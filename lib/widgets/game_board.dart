@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/game_state.dart';
+import '../models/ai_player.dart';
 
 class GameBoard extends StatefulWidget {
   const GameBoard({super.key});
@@ -10,9 +11,12 @@ class GameBoard extends StatefulWidget {
 
 class _GameBoardState extends State<GameBoard> {
   int _boardSize = 5;
+  bool _vsAI = false;
+  bool _aiThinking = false;
   late GameState gameState;
   Piece? selectedPawn;
   List<Position> validMoves = [];
+  final AIPlayer _ai = AIPlayer();
 
   @override
   void initState() {
@@ -22,6 +26,8 @@ class _GameBoardState extends State<GameBoard> {
 
   void _handleCellTap(Position pos) {
     if (gameState.winner != null) return;
+    if (_aiThinking) return;
+    if (_vsAI && gameState.currentPlayer == Player.player2) return;
 
     if (gameState.phase == GamePhase.moveBuddha) {
       if (validMoves.contains(pos)) {
@@ -29,6 +35,7 @@ class _GameBoardState extends State<GameBoard> {
           gameState = gameState.moveBuddha(pos);
           validMoves = [];
         });
+        _checkAndPlayAI();
       } else {
         setState(() {
           validMoves = gameState.getValidBuddhaMoves();
@@ -43,6 +50,7 @@ class _GameBoardState extends State<GameBoard> {
           selectedPawn = null;
           validMoves = [];
         });
+        _checkAndPlayAI();
       } else if (piece != null &&
           piece.type == PieceType.pawn &&
           piece.owner == gameState.currentPlayer) {
@@ -59,11 +67,76 @@ class _GameBoardState extends State<GameBoard> {
     }
   }
 
+  void _checkAndPlayAI() {
+    if (!_vsAI) return;
+    if (gameState.winner != null) return;
+    if (gameState.currentPlayer != Player.player2) return;
+
+    setState(() {
+      _aiThinking = true;
+    });
+
+    // Délai pour que l'IA ne joue pas instantanément
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      _playAITurn();
+    });
+  }
+
+  void _playAITurn() {
+    if (gameState.winner != null) {
+      setState(() {
+        _aiThinking = false;
+      });
+      return;
+    }
+
+    // Phase 1: Déplacer le Bouddha
+    if (gameState.phase == GamePhase.moveBuddha) {
+      final buddhaMove = _ai.getBestBuddhaMove(gameState);
+      if (buddhaMove != null) {
+        setState(() {
+          gameState = gameState.moveBuddha(buddhaMove);
+        });
+      }
+    }
+
+    // Vérifier victoire après déplacement du Bouddha
+    if (gameState.winner != null) {
+      setState(() {
+        _aiThinking = false;
+      });
+      return;
+    }
+
+    // Phase 2: Déplacer un pion (après un petit délai)
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      if (gameState.phase == GamePhase.movePawn &&
+          gameState.currentPlayer == Player.player2) {
+        final pawnMove = _ai.getBestPawnMove(gameState);
+        if (pawnMove != null) {
+          setState(() {
+            gameState = gameState.movePawn(pawnMove.$1, pawnMove.$2);
+            _aiThinking = false;
+          });
+        } else {
+          setState(() {
+            _aiThinking = false;
+          });
+        }
+      } else {
+        setState(() {
+          _aiThinking = false;
+        });
+      }
+    });
+  }
+
   void _resetGame() {
     setState(() {
       gameState = GameState.initial(size: _boardSize);
       selectedPawn = null;
       validMoves = [];
+      _aiThinking = false;
     });
   }
 
@@ -73,6 +146,17 @@ class _GameBoardState extends State<GameBoard> {
       gameState = GameState.initial(size: size);
       selectedPawn = null;
       validMoves = [];
+      _aiThinking = false;
+    });
+  }
+
+  void _toggleGameMode() {
+    setState(() {
+      _vsAI = !_vsAI;
+      gameState = GameState.initial(size: _boardSize);
+      selectedPawn = null;
+      validMoves = [];
+      _aiThinking = false;
     });
   }
 
@@ -81,6 +165,8 @@ class _GameBoardState extends State<GameBoard> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        _buildModeSelector(),
+        const SizedBox(height: 12),
         _buildSizeSelector(),
         const SizedBox(height: 16),
         _buildStatusBar(),
@@ -89,6 +175,30 @@ class _GameBoardState extends State<GameBoard> {
         const SizedBox(height: 20),
         _buildResetButton(),
       ],
+    );
+  }
+
+  Widget _buildModeSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildModeButton('2 Joueurs', !_vsAI),
+        const SizedBox(width: 12),
+        _buildModeButton('vs Ordinateur', _vsAI),
+      ],
+    );
+  }
+
+  Widget _buildModeButton(String label, bool isSelected) {
+    return ElevatedButton(
+      onPressed: _toggleGameMode,
+      style: ElevatedButton.styleFrom(
+        backgroundColor:
+            isSelected ? Colors.green.shade700 : Colors.grey.shade700,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      ),
+      child: Text(label),
     );
   }
 
@@ -108,7 +218,8 @@ class _GameBoardState extends State<GameBoard> {
     return ElevatedButton(
       onPressed: () => _changeBoardSize(size),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.amber.shade700 : Colors.grey.shade700,
+        backgroundColor:
+            isSelected ? Colors.amber.shade700 : Colors.grey.shade700,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
@@ -124,14 +235,25 @@ class _GameBoardState extends State<GameBoard> {
     Color statusColor;
 
     if (gameState.winner != null) {
-      final winnerName =
-          gameState.winner == Player.player1 ? 'Joueur 1' : 'Joueur 2';
-      statusText = '$winnerName a gagne !';
+      String winnerName;
+      if (_vsAI) {
+        winnerName = gameState.winner == Player.player1 ? 'Vous avez' : 'L\'ordinateur a';
+      } else {
+        winnerName = gameState.winner == Player.player1 ? 'Joueur 1 a' : 'Joueur 2 a';
+      }
+      statusText = '$winnerName gagne !';
       statusColor =
           gameState.winner == Player.player1 ? Colors.blue : Colors.red;
+    } else if (_aiThinking) {
+      statusText = 'L\'ordinateur reflechit...';
+      statusColor = Colors.red;
     } else {
-      final playerName =
-          gameState.currentPlayer == Player.player1 ? 'Joueur 1' : 'Joueur 2';
+      String playerName;
+      if (_vsAI) {
+        playerName = gameState.currentPlayer == Player.player1 ? 'Vous' : 'Ordinateur';
+      } else {
+        playerName = gameState.currentPlayer == Player.player1 ? 'Joueur 1' : 'Joueur 2';
+      }
       final phaseText = gameState.phase == GamePhase.moveBuddha
           ? 'Deplacez le Bouddha'
           : 'Deplacez un pion';
@@ -147,13 +269,30 @@ class _GameBoardState extends State<GameBoard> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: statusColor, width: 2),
       ),
-      child: Text(
-        statusText,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: statusColor,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_aiThinking)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: statusColor,
+                ),
+              ),
+            ),
+          Text(
+            statusText,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: statusColor,
+            ),
+          ),
+        ],
       ),
     );
   }
