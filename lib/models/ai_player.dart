@@ -1,15 +1,79 @@
 import 'dart:math';
 import 'game_state.dart';
 
+enum AIDifficulty { easy, normal, hard }
+
 class AIPlayer {
   final Random _random = Random();
+  AIDifficulty difficulty;
+
+  AIPlayer({this.difficulty = AIDifficulty.normal});
 
   /// Calcule le meilleur coup pour le Bouddha
   Position? getBestBuddhaMove(GameState state) {
     final validMoves = state.getValidBuddhaMoves();
     if (validMoves.isEmpty) return null;
 
-    // Évaluer chaque mouvement
+    switch (difficulty) {
+      case AIDifficulty.easy:
+        return _getEasyBuddhaMove(state, validMoves);
+      case AIDifficulty.normal:
+        return _getNormalBuddhaMove(state, validMoves);
+      case AIDifficulty.hard:
+        return _getHardBuddhaMove(state, validMoves);
+    }
+  }
+
+  /// Calcule le meilleur coup pour un pion
+  (Piece, Position)? getBestPawnMove(GameState state) {
+    final pawns = state.getPawns(Player.player2);
+    final allMoves = <(Piece, Position)>[];
+
+    for (final pawn in pawns) {
+      final moves = state.getValidPawnMoves(pawn);
+      for (final move in moves) {
+        allMoves.add((pawn, move));
+      }
+    }
+
+    if (allMoves.isEmpty) return null;
+
+    switch (difficulty) {
+      case AIDifficulty.easy:
+        return _getEasyPawnMove(state, allMoves);
+      case AIDifficulty.normal:
+        return _getNormalPawnMove(state, allMoves);
+      case AIDifficulty.hard:
+        return _getHardPawnMove(state, allMoves);
+    }
+  }
+
+  // ============== NIVEAU FACILE ==============
+
+  Position _getEasyBuddhaMove(GameState state, List<Position> validMoves) {
+    // 70% de chance de jouer au hasard, 30% de jouer intelligemment
+    if (_random.nextDouble() < 0.7) {
+      return validMoves[_random.nextInt(validMoves.length)];
+    }
+
+    // Éviter juste la victoire adverse
+    final safeMoves = validMoves.where((m) => m.row != 0).toList();
+    if (safeMoves.isNotEmpty) {
+      return safeMoves[_random.nextInt(safeMoves.length)];
+    }
+
+    return validMoves[_random.nextInt(validMoves.length)];
+  }
+
+  (Piece, Position)? _getEasyPawnMove(
+      GameState state, List<(Piece, Position)> allMoves) {
+    // Jouer complètement au hasard
+    return allMoves[_random.nextInt(allMoves.length)];
+  }
+
+  // ============== NIVEAU NORMAL ==============
+
+  Position _getNormalBuddhaMove(GameState state, List<Position> validMoves) {
     final scoredMoves = <MapEntry<Position, int>>[];
 
     for (final move in validMoves) {
@@ -17,69 +81,180 @@ class AIPlayer {
       scoredMoves.add(MapEntry(move, score));
     }
 
-    // Trier par score décroissant
     scoredMoves.sort((a, b) => b.value.compareTo(a.value));
 
-    // Prendre le meilleur coup (avec un peu d'aléatoire parmi les meilleurs)
     final bestScore = scoredMoves.first.value;
     final bestMoves = scoredMoves.where((m) => m.value == bestScore).toList();
 
     return bestMoves[_random.nextInt(bestMoves.length)].key;
   }
 
-  /// Calcule le meilleur coup pour un pion
-  (Piece, Position)? getBestPawnMove(GameState state) {
-    final pawns = state.getPawns(Player.player2);
-    final allMoves = <(Piece, Position, int)>[];
+  (Piece, Position)? _getNormalPawnMove(
+      GameState state, List<(Piece, Position)> allMoves) {
+    final scoredMoves = <(Piece, Position, int)>[];
 
-    for (final pawn in pawns) {
-      final moves = state.getValidPawnMoves(pawn);
-      for (final move in moves) {
-        final score = _evaluatePawnMove(state, pawn, move);
-        allMoves.add((pawn, move, score));
-      }
+    for (final move in allMoves) {
+      final score = _evaluatePawnMove(state, move.$1, move.$2);
+      scoredMoves.add((move.$1, move.$2, score));
     }
 
-    if (allMoves.isEmpty) return null;
+    scoredMoves.sort((a, b) => b.$3.compareTo(a.$3));
 
-    // Trier par score décroissant
-    allMoves.sort((a, b) => b.$3.compareTo(a.$3));
-
-    // Prendre le meilleur coup
-    final bestScore = allMoves.first.$3;
-    final bestMoves = allMoves.where((m) => m.$3 == bestScore).toList();
+    final bestScore = scoredMoves.first.$3;
+    final bestMoves = scoredMoves.where((m) => m.$3 == bestScore).toList();
     final chosen = bestMoves[_random.nextInt(bestMoves.length)];
 
     return (chosen.$1, chosen.$2);
   }
 
-  /// Évalue un mouvement du Bouddha pour l'IA (Player 2)
+  // ============== NIVEAU DIFFICILE ==============
+
+  Position _getHardBuddhaMove(GameState state, List<Position> validMoves) {
+    final scoredMoves = <MapEntry<Position, int>>[];
+
+    for (final move in validMoves) {
+      // Simuler le coup et évaluer avec minimax
+      final newState = state.moveBuddha(move);
+      int score = _minimax(newState, 3, false, -10000, 10000);
+      scoredMoves.add(MapEntry(move, score));
+    }
+
+    scoredMoves.sort((a, b) => b.value.compareTo(a.value));
+    return scoredMoves.first.key;
+  }
+
+  (Piece, Position)? _getHardPawnMove(
+      GameState state, List<(Piece, Position)> allMoves) {
+    final scoredMoves = <(Piece, Position, int)>[];
+
+    for (final move in allMoves) {
+      final newState = _simulatePawnMove(state, move.$1, move.$2);
+      int score = _minimax(newState, 3, false, -10000, 10000);
+      scoredMoves.add((move.$1, move.$2, score));
+    }
+
+    scoredMoves.sort((a, b) => b.$3.compareTo(a.$3));
+    return (scoredMoves.first.$1, scoredMoves.first.$2);
+  }
+
+  /// Algorithme Minimax avec élagage alpha-beta
+  int _minimax(GameState state, int depth, bool isMaximizing, int alpha, int beta) {
+    // Conditions terminales
+    if (state.winner == Player.player2) return 1000 + depth;
+    if (state.winner == Player.player1) return -1000 - depth;
+    if (depth == 0) return _evaluateState(state);
+
+    if (isMaximizing) {
+      // Tour de l'IA (Player 2)
+      int maxEval = -10000;
+
+      if (state.phase == GamePhase.moveBuddha) {
+        for (final move in state.getValidBuddhaMoves()) {
+          final newState = state.moveBuddha(move);
+          int eval = _minimax(newState, depth - 1, true, alpha, beta);
+          maxEval = max(maxEval, eval);
+          alpha = max(alpha, eval);
+          if (beta <= alpha) break;
+        }
+      } else {
+        for (final pawn in state.getPawns(Player.player2)) {
+          for (final move in state.getValidPawnMoves(pawn)) {
+            final newState = state.movePawn(pawn, move);
+            int eval = _minimax(newState, depth - 1, false, alpha, beta);
+            maxEval = max(maxEval, eval);
+            alpha = max(alpha, eval);
+            if (beta <= alpha) break;
+          }
+        }
+      }
+
+      return maxEval;
+    } else {
+      // Tour du joueur (Player 1)
+      int minEval = 10000;
+
+      if (state.phase == GamePhase.moveBuddha) {
+        for (final move in state.getValidBuddhaMoves()) {
+          final newState = state.moveBuddha(move);
+          int eval = _minimax(newState, depth - 1, false, alpha, beta);
+          minEval = min(minEval, eval);
+          beta = min(beta, eval);
+          if (beta <= alpha) break;
+        }
+      } else {
+        for (final pawn in state.getPawns(Player.player1)) {
+          for (final move in state.getValidPawnMoves(pawn)) {
+            final newState = state.movePawn(pawn, move);
+            int eval = _minimax(newState, depth - 1, true, alpha, beta);
+            minEval = min(minEval, eval);
+            beta = min(beta, eval);
+            if (beta <= alpha) break;
+          }
+        }
+      }
+
+      return minEval;
+    }
+  }
+
+  /// Évalue l'état du jeu pour l'IA
+  int _evaluateState(GameState state) {
+    int score = 0;
+    final buddhaPos = state.buddha.position;
+
+    // Position du Bouddha (plus proche de la ligne de l'IA = mieux)
+    score += buddhaPos.row * 15;
+
+    // Mobilité du Bouddha
+    final buddhaMovesCount = state.getValidBuddhaMoves().length;
+    if (state.currentPlayer == Player.player2) {
+      score += buddhaMovesCount * 5;
+    } else {
+      score -= buddhaMovesCount * 5;
+    }
+
+    // Contrôle du centre
+    final center = state.boardSize ~/ 2;
+    final distFromCenter = (buddhaPos.row - center).abs() + (buddhaPos.col - center).abs();
+    score -= distFromCenter * 3;
+
+    // Position des pions de l'IA
+    for (final pawn in state.getPawns(Player.player2)) {
+      final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
+      if (distToBuddha <= 2) score += 8;
+    }
+
+    // Position des pions adverses (pénalité si proches du Bouddha)
+    for (final pawn in state.getPawns(Player.player1)) {
+      final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
+      if (distToBuddha <= 2) score -= 8;
+    }
+
+    return score;
+  }
+
+  // ============== FONCTIONS COMMUNES ==============
+
   int _evaluateBuddhaMove(GameState state, Position move) {
     int score = 0;
 
-    // L'IA veut amener le Bouddha vers la ligne boardSize-1 (sa ligne de victoire)
-    // Plus on est proche de cette ligne, mieux c'est
     score += move.row * 10;
 
-    // Victoire immédiate
     if (move.row == state.boardSize - 1) {
       return 1000;
     }
 
-    // Éviter de le rapprocher de la ligne 0 (victoire adversaire)
     if (move.row == 1) {
       score -= 20;
     }
     if (move.row == 0) {
-      return -1000; // Ne jamais faire ça
+      return -1000;
     }
 
-    // Préférer le centre (plus de mobilité)
     final center = state.boardSize ~/ 2;
     final distanceFromCenter = (move.col - center).abs();
     score -= distanceFromCenter * 2;
 
-    // Évaluer la mobilité après ce mouvement
     final tempState = state.moveBuddha(move);
     final futureMoves = tempState.getValidBuddhaMoves();
     score += futureMoves.length * 3;
@@ -87,39 +262,31 @@ class AIPlayer {
     return score;
   }
 
-  /// Évalue un mouvement de pion pour l'IA
   int _evaluatePawnMove(GameState state, Piece pawn, Position move) {
     int score = 0;
     final buddhaPos = state.buddha.position;
 
-    // Simuler le mouvement
     final newState = _simulatePawnMove(state, pawn, move);
 
-    // Vérifier si ça bloque le Bouddha (victoire!)
     if (newState.isBuddhaBlocked()) {
       return 500;
     }
 
-    // Réduire la mobilité du Bouddha
     final currentBuddhaMoves = state.getValidBuddhaMoves().length;
     final newBuddhaMoves = newState.getValidBuddhaMoves().length;
     score += (currentBuddhaMoves - newBuddhaMoves) * 15;
 
-    // Bloquer les chemins vers la ligne 0 (ligne adverse)
     if (_blocksPathToRow(state, move, 0)) {
       score += 25;
     }
 
-    // Se positionner près du Bouddha pour le contrôler
     final distanceToBuddha = _manhattanDistance(move, buddhaPos);
     if (distanceToBuddha <= 2) {
       score += 10;
     }
 
-    // Préférer les positions qui créent des lignes de blocage
     score += _countBlockingPotential(state, move) * 5;
 
-    // Éviter de trop s'éloigner du centre
     final center = state.boardSize ~/ 2;
     final distanceFromCenter =
         (move.row - center).abs() + (move.col - center).abs();
@@ -152,14 +319,12 @@ class AIPlayer {
   bool _blocksPathToRow(GameState state, Position pawnPos, int targetRow) {
     final buddhaPos = state.buddha.position;
 
-    // Vérifier si le pion est entre le Bouddha et la ligne cible
     if (pawnPos.col == buddhaPos.col) {
       if (targetRow < buddhaPos.row) {
         return pawnPos.row < buddhaPos.row && pawnPos.row >= targetRow;
       }
     }
 
-    // Vérifier les diagonales
     final rowDiff = pawnPos.row - buddhaPos.row;
     final colDiff = pawnPos.col - buddhaPos.col;
     if (rowDiff.abs() == colDiff.abs() && rowDiff < 0) {
@@ -173,7 +338,6 @@ class AIPlayer {
     int count = 0;
     final buddhaPos = state.buddha.position;
 
-    // Compter combien de directions du Bouddha cette position bloque
     for (final dir in GameState.directions) {
       Position check = buddhaPos + dir;
       while (state.isValidPosition(check)) {

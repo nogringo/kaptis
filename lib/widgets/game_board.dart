@@ -13,15 +13,28 @@ class _GameBoardState extends State<GameBoard> {
   int _boardSize = 5;
   bool _vsAI = false;
   bool _aiThinking = false;
+  AIDifficulty _difficulty = AIDifficulty.normal;
   late GameState gameState;
   Piece? selectedPawn;
   List<Position> validMoves = [];
-  final AIPlayer _ai = AIPlayer();
+  late AIPlayer _ai;
 
   @override
   void initState() {
     super.initState();
+    _ai = AIPlayer(difficulty: _difficulty);
     gameState = GameState.initial(size: _boardSize);
+  }
+
+  void _changeDifficulty(AIDifficulty difficulty) {
+    setState(() {
+      _difficulty = difficulty;
+      _ai.difficulty = difficulty;
+      gameState = GameState.initial(size: _boardSize);
+      selectedPawn = null;
+      validMoves = [];
+      _aiThinking = false;
+    });
   }
 
   void _handleCellTap(Position pos) {
@@ -166,6 +179,10 @@ class _GameBoardState extends State<GameBoard> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildModeSelector(),
+        if (_vsAI) ...[
+          const SizedBox(height: 12),
+          _buildDifficultySelector(),
+        ],
         const SizedBox(height: 12),
         _buildSizeSelector(),
         const SizedBox(height: 16),
@@ -199,6 +216,45 @@ class _GameBoardState extends State<GameBoard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       ),
       child: Text(label),
+    );
+  }
+
+  Widget _buildDifficultySelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildDifficultyButton('Facile', AIDifficulty.easy),
+        const SizedBox(width: 8),
+        _buildDifficultyButton('Normal', AIDifficulty.normal),
+        const SizedBox(width: 8),
+        _buildDifficultyButton('Difficile', AIDifficulty.hard),
+      ],
+    );
+  }
+
+  Widget _buildDifficultyButton(String label, AIDifficulty diff) {
+    final isSelected = _difficulty == diff;
+    Color bgColor;
+    switch (diff) {
+      case AIDifficulty.easy:
+        bgColor = isSelected ? Colors.green : Colors.grey.shade700;
+        break;
+      case AIDifficulty.normal:
+        bgColor = isSelected ? Colors.orange : Colors.grey.shade700;
+        break;
+      case AIDifficulty.hard:
+        bgColor = isSelected ? Colors.red.shade700 : Colors.grey.shade700;
+        break;
+    }
+
+    return ElevatedButton(
+      onPressed: () => _changeDifficulty(diff),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: bgColor,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      ),
+      child: Text(label, style: const TextStyle(fontSize: 13)),
     );
   }
 
