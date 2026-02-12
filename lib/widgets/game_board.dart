@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/game_state.dart';
 import '../models/ai_player.dart';
+import '../theme/app_theme.dart';
 
 class GameBoard extends StatefulWidget {
   final int boardSize;
@@ -146,13 +147,19 @@ class GameBoardState extends State<GameBoard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.of(context);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [_buildStatusBar(), const SizedBox(height: 24), _buildBoard()],
+      children: [
+        _buildStatusBar(theme),
+        const SizedBox(height: 24),
+        _buildBoard(theme),
+      ],
     );
   }
 
-  Widget _buildStatusBar() {
+  Widget _buildStatusBar(AppTheme theme) {
     String statusText;
     Color statusColor;
 
@@ -169,11 +176,11 @@ class GameBoardState extends State<GameBoard> {
       }
       statusText = '$winnerName gagne !';
       statusColor = gameState.winner == Player.player1
-          ? Colors.blue
-          : Colors.red;
+          ? AppTheme.player1Color
+          : AppTheme.player2Color;
     } else if (_aiThinking) {
       statusText = 'L\'ordinateur reflechit...';
-      statusColor = Colors.red;
+      statusColor = AppTheme.player2Color;
     } else {
       String playerName;
       if (widget.vsAI) {
@@ -190,8 +197,8 @@ class GameBoardState extends State<GameBoard> {
           : 'Deplacez un pion';
       statusText = '$playerName - $phaseText';
       statusColor = gameState.currentPlayer == Player.player1
-          ? Colors.blue
-          : Colors.red;
+          ? AppTheme.player1Color
+          : AppTheme.player2Color;
     }
 
     return Container(
@@ -229,7 +236,7 @@ class GameBoardState extends State<GameBoard> {
     );
   }
 
-  Widget _buildBoard() {
+  Widget _buildBoard(AppTheme theme) {
     final boardPixelSize = widget.boardSize == 5 ? 350.0 : 420.0;
 
     return Container(
@@ -237,7 +244,7 @@ class GameBoardState extends State<GameBoard> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(76),
+            color: theme.shadowColor,
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -250,40 +257,38 @@ class GameBoardState extends State<GameBoard> {
           child: AspectRatio(
             aspectRatio: 1.0,
             child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: gameState.boardSize,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: gameState.boardSize,
+              ),
+              itemCount: gameState.boardSize * gameState.boardSize,
+              itemBuilder: (context, index) {
+                final row = index ~/ gameState.boardSize;
+                final col = index % gameState.boardSize;
+                final pos = Position(row, col);
+                return _buildCell(pos, theme);
+              },
             ),
-            itemCount: gameState.boardSize * gameState.boardSize,
-            itemBuilder: (context, index) {
-              final row = index ~/ gameState.boardSize;
-              final col = index % gameState.boardSize;
-              final pos = Position(row, col);
-              return _buildCell(pos);
-            },
-          ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCell(Position pos) {
+  Widget _buildCell(Position pos, AppTheme theme) {
     final piece = gameState.getPieceAt(pos);
     final isValidMove = validMoves.contains(pos);
     final isSelected = selectedPawn?.position == pos;
 
     final isLightCell = (pos.row + pos.col) % 2 == 0;
-    Color cellColor = isLightCell
-        ? const Color(0xFFE8D4B8)
-        : const Color(0xFFB58863);
+    Color cellColor = isLightCell ? theme.boardLightCell : theme.boardDarkCell;
 
     if (isValidMove) {
-      cellColor = Colors.green.withAlpha(153);
+      cellColor = theme.validMoveColor.withAlpha(153);
     }
 
     if (isSelected) {
-      cellColor = Colors.yellow.withAlpha(153);
+      cellColor = theme.selectedColor.withAlpha(153);
     }
 
     Widget? zoneIndicator;
@@ -295,7 +300,7 @@ class GameBoardState extends State<GameBoard> {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.blue.withAlpha(127),
+            color: AppTheme.player1Color.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
@@ -308,7 +313,7 @@ class GameBoardState extends State<GameBoard> {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.red.withAlpha(127),
+            color: AppTheme.player2Color.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
@@ -320,19 +325,19 @@ class GameBoardState extends State<GameBoard> {
       child: Container(
         decoration: BoxDecoration(
           color: cellColor,
-          border: Border.all(color: Colors.black26, width: 0.5),
+          border: Border.all(color: theme.boardBorder, width: 0.5),
         ),
         child: Stack(
           children: [
             ?zoneIndicator,
-            if (piece != null) _buildPiece(piece),
+            if (piece != null) _buildPiece(piece, theme),
             if (isValidMove && piece == null)
               Center(
                 child: Container(
                   width: 20,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: Colors.green.withAlpha(127),
+                    color: theme.validMoveColor.withAlpha(127),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -343,7 +348,7 @@ class GameBoardState extends State<GameBoard> {
     );
   }
 
-  Widget _buildPiece(Piece piece) {
+  Widget _buildPiece(Piece piece, AppTheme theme) {
     final pieceSize = widget.boardSize == 5 ? 50.0 : 42.0;
     final pawnSize = widget.boardSize == 5 ? 44.0 : 36.0;
     final pawnSelectedSize = widget.boardSize == 5 ? 48.0 : 40.0;
@@ -354,13 +359,13 @@ class GameBoardState extends State<GameBoard> {
           width: pieceSize,
           height: pieceSize,
           decoration: BoxDecoration(
-            gradient: const RadialGradient(
-              colors: [Color(0xFFFFD700), Color(0xFFDAA520)],
+            gradient: RadialGradient(
+              colors: [theme.accentColorBright, theme.accentColorSecondary],
             ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(76),
+                color: theme.shadowColor,
                 blurRadius: 4,
                 offset: const Offset(2, 2),
               ),
@@ -379,7 +384,9 @@ class GameBoardState extends State<GameBoard> {
       );
     }
 
-    final color = piece.owner == Player.player1 ? Colors.blue : Colors.red;
+    final color = piece.owner == Player.player1
+        ? AppTheme.player1Color
+        : AppTheme.player2Color;
     final isSelected = selectedPawn == piece;
 
     return Center(
@@ -391,12 +398,12 @@ class GameBoardState extends State<GameBoard> {
           color: color,
           shape: BoxShape.circle,
           border: Border.all(
-            color: isSelected ? Colors.yellow : Colors.white,
+            color: isSelected ? theme.selectedColor : Colors.white,
             width: isSelected ? 3 : 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(76),
+              color: theme.shadowColor,
               blurRadius: 4,
               offset: const Offset(2, 2),
             ),

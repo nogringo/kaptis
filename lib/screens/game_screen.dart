@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
+import '../theme/app_theme.dart';
 import '../widgets/game_board.dart';
 
 class GameScreen extends StatefulWidget {
@@ -23,16 +24,18 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: const Text(
           "Aboul'",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF16213E),
-        foregroundColor: Colors.white,
+        backgroundColor: theme.appBarBackground,
+        foregroundColor: theme.appBarForeground,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),

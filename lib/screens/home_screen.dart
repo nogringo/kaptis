@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'setup_screen.dart';
 import 'rules_screen.dart';
+import '../theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: theme.primaryBackground,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -16,15 +19,15 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildLogo(),
+                _buildLogo(theme),
                 const SizedBox(height: 40),
-                _buildTitle(),
+                _buildTitle(theme),
                 const SizedBox(height: 16),
-                _buildSubtitle(),
+                _buildSubtitle(theme),
                 const SizedBox(height: 60),
-                _buildPlayButton(context),
+                _buildPlayButton(context, theme),
                 const SizedBox(height: 20),
-                _buildRulesButton(context),
+                _buildRulesButton(context, theme),
               ],
             ),
           ),
@@ -33,22 +36,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(AppTheme theme) {
     return Container(
       width: 150,
       height: 150,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const RadialGradient(
-          colors: [Color(0xFFFFD700), Color(0xFFDAA520), Color(0xFFB8860B)],
-          stops: [0.3, 0.7, 1.0],
+        gradient: RadialGradient(
+          colors: theme.logoGradient,
+          stops: const [0.3, 0.7, 1.0],
         ),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFFD700).withAlpha(100),
-            blurRadius: 30,
-            spreadRadius: 5,
-          ),
+          BoxShadow(color: theme.accentShadow, blurRadius: 30, spreadRadius: 5),
         ],
       ),
       child: const Center(
@@ -70,11 +69,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle() {
+  Widget _buildTitle(AppTheme theme) {
     return ShaderMask(
-      shaderCallback: (bounds) => const LinearGradient(
-        colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-      ).createShader(bounds),
+      shaderCallback: (bounds) =>
+          LinearGradient(colors: theme.titleGradient).createShader(bounds),
       child: const Text(
         "Aboul'",
         style: TextStyle(
@@ -87,18 +85,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSubtitle() {
+  Widget _buildSubtitle(AppTheme theme) {
     return Text(
       'Jeu de strategie pour 2 joueurs',
       style: TextStyle(
         fontSize: 16,
-        color: Colors.grey.shade400,
+        color: theme.secondaryText,
         letterSpacing: 1,
       ),
     );
   }
 
-  Widget _buildPlayButton(BuildContext context) {
+  Widget _buildPlayButton(BuildContext context, AppTheme theme) {
     return SizedBox(
       width: 220,
       height: 56,
@@ -110,13 +108,13 @@ class HomeScreen extends StatelessWidget {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFFD700),
-          foregroundColor: Colors.black,
+          backgroundColor: theme.primaryButtonBackground,
+          foregroundColor: theme.primaryButtonForeground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
           elevation: 8,
-          shadowColor: const Color(0xFFFFD700).withAlpha(100),
+          shadowColor: theme.accentShadow,
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -137,7 +135,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRulesButton(BuildContext context) {
+  Widget _buildRulesButton(BuildContext context, AppTheme theme) {
     return SizedBox(
       width: 220,
       height: 50,
@@ -149,8 +147,8 @@ class HomeScreen extends StatelessWidget {
           );
         },
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: Colors.white54, width: 2),
+          foregroundColor: theme.outlineButtonForeground,
+          side: BorderSide(color: theme.outlineButtonBorder, width: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),

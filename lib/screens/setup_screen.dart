@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
+import '../theme/app_theme.dart';
 import 'game_screen.dart';
 
 class SetupScreen extends StatefulWidget {
@@ -16,16 +17,18 @@ class _SetupScreenState extends State<SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: theme.primaryBackground,
       appBar: AppBar(
         title: const Text(
           'Nouvelle partie',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF16213E),
-        foregroundColor: Colors.white,
+        backgroundColor: theme.appBarBackground,
+        foregroundColor: theme.appBarForeground,
         elevation: 0,
       ),
       body: SafeArea(
@@ -39,9 +42,9 @@ class _SetupScreenState extends State<SetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildSectionTitle('Mode de jeu'),
+                      _buildSectionTitle('Mode de jeu', theme),
                       const SizedBox(height: 16),
-                      _buildModeSelector(),
+                      _buildModeSelector(theme),
                       const SizedBox(height: 32),
                       AnimatedSize(
                         duration: const Duration(milliseconds: 300),
@@ -50,23 +53,23 @@ class _SetupScreenState extends State<SetupScreen> {
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildSectionTitle('Difficulte'),
+                                  _buildSectionTitle('Difficulte', theme),
                                   const SizedBox(height: 16),
-                                  _buildDifficultySelector(),
+                                  _buildDifficultySelector(theme),
                                   const SizedBox(height: 32),
                                 ],
                               )
                             : const SizedBox.shrink(),
                       ),
-                      _buildSectionTitle('Taille du plateau'),
+                      _buildSectionTitle('Taille du plateau', theme),
                       const SizedBox(height: 16),
-                      _buildSizeSelector(),
+                      _buildSizeSelector(theme),
                       const SizedBox(height: 24),
                     ],
                   ),
                 ),
               ),
-              _buildStartButton(),
+              _buildStartButton(theme),
             ],
           ),
         ),
@@ -74,18 +77,18 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, AppTheme theme) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.bold,
-        color: Colors.white,
+        color: theme.primaryText,
       ),
     );
   }
 
-  Widget _buildModeSelector() {
+  Widget _buildModeSelector(AppTheme theme) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -97,6 +100,7 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: 'Jouer en local',
               isSelected: !_vsAI,
               onTap: () => setState(() => _vsAI = false),
+              theme: theme,
             ),
           ),
           const SizedBox(width: 16),
@@ -107,6 +111,7 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: 'Jouer contre l\'ordinateur',
               isSelected: _vsAI,
               onTap: () => setState(() => _vsAI = true),
+              theme: theme,
             ),
           ),
         ],
@@ -120,6 +125,7 @@ class _SetupScreenState extends State<SetupScreen> {
     required String subtitle,
     required bool isSelected,
     required VoidCallback onTap,
+    required AppTheme theme,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -128,13 +134,11 @@ class _SetupScreenState extends State<SetupScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFFFD700).withAlpha(25)
-              : const Color(0xFF16213E),
+              ? theme.accentColor.withAlpha(25)
+              : theme.cardBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFFFFD700)
-                : Colors.white.withAlpha(25),
+            color: isSelected ? theme.accentColor : theme.cardBorder,
             width: 2,
           ),
         ),
@@ -143,9 +147,7 @@ class _SetupScreenState extends State<SetupScreen> {
             Icon(
               icon,
               size: 40,
-              color: isSelected
-                  ? const Color(0xFFFFD700)
-                  : Colors.grey.shade500,
+              color: isSelected ? theme.accentColor : theme.tertiaryText,
             ),
             const SizedBox(height: 12),
             Text(
@@ -153,14 +155,14 @@ class _SetupScreenState extends State<SetupScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? const Color(0xFFFFD700) : Colors.white,
+                color: isSelected ? theme.accentColor : theme.primaryText,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              style: TextStyle(fontSize: 12, color: theme.tertiaryText),
             ),
           ],
         ),
@@ -168,7 +170,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildDifficultySelector() {
+  Widget _buildDifficultySelector(AppTheme theme) {
     return Row(
       children: [
         Expanded(
@@ -177,6 +179,7 @@ class _SetupScreenState extends State<SetupScreen> {
             icon: Icons.sentiment_satisfied_rounded,
             difficulty: AIDifficulty.easy,
             color: Colors.green,
+            theme: theme,
           ),
         ),
         const SizedBox(width: 12),
@@ -186,6 +189,7 @@ class _SetupScreenState extends State<SetupScreen> {
             icon: Icons.sentiment_neutral_rounded,
             difficulty: AIDifficulty.normal,
             color: Colors.orange,
+            theme: theme,
           ),
         ),
         const SizedBox(width: 12),
@@ -195,6 +199,7 @@ class _SetupScreenState extends State<SetupScreen> {
             icon: Icons.sentiment_very_dissatisfied_rounded,
             difficulty: AIDifficulty.hard,
             color: Colors.red,
+            theme: theme,
           ),
         ),
       ],
@@ -206,6 +211,7 @@ class _SetupScreenState extends State<SetupScreen> {
     required IconData icon,
     required AIDifficulty difficulty,
     required Color color,
+    required AppTheme theme,
   }) {
     final isSelected = _difficulty == difficulty;
     return GestureDetector(
@@ -213,10 +219,10 @@ class _SetupScreenState extends State<SetupScreen> {
       child: Container(
         height: 80,
         decoration: BoxDecoration(
-          color: isSelected ? color.withAlpha(30) : const Color(0xFF16213E),
+          color: isSelected ? color.withAlpha(30) : theme.cardBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color : Colors.white.withAlpha(25),
+            color: isSelected ? color : theme.cardBorder,
             width: 2,
           ),
         ),
@@ -226,7 +232,7 @@ class _SetupScreenState extends State<SetupScreen> {
             Icon(
               icon,
               size: 28,
-              color: isSelected ? color : Colors.grey.shade500,
+              color: isSelected ? color : theme.tertiaryText,
             ),
             const SizedBox(height: 8),
             Text(
@@ -234,7 +240,7 @@ class _SetupScreenState extends State<SetupScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? color : Colors.grey.shade500,
+                color: isSelected ? color : theme.tertiaryText,
               ),
             ),
           ],
@@ -243,13 +249,14 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildSizeSelector() {
+  Widget _buildSizeSelector(AppTheme theme) {
     return Row(
       children: [
         Expanded(
           child: _buildSizeCard(
             size: 5,
             description: '5 pions par joueur\nParties rapides',
+            theme: theme,
           ),
         ),
         const SizedBox(width: 16),
@@ -257,13 +264,18 @@ class _SetupScreenState extends State<SetupScreen> {
           child: _buildSizeCard(
             size: 7,
             description: '7 pions par joueur\nParties longues',
+            theme: theme,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSizeCard({required int size, required String description}) {
+  Widget _buildSizeCard({
+    required int size,
+    required String description,
+    required AppTheme theme,
+  }) {
     final isSelected = _boardSize == size;
     return GestureDetector(
       onTap: () => setState(() => _boardSize = size),
@@ -272,13 +284,11 @@ class _SetupScreenState extends State<SetupScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFFFD700).withAlpha(25)
-              : const Color(0xFF16213E),
+              ? theme.accentColor.withAlpha(25)
+              : theme.cardBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFFFFD700)
-                : Colors.white.withAlpha(25),
+            color: isSelected ? theme.accentColor : theme.cardBorder,
             width: 2,
           ),
         ),
@@ -289,7 +299,7 @@ class _SetupScreenState extends State<SetupScreen> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? const Color(0xFFFFD700) : Colors.white,
+                color: isSelected ? theme.accentColor : theme.primaryText,
               ),
             ),
             const SizedBox(height: 8),
@@ -298,7 +308,7 @@ class _SetupScreenState extends State<SetupScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade500,
+                color: theme.tertiaryText,
                 height: 1.4,
               ),
             ),
@@ -308,7 +318,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildStartButton() {
+  Widget _buildStartButton(AppTheme theme) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -326,8 +336,8 @@ class _SetupScreenState extends State<SetupScreen> {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFFD700),
-          foregroundColor: Colors.black,
+          backgroundColor: theme.primaryButtonBackground,
+          foregroundColor: theme.primaryButtonForeground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
