@@ -214,33 +214,65 @@ class AIPlayer {
     int score = 0;
     final buddhaPos = state.buddha.position;
 
-    // Position du Bouddha (plus proche de la ligne de l'IA = mieux)
-    score += buddhaPos.row * 15;
+    if (state.gameMode == GameMode.hexagonal) {
+      // Mode hexagonal
+      // Position du Bouddha (plus proche du bas = mieux pour P2)
+      score += buddhaPos.row * 15;
 
-    // Mobilité du Bouddha
-    final buddhaMovesCount = state.getValidBuddhaMoves().length;
-    if (state.currentPlayer == Player.player2) {
-      score += buddhaMovesCount * 5;
+      // Mobilité du Bouddha
+      final buddhaMovesCount = state.getValidBuddhaMoves().length;
+      if (state.currentPlayer == Player.player2) {
+        score += buddhaMovesCount * 5;
+      } else {
+        score -= buddhaMovesCount * 5;
+      }
+
+      // Contrôle du centre (col 3 est le centre)
+      final centerCol = 3;
+      final distFromCenter = (buddhaPos.col - centerCol).abs();
+      score -= distFromCenter * 3;
+
+      // Position des pions de l'IA
+      for (final pawn in state.getPawns(Player.player2)) {
+        final distToBuddha = _hexDistance(pawn.position, buddhaPos);
+        if (distToBuddha <= 2) score += 8;
+      }
+
+      // Position des pions adverses
+      for (final pawn in state.getPawns(Player.player1)) {
+        final distToBuddha = _hexDistance(pawn.position, buddhaPos);
+        if (distToBuddha <= 2) score -= 8;
+      }
     } else {
-      score -= buddhaMovesCount * 5;
-    }
+      // Mode carré
+      // Position du Bouddha (plus proche de la ligne de l'IA = mieux)
+      score += buddhaPos.row * 15;
 
-    // Contrôle du centre
-    final center = state.boardSize ~/ 2;
-    final distFromCenter =
-        (buddhaPos.row - center).abs() + (buddhaPos.col - center).abs();
-    score -= distFromCenter * 3;
+      // Mobilité du Bouddha
+      final buddhaMovesCount = state.getValidBuddhaMoves().length;
+      if (state.currentPlayer == Player.player2) {
+        score += buddhaMovesCount * 5;
+      } else {
+        score -= buddhaMovesCount * 5;
+      }
 
-    // Position des pions de l'IA
-    for (final pawn in state.getPawns(Player.player2)) {
-      final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
-      if (distToBuddha <= 2) score += 8;
-    }
+      // Contrôle du centre
+      final center = state.boardSize ~/ 2;
+      final distFromCenter =
+          (buddhaPos.row - center).abs() + (buddhaPos.col - center).abs();
+      score -= distFromCenter * 3;
 
-    // Position des pions adverses (pénalité si proches du Bouddha)
-    for (final pawn in state.getPawns(Player.player1)) {
-      final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
-      if (distToBuddha <= 2) score -= 8;
+      // Position des pions de l'IA
+      for (final pawn in state.getPawns(Player.player2)) {
+        final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
+        if (distToBuddha <= 2) score += 8;
+      }
+
+      // Position des pions adverses (pénalité si proches du Bouddha)
+      for (final pawn in state.getPawns(Player.player1)) {
+        final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
+        if (distToBuddha <= 2) score -= 8;
+      }
     }
 
     return score;
@@ -251,26 +283,56 @@ class AIPlayer {
   int _evaluateBuddhaMove(GameState state, Position move) {
     int score = 0;
 
-    score += move.row * 10;
+    if (state.gameMode == GameMode.hexagonal) {
+      // Mode hexagonal
+      final colHeight = GameState.hexColumnHeights[move.col];
+      final maxRow = colHeight - 1;
 
-    if (move.row == state.boardSize - 1) {
-      return 1000;
+      score += move.row * 10;
+
+      // Victoire si atteint le bas de la colonne
+      if (move.row == maxRow) {
+        return 1000;
+      }
+
+      // Pénalité si proche du haut
+      if (move.row == 1) {
+        score -= 20;
+      }
+      if (move.row == 0) {
+        return -1000;
+      }
+
+      // Préférer le centre (colonne 3)
+      final distanceFromCenter = (move.col - 3).abs();
+      score -= distanceFromCenter * 2;
+
+      final tempState = state.moveBuddha(move);
+      final futureMoves = tempState.getValidBuddhaMoves();
+      score += futureMoves.length * 3;
+    } else {
+      // Mode carré
+      score += move.row * 10;
+
+      if (move.row == state.boardSize - 1) {
+        return 1000;
+      }
+
+      if (move.row == 1) {
+        score -= 20;
+      }
+      if (move.row == 0) {
+        return -1000;
+      }
+
+      final center = state.boardSize ~/ 2;
+      final distanceFromCenter = (move.col - center).abs();
+      score -= distanceFromCenter * 2;
+
+      final tempState = state.moveBuddha(move);
+      final futureMoves = tempState.getValidBuddhaMoves();
+      score += futureMoves.length * 3;
     }
-
-    if (move.row == 1) {
-      score -= 20;
-    }
-    if (move.row == 0) {
-      return -1000;
-    }
-
-    final center = state.boardSize ~/ 2;
-    final distanceFromCenter = (move.col - center).abs();
-    score -= distanceFromCenter * 2;
-
-    final tempState = state.moveBuddha(move);
-    final futureMoves = tempState.getValidBuddhaMoves();
-    score += futureMoves.length * 3;
 
     return score;
   }
@@ -293,17 +355,24 @@ class AIPlayer {
       score += 25;
     }
 
-    final distanceToBuddha = _manhattanDistance(move, buddhaPos);
+    final distanceToBuddha = _getDistance(state, move, buddhaPos);
     if (distanceToBuddha <= 2) {
       score += 10;
     }
 
     score += _countBlockingPotential(state, move) * 5;
 
-    final center = state.boardSize ~/ 2;
-    final distanceFromCenter =
-        (move.row - center).abs() + (move.col - center).abs();
-    score -= distanceFromCenter;
+    if (state.gameMode == GameMode.hexagonal) {
+      // Mode hexagonal : préférer le centre (colonne 3)
+      final distanceFromCenter = (move.col - 3).abs();
+      score -= distanceFromCenter;
+    } else {
+      // Mode carré
+      final center = state.boardSize ~/ 2;
+      final distanceFromCenter =
+          (move.row - center).abs() + (move.col - center).abs();
+      score -= distanceFromCenter;
+    }
 
     return score;
   }
@@ -322,11 +391,33 @@ class AIPlayer {
       currentPlayer: Player.player1,
       phase: GamePhase.moveBuddha,
       winner: null,
+      gameMode: state.gameMode,
     );
   }
 
   int _manhattanDistance(Position a, Position b) {
     return (a.row - b.row).abs() + (a.col - b.col).abs();
+  }
+
+  // Distance hexagonale (cube coordinates conversion)
+  int _hexDistance(Position a, Position b) {
+    // Convert offset coordinates to cube coordinates
+    final ax = a.col;
+    final az = a.row - (a.col - (a.col & 1)) ~/ 2;
+    final ay = -ax - az;
+
+    final bx = b.col;
+    final bz = b.row - (b.col - (b.col & 1)) ~/ 2;
+    final by = -bx - bz;
+
+    return ((ax - bx).abs() + (ay - by).abs() + (az - bz).abs()) ~/ 2;
+  }
+
+  int _getDistance(GameState state, Position a, Position b) {
+    if (state.gameMode == GameMode.hexagonal) {
+      return _hexDistance(a, b);
+    }
+    return _manhattanDistance(a, b);
   }
 
   bool _blocksPathToRow(GameState state, Position pawnPos, int targetRow) {
@@ -351,14 +442,30 @@ class AIPlayer {
     int count = 0;
     final buddhaPos = state.buddha.position;
 
-    for (final dir in GameState.directions) {
-      Position check = buddhaPos + dir;
-      while (state.isValidPosition(check)) {
-        if (check == pos) {
-          count++;
-          break;
+    if (state.gameMode == GameMode.hexagonal) {
+      // Mode hexagonal : vérifie les 6 directions
+      for (int dir = 0; dir < 6; dir++) {
+        Position? check = state.getNextHexCell(buddhaPos, dir);
+
+        while (check != null) {
+          if (check == pos) {
+            count++;
+            break;
+          }
+          check = state.getNextHexCell(check, dir);
         }
-        check = check + dir;
+      }
+    } else {
+      // Mode carré : vérifie les 8 directions
+      for (final dir in GameState.directions) {
+        Position check = buddhaPos + dir;
+        while (state.isValidPosition(check)) {
+          if (check == pos) {
+            count++;
+            break;
+          }
+          check = check + dir;
+        }
       }
     }
 

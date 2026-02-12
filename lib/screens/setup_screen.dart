@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
+import '../models/game_state.dart';
 import '../theme/app_theme.dart';
 import 'game_screen.dart';
 
@@ -14,6 +15,7 @@ class _SetupScreenState extends State<SetupScreen> {
   int _boardSize = 5;
   bool _vsAI = false;
   AIDifficulty _difficulty = AIDifficulty.normal;
+  GameMode _gameMode = GameMode.square;
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +63,28 @@ class _SetupScreenState extends State<SetupScreen> {
                               )
                             : const SizedBox.shrink(),
                       ),
-                      _buildSectionTitle('Taille du plateau', theme),
+                      _buildSectionTitle('Type de plateau', theme),
                       const SizedBox(height: 16),
-                      _buildSizeSelector(theme),
-                      const SizedBox(height: 24),
+                      _buildBoardTypeSelector(theme),
+                      const SizedBox(height: 32),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        child: _gameMode == GameMode.square
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildSectionTitle(
+                                    'Taille du plateau',
+                                    theme,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildSizeSelector(theme),
+                                  const SizedBox(height: 24),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
                     ],
                   ),
                 ),
@@ -120,6 +140,88 @@ class _SetupScreenState extends State<SetupScreen> {
   }
 
   Widget _buildModeCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required AppTheme theme,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.accentColor.withAlpha(25)
+              : theme.cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? theme.accentColor : theme.cardBorder,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 40,
+              color: isSelected ? theme.accentColor : theme.tertiaryText,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? theme.accentColor : theme.primaryText,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: theme.tertiaryText),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBoardTypeSelector(AppTheme theme) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _buildBoardTypeCard(
+              icon: Icons.grid_4x4_rounded,
+              title: 'Carre',
+              subtitle: '5x5 ou 7x7 cases',
+              isSelected: _gameMode == GameMode.square,
+              onTap: () => setState(() => _gameMode = GameMode.square),
+              theme: theme,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildBoardTypeCard(
+              icon: Icons.hexagon_rounded,
+              title: 'Hexagonal',
+              subtitle: '37 hexagones',
+              isSelected: _gameMode == GameMode.hexagonal,
+              onTap: () => setState(() => _gameMode = GameMode.hexagonal),
+              theme: theme,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBoardTypeCard({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -328,9 +430,10 @@ class _SetupScreenState extends State<SetupScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => GameScreen(
-                boardSize: _boardSize,
+                boardSize: _gameMode == GameMode.hexagonal ? 7 : _boardSize,
                 vsAI: _vsAI,
                 difficulty: _difficulty,
+                gameMode: _gameMode,
               ),
             ),
           );

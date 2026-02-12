@@ -4,6 +4,8 @@ enum PieceType { pawn, buddha }
 
 enum GamePhase { moveBuddha, movePawn }
 
+enum GameMode { square, hexagonal }
+
 class Position {
   final int row;
   final int col;
@@ -39,6 +41,18 @@ class GameState {
   final Player currentPlayer;
   final GamePhase phase;
   final Player? winner;
+  final GameMode gameMode;
+
+  // Hauteurs des colonnes pour le mode hexagonal (7 colonnes)
+  static const List<int> hexColumnHeights = [4, 5, 6, 7, 6, 5, 4];
+
+  // 6 directions hexagonales : 0=N, 1=S, 2=NW, 3=SW, 4=NE, 5=SE
+  static const int hexDirN = 0;
+  static const int hexDirS = 1;
+  static const int hexDirNW = 2;
+  static const int hexDirSW = 3;
+  static const int hexDirNE = 4;
+  static const int hexDirSE = 5;
 
   GameState({
     required this.boardSize,
@@ -46,6 +60,7 @@ class GameState {
     required this.currentPlayer,
     required this.phase,
     this.winner,
+    this.gameMode = GameMode.square,
   });
 
   factory GameState.initial({int size = 5}) {
@@ -91,6 +106,53 @@ class GameState {
       currentPlayer: Player.player1,
       phase: GamePhase.moveBuddha,
       winner: null,
+      gameMode: GameMode.square,
+    );
+  }
+
+  // Initialisation pour le mode hexagonal (37 cellules, 7 colonnes)
+  factory GameState.initialHex() {
+    final pieces = <Piece>[];
+
+    // Buddha au centre (col=3, row=3)
+    pieces.add(
+      Piece(
+        type: PieceType.buddha,
+        owner: null,
+        position: Position(3, 3), // row=3 dans la colonne centrale (hauteur 7)
+      ),
+    );
+
+    // Pions joueur 1 (en haut de chaque colonne, row=0)
+    for (int col = 0; col < 7; col++) {
+      pieces.add(
+        Piece(
+          type: PieceType.pawn,
+          owner: Player.player1,
+          position: Position(0, col),
+        ),
+      );
+    }
+
+    // Pions joueur 2 (en bas de chaque colonne, row=max-1)
+    for (int col = 0; col < 7; col++) {
+      final maxRow = hexColumnHeights[col] - 1;
+      pieces.add(
+        Piece(
+          type: PieceType.pawn,
+          owner: Player.player2,
+          position: Position(maxRow, col),
+        ),
+      );
+    }
+
+    return GameState(
+      boardSize: 7, // 7 colonnes pour le mode hexagonal
+      pieces: pieces,
+      currentPlayer: Player.player1,
+      phase: GamePhase.moveBuddha,
+      winner: null,
+      gameMode: GameMode.hexagonal,
     );
   }
 
@@ -108,10 +170,87 @@ class GameState {
   }
 
   bool isValidPosition(Position pos) {
+    if (gameMode == GameMode.hexagonal) {
+      return isValidHexPosition(pos);
+    }
     return pos.row >= 0 &&
         pos.row < boardSize &&
         pos.col >= 0 &&
         pos.col < boardSize;
+  }
+
+  // Validation pour le mode hexagonal
+  bool isValidHexPosition(Position pos) {
+    if (pos.col < 0 || pos.col >= 7) return false;
+    final maxRow = hexColumnHeights[pos.col];
+    return pos.row >= 0 && pos.row < maxRow;
+  }
+
+  // Obtenir la cellule suivante dans une direction hexagonale
+  // direction: 0=N, 1=S, 2=NW, 3=SW, 4=NE, 5=SE
+  Position? getNextHexCell(Position pos, int direction) {
+    final curHeight = hexColumnHeights[pos.col];
+
+    switch (direction) {
+      case 0: // N (haut même colonne)
+        if (pos.row > 0) return Position(pos.row - 1, pos.col);
+        return null;
+
+      case 1: // S (bas même colonne)
+        if (pos.row < curHeight - 1) return Position(pos.row + 1, pos.col);
+        return null;
+
+      case 2: // NW (haut-gauche)
+        if (pos.col == 0) return null;
+        final leftHeight = hexColumnHeights[pos.col - 1];
+        // Si colonne adjacente plus courte: row-1, sinon: row
+        final newRow = leftHeight < curHeight ? pos.row - 1 : pos.row;
+        if (newRow >= 0 && newRow < leftHeight) {
+          return Position(newRow, pos.col - 1);
+        }
+        return null;
+
+      case 3: // SW (bas-gauche)
+        if (pos.col == 0) return null;
+        final leftHeight2 = hexColumnHeights[pos.col - 1];
+        // Si colonne adjacente plus courte: row, sinon: row+1
+        final newRow2 = leftHeight2 < curHeight ? pos.row : pos.row + 1;
+        if (newRow2 >= 0 && newRow2 < leftHeight2) {
+          return Position(newRow2, pos.col - 1);
+        }
+        return null;
+
+      case 4: // NE (haut-droite)
+        if (pos.col >= 6) return null;
+        final rightHeight = hexColumnHeights[pos.col + 1];
+        final newRow3 = rightHeight < curHeight ? pos.row - 1 : pos.row;
+        if (newRow3 >= 0 && newRow3 < rightHeight) {
+          return Position(newRow3, pos.col + 1);
+        }
+        return null;
+
+      case 5: // SE (bas-droite)
+        if (pos.col >= 6) return null;
+        final rightHeight2 = hexColumnHeights[pos.col + 1];
+        final newRow4 = rightHeight2 < curHeight ? pos.row : pos.row + 1;
+        if (newRow4 >= 0 && newRow4 < rightHeight2) {
+          return Position(newRow4, pos.col + 1);
+        }
+        return null;
+    }
+    return null;
+  }
+
+  // Obtenir tous les voisins hexagonaux d'une position
+  List<Position> getHexNeighbors(Position pos) {
+    final neighbors = <Position>[];
+    for (int dir = 0; dir < 6; dir++) {
+      final neighbor = getNextHexCell(pos, dir);
+      if (neighbor != null) {
+        neighbors.add(neighbor);
+      }
+    }
+    return neighbors;
   }
 
   // Directions possibles (8 directions)
@@ -131,10 +270,21 @@ class GameState {
     final buddhaPos = buddha.position;
     final validMoves = <Position>[];
 
-    for (final dir in directions) {
-      final newPos = buddhaPos + dir;
-      if (isValidPosition(newPos) && getPieceAt(newPos) == null) {
-        validMoves.add(newPos);
+    if (gameMode == GameMode.hexagonal) {
+      // Mode hexagonal : 6 directions
+      final neighbors = getHexNeighbors(buddhaPos);
+      for (final newPos in neighbors) {
+        if (getPieceAt(newPos) == null) {
+          validMoves.add(newPos);
+        }
+      }
+    } else {
+      // Mode carré : 8 directions
+      for (final dir in directions) {
+        final newPos = buddhaPos + dir;
+        if (isValidPosition(newPos) && getPieceAt(newPos) == null) {
+          validMoves.add(newPos);
+        }
       }
     }
 
@@ -147,18 +297,36 @@ class GameState {
 
     final validMoves = <Position>[];
 
-    for (final dir in directions) {
-      Position lastValid = pawn.position;
-      Position current = pawn.position + dir;
+    if (gameMode == GameMode.hexagonal) {
+      // Mode hexagonal : 6 directions, glisse jusqu'à l'obstacle
+      for (int dir = 0; dir < 6; dir++) {
+        Position lastValid = pawn.position;
+        Position? current = getNextHexCell(pawn.position, dir);
 
-      while (isValidPosition(current) && getPieceAt(current) == null) {
-        lastValid = current;
-        current = current + dir;
+        while (current != null && getPieceAt(current) == null) {
+          lastValid = current;
+          current = getNextHexCell(current, dir);
+        }
+
+        if (lastValid != pawn.position) {
+          validMoves.add(lastValid);
+        }
       }
+    } else {
+      // Mode carré : 8 directions
+      for (final dir in directions) {
+        Position lastValid = pawn.position;
+        Position current = pawn.position + dir;
 
-      // Le pion doit se déplacer le plus loin possible
-      if (lastValid != pawn.position) {
-        validMoves.add(lastValid);
+        while (isValidPosition(current) && getPieceAt(current) == null) {
+          lastValid = current;
+          current = current + dir;
+        }
+
+        // Le pion doit se déplacer le plus loin possible
+        if (lastValid != pawn.position) {
+          validMoves.add(lastValid);
+        }
       }
     }
 
@@ -174,12 +342,25 @@ class GameState {
   Player? checkWinner() {
     final buddhaPos = buddha.position;
 
-    // Victoire si le Bouddha est sur sa propre ligne de départ
-    if (buddhaPos.row == 0) {
-      return Player.player1; // Joueur 1 a ramené le Bouddha sur son camp
-    }
-    if (buddhaPos.row == boardSize - 1) {
-      return Player.player2; // Joueur 2 a ramené le Bouddha sur son camp
+    if (gameMode == GameMode.hexagonal) {
+      // Mode hexagonal : victoire si Buddha atteint le bord de sa zone
+      // P1 gagne si Buddha atteint row == 0 (haut de n'importe quelle colonne)
+      if (buddhaPos.row == 0) {
+        return Player.player1;
+      }
+      // P2 gagne si Buddha atteint la dernière row de sa colonne
+      final maxRow = hexColumnHeights[buddhaPos.col] - 1;
+      if (buddhaPos.row == maxRow) {
+        return Player.player2;
+      }
+    } else {
+      // Mode carré : victoire si le Bouddha est sur sa propre ligne de départ
+      if (buddhaPos.row == 0) {
+        return Player.player1; // Joueur 1 a ramené le Bouddha sur son camp
+      }
+      if (buddhaPos.row == boardSize - 1) {
+        return Player.player2; // Joueur 2 a ramené le Bouddha sur son camp
+      }
     }
 
     return null;
@@ -217,6 +398,7 @@ class GameState {
       currentPlayer: currentPlayer,
       phase: GamePhase.movePawn,
       winner: null,
+      gameMode: gameMode,
     );
 
     // Vérifier victoire après déplacement du Bouddha
@@ -228,6 +410,7 @@ class GameState {
         currentPlayer: currentPlayer,
         phase: GamePhase.movePawn,
         winner: winner,
+        gameMode: gameMode,
       );
     }
 
@@ -256,6 +439,7 @@ class GameState {
       currentPlayer: nextPlayer,
       phase: GamePhase.moveBuddha,
       winner: null,
+      gameMode: gameMode,
     );
 
     // Vérifier si le Bouddha est bloqué (victoire pour le joueur actuel)
@@ -266,6 +450,7 @@ class GameState {
         currentPlayer: nextPlayer,
         phase: GamePhase.moveBuddha,
         winner: currentPlayer,
+        gameMode: gameMode,
       );
     }
 

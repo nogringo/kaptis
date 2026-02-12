@@ -73,8 +73,7 @@ class AppTheme {
   Color get boardBorder => isDark ? Colors.black26 : Colors.transparent;
 
   // Game states
-  Color get validMoveColor =>
-      isDark ? Colors.green : const Color(0xFF2E7D32);
+  Color get validMoveColor => isDark ? Colors.green : const Color(0xFF2E7D32);
 
   Color get selectedColor => isDark ? Colors.yellow : const Color(0xFFFF8F00);
 

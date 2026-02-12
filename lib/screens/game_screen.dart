@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
+import '../models/game_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/game_board.dart';
 
@@ -7,12 +8,14 @@ class GameScreen extends StatefulWidget {
   final int boardSize;
   final bool vsAI;
   final AIDifficulty difficulty;
+  final GameMode gameMode;
 
   const GameScreen({
     super.key,
     required this.boardSize,
     required this.vsAI,
     required this.difficulty,
+    this.gameMode = GameMode.square,
   });
 
   @override
@@ -49,17 +52,25 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: GameBoard(
-              key: _gameBoardKey,
-              boardSize: widget.boardSize,
-              vsAI: widget.vsAI,
-              difficulty: widget.difficulty,
-            ),
-          ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: GameBoard(
+                    key: _gameBoardKey,
+                    boardSize: widget.boardSize,
+                    vsAI: widget.vsAI,
+                    difficulty: widget.difficulty,
+                    gameMode: widget.gameMode,
+                    maxWidth: constraints.maxWidth - 32,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
