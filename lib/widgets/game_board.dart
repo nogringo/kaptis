@@ -9,32 +9,35 @@ class GameBoard extends StatefulWidget {
 }
 
 class _GameBoardState extends State<GameBoard> {
-  GameState gameState = GameState.initial();
+  int _boardSize = 5;
+  late GameState gameState;
   Piece? selectedPawn;
   List<Position> validMoves = [];
+
+  @override
+  void initState() {
+    super.initState();
+    gameState = GameState.initial(size: _boardSize);
+  }
 
   void _handleCellTap(Position pos) {
     if (gameState.winner != null) return;
 
     if (gameState.phase == GamePhase.moveBuddha) {
-      // Phase 1: Déplacer le Bouddha
       if (validMoves.contains(pos)) {
         setState(() {
           gameState = gameState.moveBuddha(pos);
           validMoves = [];
         });
       } else {
-        // Montrer les mouvements valides du Bouddha
         setState(() {
           validMoves = gameState.getValidBuddhaMoves();
         });
       }
     } else {
-      // Phase 2: Déplacer un pion
       final piece = gameState.getPieceAt(pos);
 
       if (selectedPawn != null && validMoves.contains(pos)) {
-        // Déplacer le pion sélectionné
         setState(() {
           gameState = gameState.movePawn(selectedPawn!, pos);
           selectedPawn = null;
@@ -43,7 +46,6 @@ class _GameBoardState extends State<GameBoard> {
       } else if (piece != null &&
           piece.type == PieceType.pawn &&
           piece.owner == gameState.currentPlayer) {
-        // Sélectionner un pion
         setState(() {
           selectedPawn = piece;
           validMoves = gameState.getValidPawnMoves(piece);
@@ -59,7 +61,16 @@ class _GameBoardState extends State<GameBoard> {
 
   void _resetGame() {
     setState(() {
-      gameState = GameState.initial();
+      gameState = GameState.initial(size: _boardSize);
+      selectedPawn = null;
+      validMoves = [];
+    });
+  }
+
+  void _changeBoardSize(int size) {
+    setState(() {
+      _boardSize = size;
+      gameState = GameState.initial(size: size);
       selectedPawn = null;
       validMoves = [];
     });
@@ -70,6 +81,8 @@ class _GameBoardState extends State<GameBoard> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        _buildSizeSelector(),
+        const SizedBox(height: 16),
         _buildStatusBar(),
         const SizedBox(height: 20),
         _buildBoard(),
@@ -79,35 +92,58 @@ class _GameBoardState extends State<GameBoard> {
     );
   }
 
+  Widget _buildSizeSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildSizeButton(5),
+        const SizedBox(width: 12),
+        _buildSizeButton(7),
+      ],
+    );
+  }
+
+  Widget _buildSizeButton(int size) {
+    final isSelected = _boardSize == size;
+    return ElevatedButton(
+      onPressed: () => _changeBoardSize(size),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected ? Colors.amber.shade700 : Colors.grey.shade700,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      ),
+      child: Text(
+        '${size}x$size',
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
   Widget _buildStatusBar() {
     String statusText;
     Color statusColor;
 
     if (gameState.winner != null) {
-      final winnerName = gameState.winner == Player.player1
-          ? 'Joueur 1'
-          : 'Joueur 2';
-      statusText = '$winnerName a gagn\u00e9 !';
-      statusColor = gameState.winner == Player.player1
-          ? Colors.blue
-          : Colors.red;
+      final winnerName =
+          gameState.winner == Player.player1 ? 'Joueur 1' : 'Joueur 2';
+      statusText = '$winnerName a gagne !';
+      statusColor =
+          gameState.winner == Player.player1 ? Colors.blue : Colors.red;
     } else {
-      final playerName = gameState.currentPlayer == Player.player1
-          ? 'Joueur 1'
-          : 'Joueur 2';
+      final playerName =
+          gameState.currentPlayer == Player.player1 ? 'Joueur 1' : 'Joueur 2';
       final phaseText = gameState.phase == GamePhase.moveBuddha
-          ? 'D\u00e9placez le Bouddha'
-          : 'D\u00e9placez un pion';
+          ? 'Deplacez le Bouddha'
+          : 'Deplacez un pion';
       statusText = '$playerName - $phaseText';
-      statusColor = gameState.currentPlayer == Player.player1
-          ? Colors.blue
-          : Colors.red;
+      statusColor =
+          gameState.currentPlayer == Player.player1 ? Colors.blue : Colors.red;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor.withAlpha(25),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: statusColor, width: 2),
       ),
@@ -123,12 +159,14 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   Widget _buildBoard() {
+    final boardPixelSize = _boardSize == 5 ? 350.0 : 420.0;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withAlpha(76),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -137,17 +175,17 @@ class _GameBoardState extends State<GameBoard> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
-          width: 350,
-          height: 350,
+          width: boardPixelSize,
+          height: boardPixelSize,
           child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: GameState.boardSize,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: gameState.boardSize,
             ),
-            itemCount: GameState.boardSize * GameState.boardSize,
+            itemCount: gameState.boardSize * gameState.boardSize,
             itemBuilder: (context, index) {
-              final row = index ~/ GameState.boardSize;
-              final col = index % GameState.boardSize;
+              final row = index ~/ gameState.boardSize;
+              final col = index % gameState.boardSize;
               final pos = Position(row, col);
               return _buildCell(pos);
             },
@@ -162,23 +200,18 @@ class _GameBoardState extends State<GameBoard> {
     final isValidMove = validMoves.contains(pos);
     final isSelected = selectedPawn?.position == pos;
 
-    // Couleur de la case (damier)
     final isLightCell = (pos.row + pos.col) % 2 == 0;
-    Color cellColor = isLightCell
-        ? const Color(0xFFE8D4B8)
-        : const Color(0xFFB58863);
+    Color cellColor =
+        isLightCell ? const Color(0xFFE8D4B8) : const Color(0xFFB58863);
 
-    // Surbrillance pour les mouvements valides
     if (isValidMove) {
-      cellColor = Colors.green.withOpacity(0.6);
+      cellColor = Colors.green.withAlpha(153);
     }
 
-    // Surbrillance pour la pi\u00e8ce s\u00e9lectionn\u00e9e
     if (isSelected) {
-      cellColor = Colors.yellow.withOpacity(0.6);
+      cellColor = Colors.yellow.withAlpha(153);
     }
 
-    // Zones de d\u00e9part (lignes 0 et 4)
     Widget? zoneIndicator;
     if (pos.row == 0) {
       zoneIndicator = Positioned(
@@ -188,12 +221,12 @@ class _GameBoardState extends State<GameBoard> {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.5),
+            color: Colors.blue.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
       );
-    } else if (pos.row == 4) {
+    } else if (pos.row == gameState.boardSize - 1) {
       zoneIndicator = Positioned(
         top: 2,
         right: 2,
@@ -201,7 +234,7 @@ class _GameBoardState extends State<GameBoard> {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.5),
+            color: Colors.red.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
@@ -225,7 +258,7 @@ class _GameBoardState extends State<GameBoard> {
                   width: 20,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.5),
+                    color: Colors.green.withAlpha(127),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -237,11 +270,15 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   Widget _buildPiece(Piece piece) {
+    final pieceSize = _boardSize == 5 ? 50.0 : 42.0;
+    final pawnSize = _boardSize == 5 ? 44.0 : 36.0;
+    final pawnSelectedSize = _boardSize == 5 ? 48.0 : 40.0;
+
     if (piece.type == PieceType.buddha) {
       return Center(
         child: Container(
-          width: 50,
-          height: 50,
+          width: pieceSize,
+          height: pieceSize,
           decoration: BoxDecoration(
             gradient: const RadialGradient(
               colors: [Color(0xFFFFD700), Color(0xFFDAA520)],
@@ -249,16 +286,19 @@ class _GameBoardState extends State<GameBoard> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withAlpha(76),
                 blurRadius: 4,
                 offset: const Offset(2, 2),
               ),
             ],
           ),
-          child: const Center(
+          child: Center(
             child: Text(
               '\u2638',
-              style: TextStyle(fontSize: 28, color: Colors.white),
+              style: TextStyle(
+                fontSize: _boardSize == 5 ? 28 : 24,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -271,8 +311,8 @@ class _GameBoardState extends State<GameBoard> {
     return Center(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: isSelected ? 48 : 44,
-        height: isSelected ? 48 : 44,
+        width: isSelected ? pawnSelectedSize : pawnSize,
+        height: isSelected ? pawnSelectedSize : pawnSize,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
@@ -282,7 +322,7 @@ class _GameBoardState extends State<GameBoard> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withAlpha(76),
               blurRadius: 4,
               offset: const Offset(2, 2),
             ),

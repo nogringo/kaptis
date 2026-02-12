@@ -34,34 +34,37 @@ class Piece {
 }
 
 class GameState {
-  static const int boardSize = 5;
-
+  final int boardSize;
   final List<Piece> pieces;
   final Player currentPlayer;
   final GamePhase phase;
   final Player? winner;
 
   GameState({
+    required this.boardSize,
     required this.pieces,
     required this.currentPlayer,
     required this.phase,
     this.winner,
   });
 
-  factory GameState.initial() {
+  factory GameState.initial({int size = 5}) {
+    assert(size == 5 || size == 7, 'Board size must be 5 or 7');
+
     final pieces = <Piece>[];
+    final center = size ~/ 2;
 
     // Bouddha au centre
     pieces.add(
       Piece(
         type: PieceType.buddha,
         owner: null,
-        position: const Position(2, 2),
+        position: Position(center, center),
       ),
     );
 
     // Pions joueur 1 (en haut, ligne 0)
-    for (int col = 0; col < boardSize; col++) {
+    for (int col = 0; col < size; col++) {
       pieces.add(
         Piece(
           type: PieceType.pawn,
@@ -71,18 +74,19 @@ class GameState {
       );
     }
 
-    // Pions joueur 2 (en bas, ligne 4)
-    for (int col = 0; col < boardSize; col++) {
+    // Pions joueur 2 (en bas, dernière ligne)
+    for (int col = 0; col < size; col++) {
       pieces.add(
         Piece(
           type: PieceType.pawn,
           owner: Player.player2,
-          position: Position(4, col),
+          position: Position(size - 1, col),
         ),
       );
     }
 
     return GameState(
+      boardSize: size,
       pieces: pieces,
       currentPlayer: Player.player1,
       phase: GamePhase.moveBuddha,
@@ -174,7 +178,7 @@ class GameState {
     if (buddhaPos.row == 0) {
       return Player.player1; // Joueur 1 a ramené le Bouddha sur son camp
     }
-    if (buddhaPos.row == 4) {
+    if (buddhaPos.row == boardSize - 1) {
       return Player.player2; // Joueur 2 a ramené le Bouddha sur son camp
     }
 
@@ -208,6 +212,7 @@ class GameState {
     }).toList();
 
     final newState = GameState(
+      boardSize: boardSize,
       pieces: newPieces,
       currentPlayer: currentPlayer,
       phase: GamePhase.movePawn,
@@ -218,6 +223,7 @@ class GameState {
     final winner = newState.checkWinner();
     if (winner != null) {
       return GameState(
+        boardSize: boardSize,
         pieces: newPieces,
         currentPlayer: currentPlayer,
         phase: GamePhase.movePawn,
@@ -245,6 +251,7 @@ class GameState {
         : Player.player1;
 
     final newState = GameState(
+      boardSize: boardSize,
       pieces: newPieces,
       currentPlayer: nextPlayer,
       phase: GamePhase.moveBuddha,
@@ -254,6 +261,7 @@ class GameState {
     // Vérifier si le Bouddha est bloqué (victoire pour le joueur actuel)
     if (newState.isBuddhaBlocked()) {
       return GameState(
+        boardSize: boardSize,
         pieces: newPieces,
         currentPlayer: nextPlayer,
         phase: GamePhase.moveBuddha,
