@@ -15,15 +15,24 @@ class GameBoard extends StatefulWidget {
   });
 
   @override
-  State<GameBoard> createState() => _GameBoardState();
+  GameBoardState createState() => GameBoardState();
 }
 
-class _GameBoardState extends State<GameBoard> {
+class GameBoardState extends State<GameBoard> {
   bool _aiThinking = false;
   late GameState gameState;
   Piece? selectedPawn;
   List<Position> validMoves = [];
   late AIPlayer _ai;
+
+  void resetGame() {
+    setState(() {
+      gameState = GameState.initial(size: widget.boardSize);
+      selectedPawn = null;
+      validMoves = [];
+      _aiThinking = false;
+    });
+  }
 
   @override
   void initState() {
@@ -135,26 +144,11 @@ class _GameBoardState extends State<GameBoard> {
     });
   }
 
-  void _resetGame() {
-    setState(() {
-      gameState = GameState.initial(size: widget.boardSize);
-      selectedPawn = null;
-      validMoves = [];
-      _aiThinking = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildStatusBar(),
-        const SizedBox(height: 24),
-        _buildBoard(),
-        const SizedBox(height: 24),
-        _buildResetButton(),
-      ],
+      children: [_buildStatusBar(), const SizedBox(height: 24), _buildBoard()],
     );
   }
 
@@ -406,17 +400,6 @@ class _GameBoardState extends State<GameBoard> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildResetButton() {
-    return ElevatedButton.icon(
-      onPressed: _resetGame,
-      icon: const Icon(Icons.refresh),
-      label: const Text('Nouvelle partie'),
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       ),
     );
   }
