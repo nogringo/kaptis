@@ -12,7 +12,6 @@ class AboulApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Aboul'",
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
       ),

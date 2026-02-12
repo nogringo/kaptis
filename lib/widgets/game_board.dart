@@ -3,17 +3,23 @@ import '../models/game_state.dart';
 import '../models/ai_player.dart';
 
 class GameBoard extends StatefulWidget {
-  const GameBoard({super.key});
+  final int boardSize;
+  final bool vsAI;
+  final AIDifficulty difficulty;
+
+  const GameBoard({
+    super.key,
+    required this.boardSize,
+    required this.vsAI,
+    required this.difficulty,
+  });
 
   @override
   State<GameBoard> createState() => _GameBoardState();
 }
 
 class _GameBoardState extends State<GameBoard> {
-  int _boardSize = 5;
-  bool _vsAI = false;
   bool _aiThinking = false;
-  AIDifficulty _difficulty = AIDifficulty.normal;
   late GameState gameState;
   Piece? selectedPawn;
   List<Position> validMoves = [];
@@ -22,25 +28,14 @@ class _GameBoardState extends State<GameBoard> {
   @override
   void initState() {
     super.initState();
-    _ai = AIPlayer(difficulty: _difficulty);
-    gameState = GameState.initial(size: _boardSize);
-  }
-
-  void _changeDifficulty(AIDifficulty difficulty) {
-    setState(() {
-      _difficulty = difficulty;
-      _ai.difficulty = difficulty;
-      gameState = GameState.initial(size: _boardSize);
-      selectedPawn = null;
-      validMoves = [];
-      _aiThinking = false;
-    });
+    _ai = AIPlayer(difficulty: widget.difficulty);
+    gameState = GameState.initial(size: widget.boardSize);
   }
 
   void _handleCellTap(Position pos) {
     if (gameState.winner != null) return;
     if (_aiThinking) return;
-    if (_vsAI && gameState.currentPlayer == Player.player2) return;
+    if (widget.vsAI && gameState.currentPlayer == Player.player2) return;
 
     if (gameState.phase == GamePhase.moveBuddha) {
       if (validMoves.contains(pos)) {
@@ -81,7 +76,7 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   void _checkAndPlayAI() {
-    if (!_vsAI) return;
+    if (!widget.vsAI) return;
     if (gameState.winner != null) return;
     if (gameState.currentPlayer != Player.player2) return;
 
@@ -89,7 +84,6 @@ class _GameBoardState extends State<GameBoard> {
       _aiThinking = true;
     });
 
-    // Délai pour que l'IA ne joue pas instantanément
     Future.delayed(const Duration(milliseconds: 2000), () {
       _playAITurn();
     });
@@ -103,7 +97,6 @@ class _GameBoardState extends State<GameBoard> {
       return;
     }
 
-    // Phase 1: Déplacer le Bouddha
     if (gameState.phase == GamePhase.moveBuddha) {
       final buddhaMove = _ai.getBestBuddhaMove(gameState);
       if (buddhaMove != null) {
@@ -113,7 +106,6 @@ class _GameBoardState extends State<GameBoard> {
       }
     }
 
-    // Vérifier victoire après déplacement du Bouddha
     if (gameState.winner != null) {
       setState(() {
         _aiThinking = false;
@@ -121,7 +113,6 @@ class _GameBoardState extends State<GameBoard> {
       return;
     }
 
-    // Phase 2: Déplacer un pion (après un petit délai)
     Future.delayed(const Duration(milliseconds: 2000), () {
       if (gameState.phase == GamePhase.movePawn &&
           gameState.currentPlayer == Player.player2) {
@@ -146,27 +137,7 @@ class _GameBoardState extends State<GameBoard> {
 
   void _resetGame() {
     setState(() {
-      gameState = GameState.initial(size: _boardSize);
-      selectedPawn = null;
-      validMoves = [];
-      _aiThinking = false;
-    });
-  }
-
-  void _changeBoardSize(int size) {
-    setState(() {
-      _boardSize = size;
-      gameState = GameState.initial(size: size);
-      selectedPawn = null;
-      validMoves = [];
-      _aiThinking = false;
-    });
-  }
-
-  void _toggleGameMode() {
-    setState(() {
-      _vsAI = !_vsAI;
-      gameState = GameState.initial(size: _boardSize);
+      gameState = GameState.initial(size: widget.boardSize);
       selectedPawn = null;
       validMoves = [];
       _aiThinking = false;
@@ -178,110 +149,12 @@ class _GameBoardState extends State<GameBoard> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildModeSelector(),
-        if (_vsAI) ...[const SizedBox(height: 12), _buildDifficultySelector()],
-        const SizedBox(height: 12),
-        _buildSizeSelector(),
-        const SizedBox(height: 16),
         _buildStatusBar(),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         _buildBoard(),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         _buildResetButton(),
       ],
-    );
-  }
-
-  Widget _buildModeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildModeButton('2 Joueurs', !_vsAI),
-        const SizedBox(width: 12),
-        _buildModeButton('vs Ordinateur', _vsAI),
-      ],
-    );
-  }
-
-  Widget _buildModeButton(String label, bool isSelected) {
-    return ElevatedButton(
-      onPressed: _toggleGameMode,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected
-            ? Colors.green.shade700
-            : Colors.grey.shade700,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      ),
-      child: Text(label),
-    );
-  }
-
-  Widget _buildDifficultySelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildDifficultyButton('Facile', AIDifficulty.easy),
-        const SizedBox(width: 8),
-        _buildDifficultyButton('Normal', AIDifficulty.normal),
-        const SizedBox(width: 8),
-        _buildDifficultyButton('Difficile', AIDifficulty.hard),
-      ],
-    );
-  }
-
-  Widget _buildDifficultyButton(String label, AIDifficulty diff) {
-    final isSelected = _difficulty == diff;
-    Color bgColor;
-    switch (diff) {
-      case AIDifficulty.easy:
-        bgColor = isSelected ? Colors.green : Colors.grey.shade700;
-        break;
-      case AIDifficulty.normal:
-        bgColor = isSelected ? Colors.orange : Colors.grey.shade700;
-        break;
-      case AIDifficulty.hard:
-        bgColor = isSelected ? Colors.red.shade700 : Colors.grey.shade700;
-        break;
-    }
-
-    return ElevatedButton(
-      onPressed: () => _changeDifficulty(diff),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: bgColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      ),
-      child: Text(label, style: const TextStyle(fontSize: 13)),
-    );
-  }
-
-  Widget _buildSizeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildSizeButton(5),
-        const SizedBox(width: 12),
-        _buildSizeButton(7),
-      ],
-    );
-  }
-
-  Widget _buildSizeButton(int size) {
-    final isSelected = _boardSize == size;
-    return ElevatedButton(
-      onPressed: () => _changeBoardSize(size),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected
-            ? Colors.amber.shade700
-            : Colors.grey.shade700,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      ),
-      child: Text(
-        '${size}x$size',
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
     );
   }
 
@@ -291,7 +164,7 @@ class _GameBoardState extends State<GameBoard> {
 
     if (gameState.winner != null) {
       String winnerName;
-      if (_vsAI) {
+      if (widget.vsAI) {
         winnerName = gameState.winner == Player.player1
             ? 'Vous avez'
             : 'L\'ordinateur a';
@@ -309,7 +182,7 @@ class _GameBoardState extends State<GameBoard> {
       statusColor = Colors.red;
     } else {
       String playerName;
-      if (_vsAI) {
+      if (widget.vsAI) {
         playerName = gameState.currentPlayer == Player.player1
             ? 'Vous'
             : 'Ordinateur';
@@ -363,7 +236,7 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   Widget _buildBoard() {
-    final boardPixelSize = _boardSize == 5 ? 350.0 : 420.0;
+    final boardPixelSize = widget.boardSize == 5 ? 350.0 : 420.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -455,7 +328,7 @@ class _GameBoardState extends State<GameBoard> {
         ),
         child: Stack(
           children: [
-            if (zoneIndicator != null) zoneIndicator,
+            ?zoneIndicator,
             if (piece != null) _buildPiece(piece),
             if (isValidMove && piece == null)
               Center(
@@ -475,9 +348,9 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   Widget _buildPiece(Piece piece) {
-    final pieceSize = _boardSize == 5 ? 50.0 : 42.0;
-    final pawnSize = _boardSize == 5 ? 44.0 : 36.0;
-    final pawnSelectedSize = _boardSize == 5 ? 48.0 : 40.0;
+    final pieceSize = widget.boardSize == 5 ? 50.0 : 42.0;
+    final pawnSize = widget.boardSize == 5 ? 44.0 : 36.0;
+    final pawnSelectedSize = widget.boardSize == 5 ? 48.0 : 40.0;
 
     if (piece.type == PieceType.buddha) {
       return Center(
@@ -501,7 +374,7 @@ class _GameBoardState extends State<GameBoard> {
             child: Text(
               '\u2638',
               style: TextStyle(
-                fontSize: _boardSize == 5 ? 28 : 24,
+                fontSize: widget.boardSize == 5 ? 28 : 24,
                 color: Colors.white,
               ),
             ),

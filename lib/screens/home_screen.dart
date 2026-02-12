@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'game_screen.dart';
+import 'setup_screen.dart';
 import 'rules_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -106,7 +106,7 @@ class HomeScreen extends StatelessWidget {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const GameScreen()),
+            MaterialPageRoute(builder: (context) => const SetupScreen()),
           );
         },
         style: ElevatedButton.styleFrom(

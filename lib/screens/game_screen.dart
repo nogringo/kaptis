@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import '../models/ai_player.dart';
 import '../widgets/game_board.dart';
 
 class GameScreen extends StatelessWidget {
-  const GameScreen({super.key});
+  final int boardSize;
+  final bool vsAI;
+  final AIDifficulty difficulty;
+
+  const GameScreen({
+    super.key,
+    required this.boardSize,
+    required this.vsAI,
+    required this.difficulty,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +31,16 @@ class GameScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: const Center(
+      body: Center(
         child: SingleChildScrollView(
-          child: Padding(padding: EdgeInsets.all(16.0), child: GameBoard()),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GameBoard(
+              boardSize: boardSize,
+              vsAI: vsAI,
+              difficulty: difficulty,
+            ),
+          ),
         ),
       ),
     );
