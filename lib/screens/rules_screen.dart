@@ -25,49 +25,54 @@ class RulesScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSection(
-              icon: Icons.grid_on_rounded,
-              title: 'Le plateau',
-              content:
-                  'Le jeu se joue sur un plateau de 5x5 ou 7x7 cases. '
-                  'Chaque joueur possede 5 ou 7 pions places sur sa ligne de depart. '
-                  'Le Bouddha (piece doree) est place au centre du plateau.',
-              theme: theme,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSection(
+                  icon: Icons.grid_on_rounded,
+                  title: 'Le plateau',
+                  content:
+                      'Le jeu se joue sur un plateau de 5x5 ou 7x7 cases. '
+                      'Chaque joueur possede 5 ou 7 pions places sur sa ligne de depart. '
+                      'Le Bouddha (piece doree) est place au centre du plateau.',
+                  theme: theme,
+                ),
+                _buildSection(
+                  icon: Icons.emoji_events_rounded,
+                  title: 'Objectif',
+                  content:
+                      'Un joueur gagne la partie s\'il reussit a :\n\n'
+                      '1. Ramener le Bouddha sur sa propre ligne de depart\n\n'
+                      '2. Bloquer le Bouddha de facon a ce qu\'il ne puisse plus etre deplace',
+                  theme: theme,
+                ),
+                _buildSection(
+                  icon: Icons.swap_horiz_rounded,
+                  title: 'Deroulement d\'un tour',
+                  content:
+                      'A son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
+                      '1. Deplacer le Bouddha d\'une seule case (dans n\'importe quelle direction)\n\n'
+                      '2. Deplacer un de ses pions jusqu\'au bout de la ligne ou jusqu\'a un obstacle',
+                  theme: theme,
+                ),
+                _buildSection(
+                  icon: Icons.info_outline_rounded,
+                  title: 'Regles importantes',
+                  content:
+                      '- Le Bouddha se deplace d\'une seule case a la fois\n\n'
+                      '- Les pions doivent aller le plus loin possible dans la direction choisie\n\n'
+                      '- Aucun pion ne peut sauter par-dessus un autre pion ou le Bouddha\n\n'
+                      '- 8 directions possibles : horizontale, verticale et diagonales',
+                  theme: theme,
+                ),
+                _buildPiecesLegend(theme),
+                const SizedBox(height: 30),
+              ],
             ),
-            _buildSection(
-              icon: Icons.emoji_events_rounded,
-              title: 'Objectif',
-              content:
-                  'Un joueur gagne la partie s\'il reussit a :\n\n'
-                  '1. Ramener le Bouddha sur sa propre ligne de depart\n\n'
-                  '2. Bloquer le Bouddha de facon a ce qu\'il ne puisse plus etre deplace',
-              theme: theme,
-            ),
-            _buildSection(
-              icon: Icons.swap_horiz_rounded,
-              title: 'Deroulement d\'un tour',
-              content:
-                  'A son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
-                  '1. Deplacer le Bouddha d\'une seule case (dans n\'importe quelle direction)\n\n'
-                  '2. Deplacer un de ses pions jusqu\'au bout de la ligne ou jusqu\'a un obstacle',
-              theme: theme,
-            ),
-            _buildSection(
-              icon: Icons.info_outline_rounded,
-              title: 'Regles importantes',
-              content:
-                  '- Le Bouddha se deplace d\'une seule case a la fois\n\n'
-                  '- Les pions doivent aller le plus loin possible dans la direction choisie\n\n'
-                  '- Aucun pion ne peut sauter par-dessus un autre pion ou le Bouddha\n\n'
-                  '- 8 directions possibles : horizontale, verticale et diagonales',
-              theme: theme,
-            ),
-            _buildPiecesLegend(theme),
-            const SizedBox(height: 30),
-          ],
+          ),
         ),
       ),
     );

@@ -25,9 +25,22 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final GlobalKey<GameBoardState> _gameBoardKey = GlobalKey<GameBoardState>();
 
+  void _triggerRebuild() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 1000;
+
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: theme.primaryBackground,
+        body: SafeArea(child: _buildDesktopLayout(theme)),
+      );
+    }
 
     return Scaffold(
       backgroundColor: theme.primaryBackground,
@@ -48,30 +61,259 @@ class _GameScreenState extends State<GameScreen> {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Nouvelle partie',
-            onPressed: () => _gameBoardKey.currentState?.resetGame(),
+            onPressed: () {
+              _gameBoardKey.currentState?.resetGame();
+              _triggerRebuild();
+            },
           ),
         ],
       ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Center(
-              child: SingleChildScrollView(
+      body: SafeArea(child: _buildMobileLayout(theme)),
+    );
+  }
+
+  Widget _buildMobileLayout(AppTheme theme) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final padding = 16.0;
+        final availableWidth = constraints.maxWidth - (padding * 2);
+        // Réserver espace pour status bar (~120px) + spacing (24px)
+        final statusBarHeight = 144.0;
+        final availableHeight =
+            constraints.maxHeight - (padding * 2) - statusBarHeight;
+        final maxBoardSize = availableWidth < availableHeight
+            ? availableWidth
+            : availableHeight;
+
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.all(padding),
+            child: GameBoard(
+              key: _gameBoardKey,
+              boardSize: widget.boardSize,
+              vsAI: widget.vsAI,
+              difficulty: widget.difficulty,
+              gameMode: widget.gameMode,
+              maxWidth: maxBoardSize.clamp(200.0, 700.0),
+              maxHeight: availableHeight.clamp(200.0, 700.0),
+              showStatusBar: true,
+              onStateChanged: _triggerRebuild,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDesktopLayout(AppTheme theme) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const sidebarWidth = 280.0;
+        final availableWidth = constraints.maxWidth - sidebarWidth - 64;
+        final availableHeight = constraints.maxHeight - 64;
+        final maxBoardSize = availableWidth < availableHeight
+            ? availableWidth
+            : availableHeight;
+
+        return Row(
+          children: [
+            // Sidebar
+            Container(
+              width: sidebarWidth,
+              decoration: BoxDecoration(
+                color: theme.cardBackground,
+                border: Border(
+                  right: BorderSide(color: theme.cardBorder, width: 1),
+                ),
+              ),
+              child: _buildSidebar(theme),
+            ),
+            // Plateau de jeu
+            Expanded(
+              child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(32),
                   child: GameBoard(
                     key: _gameBoardKey,
                     boardSize: widget.boardSize,
                     vsAI: widget.vsAI,
                     difficulty: widget.difficulty,
                     gameMode: widget.gameMode,
-                    maxWidth: constraints.maxWidth - 32,
+                    maxWidth: maxBoardSize.clamp(200.0, 700.0),
+                    maxHeight: availableHeight.clamp(200.0, 700.0),
+                    showStatusBar: false,
+                    onStateChanged: _triggerRebuild,
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSidebar(AppTheme theme) {
+    return Column(
+      children: [
+        // Options en haut
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bouton retour + titre
+                Row(
+                  children: [
+                    const BackButton(),
+                    const SizedBox(width: 4),
+                    Text(
+                      "Aboul'",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: theme.primaryText,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                // Bouton nouvelle partie
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      _gameBoardKey.currentState?.resetGame();
+                      _triggerRebuild();
+                    },
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Nouvelle partie'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.accentColor,
+                      side: BorderSide(color: theme.accentColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+        // Status en bas
+        _buildStatusPanel(theme),
+      ],
+    );
+  }
+
+  Widget _buildStatusPanel(AppTheme theme) {
+    final boardState = _gameBoardKey.currentState;
+
+    String playerName;
+    String actionText;
+    Color statusColor;
+    bool isThinking = false;
+
+    if (boardState == null) {
+      playerName = widget.vsAI ? 'Vous' : 'Joueur 1';
+      actionText = 'Deplacez le Bouddha';
+      statusColor = AppTheme.player1Color;
+    } else if (boardState.winner != null) {
+      if (widget.vsAI) {
+        playerName = boardState.winner == Player.player1
+            ? 'Vous'
+            : 'Ordinateur';
+      } else {
+        playerName = boardState.winner == Player.player1
+            ? 'Joueur 1'
+            : 'Joueur 2';
+      }
+      actionText = 'Gagne !';
+      statusColor = boardState.winner == Player.player1
+          ? AppTheme.player1Color
+          : AppTheme.player2Color;
+    } else if (boardState.aiThinking) {
+      playerName = 'Ordinateur';
+      actionText = 'Reflechit...';
+      statusColor = AppTheme.player2Color;
+      isThinking = true;
+    } else {
+      if (widget.vsAI) {
+        playerName = boardState.currentPlayer == Player.player1
+            ? 'Vous'
+            : 'Ordinateur';
+      } else {
+        playerName = boardState.currentPlayer == Player.player1
+            ? 'Joueur 1'
+            : 'Joueur 2';
+      }
+      actionText = boardState.phase == GamePhase.moveBuddha
+          ? 'Deplacez le Bouddha'
+          : 'Deplacez un pion';
+      statusColor = boardState.currentPlayer == Player.player1
+          ? AppTheme.player1Color
+          : AppTheme.player2Color;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: statusColor.withAlpha(20),
+        border: Border(
+          top: BorderSide(color: statusColor.withAlpha(50), width: 1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  playerName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              if (isThinking)
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            actionText,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: statusColor,
+            ),
+          ),
+        ],
       ),
     );
   }

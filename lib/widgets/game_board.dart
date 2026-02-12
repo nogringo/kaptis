@@ -4,19 +4,15 @@ import '../models/game_state.dart';
 import '../models/ai_player.dart';
 import '../theme/app_theme.dart';
 
-// Constantes pour le plateau hexagonal
-const double kHexMinSize = 40.0;
-const double kHexMaxSize = 80.0;
-const double kHexWidthRatio = 5.5; // 6 * 0.75 + 1 (ratio largeur totale / taille hex)
-const double kHexSpacingRatio = 0.75; // Espacement horizontal entre colonnes
-const double kHexDefaultMaxWidth = 400.0;
-
 class GameBoard extends StatefulWidget {
   final int boardSize;
   final bool vsAI;
   final AIDifficulty difficulty;
   final GameMode gameMode;
   final double? maxWidth;
+  final double? maxHeight;
+  final bool showStatusBar;
+  final VoidCallback? onStateChanged;
 
   const GameBoard({
     super.key,
@@ -25,6 +21,9 @@ class GameBoard extends StatefulWidget {
     required this.difficulty,
     this.gameMode = GameMode.square,
     this.maxWidth,
+    this.maxHeight,
+    this.showStatusBar = true,
+    this.onStateChanged,
   });
 
   @override
@@ -38,6 +37,31 @@ class GameBoardState extends State<GameBoard> {
   List<Position> validMoves = [];
   late AIPlayer _ai;
 
+  // Getters pour exposer l'état au parent
+  bool get aiThinking => _aiThinking;
+  Player? get winner => gameState.winner;
+  Player get currentPlayer => gameState.currentPlayer;
+  GamePhase get phase => gameState.phase;
+
+  void _notifyStateChanged() {
+    widget.onStateChanged?.call();
+  }
+
+  double get _boardPixelSize {
+    final maxWidth = widget.maxWidth ?? 400;
+    if (widget.gameMode == GameMode.hexagonal) {
+      return maxWidth;
+    }
+    return maxWidth.clamp(280.0, 700.0);
+  }
+
+  double get _cellSize => _boardPixelSize / widget.boardSize;
+
+  double get _buddhaSize => _cellSize * 0.72;
+  double get _pawnSize => _cellSize * 0.62;
+  double get _pawnSelectedSize => _cellSize * 0.68;
+  double get _buddhaFontSize => _cellSize * 0.42;
+
   void resetGame() {
     setState(() {
       if (widget.gameMode == GameMode.hexagonal) {
@@ -49,6 +73,7 @@ class GameBoardState extends State<GameBoard> {
       validMoves = [];
       _aiThinking = false;
     });
+    _notifyStateChanged();
   }
 
   @override
@@ -73,6 +98,7 @@ class GameBoardState extends State<GameBoard> {
           gameState = gameState.moveBuddha(pos);
           validMoves = [];
         });
+        _notifyStateChanged();
         _checkAndPlayAI();
       } else {
         setState(() {
@@ -88,6 +114,7 @@ class GameBoardState extends State<GameBoard> {
           selectedPawn = null;
           validMoves = [];
         });
+        _notifyStateChanged();
         _checkAndPlayAI();
       } else if (piece != null &&
           piece.type == PieceType.pawn &&
@@ -113,6 +140,7 @@ class GameBoardState extends State<GameBoard> {
     setState(() {
       _aiThinking = true;
     });
+    _notifyStateChanged();
 
     Future.delayed(const Duration(milliseconds: 2000), () {
       _playAITurn();
@@ -124,6 +152,7 @@ class GameBoardState extends State<GameBoard> {
       setState(() {
         _aiThinking = false;
       });
+      _notifyStateChanged();
       return;
     }
 
@@ -133,6 +162,7 @@ class GameBoardState extends State<GameBoard> {
         setState(() {
           gameState = gameState.moveBuddha(buddhaMove);
         });
+        _notifyStateChanged();
       }
     }
 
@@ -140,6 +170,7 @@ class GameBoardState extends State<GameBoard> {
       setState(() {
         _aiThinking = false;
       });
+      _notifyStateChanged();
       return;
     }
 
@@ -162,12 +193,17 @@ class GameBoardState extends State<GameBoard> {
           _aiThinking = false;
         });
       }
+      _notifyStateChanged();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
+
+    if (!widget.showStatusBar) {
+      return _buildBoard(theme);
+    }
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -219,23 +255,24 @@ class GameBoardState extends State<GameBoard> {
           : AppTheme.player2Color;
     }
 
-    final double boardPixelSize;
+    final double statusWidth;
     if (widget.gameMode == GameMode.hexagonal) {
-      // Même calcul que dans _buildHexBoard
-      final double maxWidth = widget.maxWidth ?? kHexDefaultMaxWidth;
-      final double hexSize = (maxWidth / kHexWidthRatio).clamp(kHexMinSize, kHexMaxSize);
-      final double horizontalSpacing = hexSize * kHexSpacingRatio;
-      boardPixelSize = 6 * horizontalSpacing + hexSize;
+      statusWidth = _hexBoardWidth;
     } else {
-      boardPixelSize = widget.boardSize == 5 ? 350.0 : 420.0;
+      statusWidth = _boardPixelSize;
     }
 
+    final isLarge = statusWidth > 450;
+
     return Container(
-      width: boardPixelSize,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      width: statusWidth,
+      padding: EdgeInsets.symmetric(
+        horizontal: isLarge ? 20 : 16,
+        vertical: isLarge ? 16 : 12,
+      ),
       decoration: BoxDecoration(
         color: statusColor.withAlpha(25),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(isLarge ? 16 : 12),
         border: Border.all(color: statusColor, width: 2),
       ),
       child: Column(
@@ -246,9 +283,9 @@ class GameBoardState extends State<GameBoard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isLarge ? 16 : 12,
+                  vertical: isLarge ? 6 : 4,
                 ),
                 decoration: BoxDecoration(
                   color: statusColor,
@@ -256,8 +293,8 @@ class GameBoardState extends State<GameBoard> {
                 ),
                 child: Text(
                   playerName,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: TextStyle(
+                    fontSize: isLarge ? 16 : 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -267,8 +304,8 @@ class GameBoardState extends State<GameBoard> {
                 Padding(
                   padding: const EdgeInsets.only(left: 12),
                   child: SizedBox(
-                    width: 16,
-                    height: 16,
+                    width: isLarge ? 20 : 16,
+                    height: isLarge ? 20 : 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       color: statusColor,
@@ -277,11 +314,11 @@ class GameBoardState extends State<GameBoard> {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isLarge ? 12 : 8),
           Text(
             actionText,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: isLarge ? 22 : 18,
               fontWeight: FontWeight.w600,
               color: statusColor,
             ),
@@ -295,8 +332,6 @@ class GameBoardState extends State<GameBoard> {
     if (widget.gameMode == GameMode.hexagonal) {
       return _buildHexBoard(theme);
     }
-
-    final boardPixelSize = widget.boardSize == 5 ? 350.0 : 420.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -312,7 +347,7 @@ class GameBoardState extends State<GameBoard> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
-          width: boardPixelSize,
+          width: _boardPixelSize,
           child: AspectRatio(
             aspectRatio: 1.0,
             child: GridView.builder(
@@ -334,17 +369,36 @@ class GameBoardState extends State<GameBoard> {
     );
   }
 
-  Widget _buildHexBoard(AppTheme theme) {
-    // Calculer hexSize en fonction de la largeur disponible
-    final double maxWidth = widget.maxWidth ?? kHexDefaultMaxWidth;
-    final double hexSize = (maxWidth / kHexWidthRatio).clamp(kHexMinSize, kHexMaxSize);
+  double get _hexSize {
+    final maxWidth = widget.maxWidth ?? 400;
+    final maxHeight = widget.maxHeight;
 
-    final double horizontalSpacing = hexSize * kHexSpacingRatio;
-    final double totalWidth = 6 * horizontalSpacing + hexSize;
-    final double boardWidth = totalWidth;
-    final double hexHeight = hexSize * sqrt(3) / 2;
-    final double boardHeight =
-        7 * hexHeight + hexSize * 0.5; // 7 cellules max + marge
+    // Calculer hexSize basé sur la largeur
+    final hexSizeFromWidth = maxWidth / 5.5;
+
+    // Si on a une contrainte de hauteur, calculer aussi hexSize basé sur la hauteur
+    // Le ratio hauteur/hexSize est environ 7 * sqrt(3)/2 + 0.5 ≈ 6.56
+    if (maxHeight != null) {
+      final hexSizeFromHeight = maxHeight / 6.56;
+      return min(hexSizeFromWidth, hexSizeFromHeight).clamp(40.0, 100.0);
+    }
+
+    return hexSizeFromWidth.clamp(40.0, 100.0);
+  }
+
+  double get _hexBoardWidth {
+    final hexSize = _hexSize;
+    final horizontalSpacing = hexSize * 0.75;
+    return 6 * horizontalSpacing + hexSize;
+  }
+
+  Widget _buildHexBoard(AppTheme theme) {
+    final hexSize = _hexSize;
+    final horizontalSpacing = hexSize * 0.75;
+    final totalWidth = 6 * horizontalSpacing + hexSize;
+    final boardWidth = totalWidth;
+    final hexHeight = hexSize * sqrt(3) / 2;
+    final boardHeight = 7 * hexHeight + hexSize * 0.5;
 
     return SizedBox(
       width: boardWidth,
@@ -401,8 +455,6 @@ class GameBoardState extends State<GameBoard> {
     final isTopRow = pos.row == 0;
     final isBottomRow = pos.row == colHeight - 1;
 
-    // 3 couleurs alternées pour hexagones (chaque voisin a une couleur différente)
-    // Formule adaptée au plateau en diamant avec colonnes de hauteurs différentes
     final colorIndex = (2 * pos.row - colHeight + 100) % 3;
     Color cellColor;
     switch (colorIndex) {
@@ -414,7 +466,6 @@ class GameBoardState extends State<GameBoard> {
         break;
       case 2:
       default:
-        // Couleur intermédiaire (mélange des deux)
         cellColor = Color.lerp(theme.boardLightCell, theme.boardDarkCell, 0.5)!;
         break;
     }
@@ -427,66 +478,84 @@ class GameBoardState extends State<GameBoard> {
       cellColor = theme.selectedColor.withAlpha(180);
     }
 
+    final hexPieceSize = hexSize * 0.55;
+    final hexPawnSize = hexSize * 0.45;
+    final hexPawnSelectedSize = hexSize * 0.52;
+    final indicatorSize = hexSize * 0.12;
+    final validMoveIndicatorSize = hexSize * 0.24;
+
     return Positioned(
       left: x - hexSize / 2,
       top: y - hexSize * sqrt(3) / 4,
       child: GestureDetector(
         onTap: () => _handleCellTap(pos),
-        child: SizedBox(
-          width: hexSize,
-          height: hexSize * sqrt(3) / 2,
-          child: CustomPaint(
-            painter: HexagonPainter(
-              fillColor: cellColor,
-              borderColor: theme.boardBorder,
-            ),
-            child: Stack(
-              children: [
-                if (isTopRow)
-                  Positioned(
-                    top: 6,
-                    left: 0,
-                    right: 0,
-                    child: Center(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: SizedBox(
+            width: hexSize,
+            height: hexSize * sqrt(3) / 2,
+            child: CustomPaint(
+              painter: HexagonPainter(
+                fillColor: cellColor,
+                borderColor: theme.boardBorder,
+              ),
+              child: Stack(
+                children: [
+                  if (isTopRow)
+                    Positioned(
+                      top: 6,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          width: indicatorSize,
+                          height: indicatorSize,
+                          decoration: BoxDecoration(
+                            color: AppTheme.player1Color.withAlpha(180),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (isBottomRow)
+                    Positioned(
+                      bottom: 6,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          width: indicatorSize,
+                          height: indicatorSize,
+                          decoration: BoxDecoration(
+                            color: AppTheme.player2Color.withAlpha(180),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (piece != null)
+                    Center(
+                      child: _buildHexPiece(
+                        piece,
+                        theme,
+                        hexPieceSize,
+                        hexPawnSize,
+                        hexPawnSelectedSize,
+                      ),
+                    ),
+                  if (isValidMove && piece == null)
+                    Center(
                       child: Container(
-                        width: 8,
-                        height: 8,
+                        width: validMoveIndicatorSize,
+                        height: validMoveIndicatorSize,
                         decoration: BoxDecoration(
-                          color: AppTheme.player1Color.withAlpha(180),
+                          color: theme.validMoveColor.withAlpha(150),
                           shape: BoxShape.circle,
                         ),
                       ),
                     ),
-                  ),
-                if (isBottomRow)
-                  Positioned(
-                    bottom: 6,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: AppTheme.player2Color.withAlpha(180),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ),
-                if (piece != null) Center(child: _buildHexPiece(piece, theme)),
-                if (isValidMove && piece == null)
-                  Center(
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: theme.validMoveColor.withAlpha(150),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -494,11 +563,13 @@ class GameBoardState extends State<GameBoard> {
     );
   }
 
-  Widget _buildHexPiece(Piece piece, AppTheme theme) {
-    const pieceSize = 36.0;
-    const pawnSize = 30.0;
-    const pawnSelectedSize = 34.0;
-
+  Widget _buildHexPiece(
+    Piece piece,
+    AppTheme theme,
+    double pieceSize,
+    double pawnSize,
+    double pawnSelectedSize,
+  ) {
     if (piece.type == PieceType.buddha) {
       return Container(
         width: pieceSize,
@@ -516,10 +587,10 @@ class GameBoardState extends State<GameBoard> {
             ),
           ],
         ),
-        child: const Center(
+        child: Center(
           child: Text(
             '\u2638',
-            style: TextStyle(fontSize: 20, color: Colors.white),
+            style: TextStyle(fontSize: pieceSize * 0.55, color: Colors.white),
           ),
         ),
       );
@@ -568,14 +639,16 @@ class GameBoardState extends State<GameBoard> {
       cellColor = theme.selectedColor.withAlpha(153);
     }
 
+    final indicatorSize = _cellSize * 0.12;
+
     Widget? zoneIndicator;
     if (pos.row == 0) {
       zoneIndicator = Positioned(
         top: 2,
         right: 2,
         child: Container(
-          width: 8,
-          height: 8,
+          width: indicatorSize,
+          height: indicatorSize,
           decoration: BoxDecoration(
             color: AppTheme.player1Color.withAlpha(127),
             shape: BoxShape.circle,
@@ -587,8 +660,8 @@ class GameBoardState extends State<GameBoard> {
         top: 2,
         right: 2,
         child: Container(
-          width: 8,
-          height: 8,
+          width: indicatorSize,
+          height: indicatorSize,
           decoration: BoxDecoration(
             color: AppTheme.player2Color.withAlpha(127),
             shape: BoxShape.circle,
@@ -599,42 +672,41 @@ class GameBoardState extends State<GameBoard> {
 
     return GestureDetector(
       onTap: () => _handleCellTap(pos),
-      child: Container(
-        decoration: BoxDecoration(
-          color: cellColor,
-          border: Border.all(color: theme.boardBorder, width: 0.5),
-        ),
-        child: Stack(
-          children: [
-            ?zoneIndicator,
-            if (piece != null) _buildPiece(piece, theme),
-            if (isValidMove && piece == null)
-              Center(
-                child: Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: theme.validMoveColor.withAlpha(127),
-                    shape: BoxShape.circle,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          decoration: BoxDecoration(
+            color: cellColor,
+            border: Border.all(color: theme.boardBorder, width: 0.5),
+          ),
+          child: Stack(
+            children: [
+              ?zoneIndicator,
+              if (piece != null) _buildPiece(piece, theme),
+              if (isValidMove && piece == null)
+                Center(
+                  child: Container(
+                    width: _cellSize * 0.3,
+                    height: _cellSize * 0.3,
+                    decoration: BoxDecoration(
+                      color: theme.validMoveColor.withAlpha(127),
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildPiece(Piece piece, AppTheme theme) {
-    final pieceSize = widget.boardSize == 5 ? 50.0 : 42.0;
-    final pawnSize = widget.boardSize == 5 ? 44.0 : 36.0;
-    final pawnSelectedSize = widget.boardSize == 5 ? 48.0 : 40.0;
-
     if (piece.type == PieceType.buddha) {
       return Center(
         child: Container(
-          width: pieceSize,
-          height: pieceSize,
+          width: _buddhaSize,
+          height: _buddhaSize,
           decoration: BoxDecoration(
             gradient: RadialGradient(
               colors: [theme.accentColorBright, theme.accentColorSecondary],
@@ -651,10 +723,7 @@ class GameBoardState extends State<GameBoard> {
           child: Center(
             child: Text(
               '\u2638',
-              style: TextStyle(
-                fontSize: widget.boardSize == 5 ? 28 : 24,
-                color: Colors.white,
-              ),
+              style: TextStyle(fontSize: _buddhaFontSize, color: Colors.white),
             ),
           ),
         ),
@@ -669,8 +738,8 @@ class GameBoardState extends State<GameBoard> {
     return Center(
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: isSelected ? pawnSelectedSize : pawnSize,
-        height: isSelected ? pawnSelectedSize : pawnSize,
+        width: isSelected ? _pawnSelectedSize : _pawnSize,
+        height: isSelected ? _pawnSelectedSize : _pawnSize,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
@@ -691,7 +760,6 @@ class GameBoardState extends State<GameBoard> {
   }
 }
 
-// CustomPainter pour dessiner un hexagone flat-top
 class HexagonPainter extends CustomPainter {
   final Color fillColor;
   final Color borderColor;
@@ -719,12 +787,6 @@ class HexagonPainter extends CustomPainter {
     final path = Path();
     final w = size.width;
     final h = size.height;
-
-    // Hexagone flat-top (pointe sur les côtés)
-    // Les 6 points sont disposés ainsi:
-    //     ___
-    //    /   \
-    //    \___/
 
     path.moveTo(w * 0.25, 0);
     path.lineTo(w * 0.75, 0);

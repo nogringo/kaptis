@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'setup_screen.dart';
 import 'rules_screen.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,26 +10,30 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
+    final isLarge = Responsive.isLargeScreen(context);
 
     return Scaffold(
       backgroundColor: theme.primaryBackground,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildLogo(theme),
-                const SizedBox(height: 40),
-                _buildTitle(theme),
-                const SizedBox(height: 16),
-                _buildSubtitle(theme),
-                const SizedBox(height: 60),
-                _buildPlayButton(context, theme),
-                const SizedBox(height: 20),
-                _buildRulesButton(context, theme),
-              ],
+            padding: Responsive.screenPadding(context),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: Responsive.contentMaxWidth(context),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildLogo(theme, isLarge),
+                  SizedBox(height: isLarge ? 50 : 40),
+                  _buildTitle(theme, isLarge),
+                  SizedBox(height: isLarge ? 20 : 16),
+                  _buildSubtitle(theme, isLarge),
+                  SizedBox(height: isLarge ? 80 : 60),
+                  _buildButtons(context, theme, isLarge),
+                ],
+              ),
             ),
           ),
         ),
@@ -36,10 +41,13 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogo(AppTheme theme) {
+  Widget _buildLogo(AppTheme theme, bool isLarge) {
+    final size = isLarge ? 200.0 : 150.0;
+    final iconSize = isLarge ? 110.0 : 80.0;
+
     return Container(
-      width: 150,
-      height: 150,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
@@ -47,16 +55,20 @@ class HomeScreen extends StatelessWidget {
           stops: const [0.3, 0.7, 1.0],
         ),
         boxShadow: [
-          BoxShadow(color: theme.accentShadow, blurRadius: 30, spreadRadius: 5),
+          BoxShadow(
+            color: theme.accentShadow,
+            blurRadius: isLarge ? 40 : 30,
+            spreadRadius: isLarge ? 8 : 5,
+          ),
         ],
       ),
-      child: const Center(
+      child: Center(
         child: Text(
           '\u2638',
           style: TextStyle(
-            fontSize: 80,
+            fontSize: iconSize,
             color: Colors.white,
-            shadows: [
+            shadows: const [
               Shadow(
                 color: Colors.black54,
                 blurRadius: 10,
@@ -69,37 +81,67 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(AppTheme theme) {
+  Widget _buildTitle(AppTheme theme, bool isLarge) {
     return ShaderMask(
       shaderCallback: (bounds) =>
           LinearGradient(colors: theme.titleGradient).createShader(bounds),
-      child: const Text(
+      child: Text(
         "Aboul'",
         style: TextStyle(
-          fontSize: 56,
+          fontSize: isLarge ? 72 : 56,
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          letterSpacing: 4,
+          letterSpacing: isLarge ? 6 : 4,
         ),
       ),
     );
   }
 
-  Widget _buildSubtitle(AppTheme theme) {
+  Widget _buildSubtitle(AppTheme theme, bool isLarge) {
     return Text(
       'Jeu de strategie pour 2 joueurs',
       style: TextStyle(
-        fontSize: 16,
+        fontSize: isLarge ? 20 : 16,
         color: theme.secondaryText,
-        letterSpacing: 1,
+        letterSpacing: isLarge ? 2 : 1,
       ),
     );
   }
 
-  Widget _buildPlayButton(BuildContext context, AppTheme theme) {
+  Widget _buildButtons(BuildContext context, AppTheme theme, bool isLarge) {
+    final buttonWidth = isLarge ? 280.0 : 220.0;
+    final buttonHeight = isLarge ? 64.0 : 56.0;
+    final secondaryHeight = isLarge ? 56.0 : 50.0;
+
+    if (isLarge) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildPlayButton(context, theme, buttonWidth, buttonHeight),
+          const SizedBox(width: 24),
+          _buildRulesButton(context, theme, buttonWidth, secondaryHeight),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        _buildPlayButton(context, theme, buttonWidth, buttonHeight),
+        const SizedBox(height: 20),
+        _buildRulesButton(context, theme, buttonWidth, secondaryHeight),
+      ],
+    );
+  }
+
+  Widget _buildPlayButton(
+    BuildContext context,
+    AppTheme theme,
+    double width,
+    double height,
+  ) {
     return SizedBox(
-      width: 220,
-      height: 56,
+      width: width,
+      height: height,
       child: ElevatedButton(
         onPressed: () {
           Navigator.push(
@@ -111,20 +153,20 @@ class HomeScreen extends StatelessWidget {
           backgroundColor: theme.primaryButtonBackground,
           foregroundColor: theme.primaryButtonForeground,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(height / 2),
           ),
           elevation: 8,
           shadowColor: theme.accentShadow,
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.play_arrow_rounded, size: 32),
-            SizedBox(width: 8),
+            Icon(Icons.play_arrow_rounded, size: height * 0.5),
+            const SizedBox(width: 8),
             Text(
               'JOUER',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: height * 0.32,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
               ),
@@ -135,10 +177,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRulesButton(BuildContext context, AppTheme theme) {
+  Widget _buildRulesButton(
+    BuildContext context,
+    AppTheme theme,
+    double width,
+    double height,
+  ) {
     return SizedBox(
-      width: 220,
-      height: 50,
+      width: width,
+      height: height,
       child: OutlinedButton(
         onPressed: () {
           Navigator.push(
@@ -150,18 +197,18 @@ class HomeScreen extends StatelessWidget {
           foregroundColor: theme.outlineButtonForeground,
           side: BorderSide(color: theme.outlineButtonBorder, width: 2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(height / 2),
           ),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.menu_book_rounded, size: 24),
-            SizedBox(width: 8),
+            Icon(Icons.menu_book_rounded, size: height * 0.45),
+            const SizedBox(width: 8),
             Text(
               'REGLES',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: height * 0.3,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 2,
               ),

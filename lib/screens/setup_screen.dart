@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
 import '../models/game_state.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive.dart';
 import 'game_screen.dart';
 
 class SetupScreen extends StatefulWidget {
@@ -20,13 +21,18 @@ class _SetupScreenState extends State<SetupScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = AppTheme.of(context);
+    final isLarge = Responsive.isLargeScreen(context);
+    final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
       backgroundColor: theme.primaryBackground,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Nouvelle partie',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: isLarge ? 24 : 20,
+          ),
         ),
         centerTitle: true,
         backgroundColor: theme.appBarBackground,
@@ -34,81 +40,170 @@ class _SetupScreenState extends State<SetupScreen> {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  clipBehavior: Clip.none,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle('Mode de jeu', theme),
-                      const SizedBox(height: 16),
-                      _buildModeSelector(theme),
-                      const SizedBox(height: 32),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        child: _vsAI
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildSectionTitle('Difficulte', theme),
-                                  const SizedBox(height: 16),
-                                  _buildDifficultySelector(theme),
-                                  const SizedBox(height: 32),
-                                ],
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                      _buildSectionTitle('Type de plateau', theme),
-                      const SizedBox(height: 16),
-                      _buildBoardTypeSelector(theme),
-                      const SizedBox(height: 32),
-                      AnimatedSize(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                        child: _gameMode == GameMode.square
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildSectionTitle(
-                                    'Taille du plateau',
-                                    theme,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildSizeSelector(theme),
-                                  const SizedBox(height: 24),
-                                ],
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: Responsive.screenPadding(context),
+                clipBehavior: Clip.none,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: Responsive.contentMaxWidth(context),
+                    ),
+                    child: isDesktop
+                        ? _buildDesktopLayout(theme)
+                        : _buildMobileLayout(theme),
                   ),
                 ),
               ),
-              _buildStartButton(theme),
-            ],
-          ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.screenPadding(context).horizontal / 2,
+                vertical: 16,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: Responsive.contentMaxWidth(context),
+                  ),
+                  child: _buildStartButton(theme, isLarge),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title, AppTheme theme) {
+  Widget _buildDesktopLayout(AppTheme theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle('Mode de jeu', theme, true),
+                  const SizedBox(height: 16),
+                  _buildModeSelector(theme, true),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _vsAI
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 32),
+                              _buildSectionTitle('Difficulte', theme, true),
+                              const SizedBox(height: 16),
+                              _buildDifficultySelector(theme, true),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 48),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle('Type de plateau', theme, true),
+                  const SizedBox(height: 16),
+                  _buildBoardTypeSelector(theme, true),
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _gameMode == GameMode.square
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 32),
+                              _buildSectionTitle(
+                                'Taille du plateau',
+                                theme,
+                                true,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildSizeSelector(theme, true),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout(AppTheme theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Mode de jeu', theme, false),
+        const SizedBox(height: 16),
+        _buildModeSelector(theme, false),
+        const SizedBox(height: 32),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: _vsAI
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle('Difficulte', theme, false),
+                    const SizedBox(height: 16),
+                    _buildDifficultySelector(theme, false),
+                    const SizedBox(height: 32),
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
+        _buildSectionTitle('Type de plateau', theme, false),
+        const SizedBox(height: 16),
+        _buildBoardTypeSelector(theme, false),
+        const SizedBox(height: 32),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: _gameMode == GameMode.square
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle('Taille du plateau', theme, false),
+                    const SizedBox(height: 16),
+                    _buildSizeSelector(theme, false),
+                    const SizedBox(height: 24),
+                  ],
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title, AppTheme theme, bool isLarge) {
     return Text(
       title,
       style: TextStyle(
-        fontSize: 18,
+        fontSize: isLarge ? 22 : 18,
         fontWeight: FontWeight.bold,
         color: theme.primaryText,
       ),
     );
   }
 
-  Widget _buildModeSelector(AppTheme theme) {
+  Widget _buildModeSelector(AppTheme theme, bool isLarge) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -121,9 +216,10 @@ class _SetupScreenState extends State<SetupScreen> {
               isSelected: !_vsAI,
               onTap: () => setState(() => _vsAI = false),
               theme: theme,
+              isLarge: isLarge,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: isLarge ? 20 : 16),
           Expanded(
             child: _buildModeCard(
               icon: Icons.smart_toy_rounded,
@@ -132,6 +228,7 @@ class _SetupScreenState extends State<SetupScreen> {
               isSelected: _vsAI,
               onTap: () => setState(() => _vsAI = true),
               theme: theme,
+              isLarge: isLarge,
             ),
           ),
         ],
@@ -146,51 +243,58 @@ class _SetupScreenState extends State<SetupScreen> {
     required bool isSelected,
     required VoidCallback onTap,
     required AppTheme theme,
+    required bool isLarge,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.accentColor.withAlpha(25)
-              : theme.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? theme.accentColor : theme.cardBorder,
-            width: 2,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.all(isLarge ? 24 : 20),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.accentColor.withAlpha(25)
+                : theme.cardBackground,
+            borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
+            border: Border.all(
+              color: isSelected ? theme.accentColor : theme.cardBorder,
+              width: 2,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: isSelected ? theme.accentColor : theme.tertiaryText,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? theme.accentColor : theme.primaryText,
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: isLarge ? 48 : 40,
+                color: isSelected ? theme.accentColor : theme.tertiaryText,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: theme.tertiaryText),
-            ),
-          ],
+              SizedBox(height: isLarge ? 16 : 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: isLarge ? 18 : 16,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? theme.accentColor : theme.primaryText,
+                ),
+              ),
+              SizedBox(height: isLarge ? 6 : 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isLarge ? 14 : 12,
+                  color: theme.tertiaryText,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBoardTypeSelector(AppTheme theme) {
+  Widget _buildBoardTypeSelector(AppTheme theme, bool isLarge) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -203,9 +307,10 @@ class _SetupScreenState extends State<SetupScreen> {
               isSelected: _gameMode == GameMode.square,
               onTap: () => setState(() => _gameMode = GameMode.square),
               theme: theme,
+              isLarge: isLarge,
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: isLarge ? 20 : 16),
           Expanded(
             child: _buildBoardTypeCard(
               icon: Icons.hexagon_rounded,
@@ -214,6 +319,7 @@ class _SetupScreenState extends State<SetupScreen> {
               isSelected: _gameMode == GameMode.hexagonal,
               onTap: () => setState(() => _gameMode = GameMode.hexagonal),
               theme: theme,
+              isLarge: isLarge,
             ),
           ),
         ],
@@ -228,51 +334,58 @@ class _SetupScreenState extends State<SetupScreen> {
     required bool isSelected,
     required VoidCallback onTap,
     required AppTheme theme,
+    required bool isLarge,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.accentColor.withAlpha(25)
-              : theme.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? theme.accentColor : theme.cardBorder,
-            width: 2,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.all(isLarge ? 24 : 20),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.accentColor.withAlpha(25)
+                : theme.cardBackground,
+            borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
+            border: Border.all(
+              color: isSelected ? theme.accentColor : theme.cardBorder,
+              width: 2,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: isSelected ? theme.accentColor : theme.tertiaryText,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? theme.accentColor : theme.primaryText,
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: isLarge ? 48 : 40,
+                color: isSelected ? theme.accentColor : theme.tertiaryText,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: theme.tertiaryText),
-            ),
-          ],
+              SizedBox(height: isLarge ? 16 : 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: isLarge ? 18 : 16,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? theme.accentColor : theme.primaryText,
+                ),
+              ),
+              SizedBox(height: isLarge ? 6 : 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isLarge ? 14 : 12,
+                  color: theme.tertiaryText,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDifficultySelector(AppTheme theme) {
+  Widget _buildDifficultySelector(AppTheme theme, bool isLarge) {
     return Row(
       children: [
         Expanded(
@@ -282,9 +395,10 @@ class _SetupScreenState extends State<SetupScreen> {
             difficulty: AIDifficulty.easy,
             color: Colors.green,
             theme: theme,
+            isLarge: isLarge,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: isLarge ? 16 : 12),
         Expanded(
           child: _buildDifficultyCard(
             label: 'Normal',
@@ -292,9 +406,10 @@ class _SetupScreenState extends State<SetupScreen> {
             difficulty: AIDifficulty.normal,
             color: Colors.orange,
             theme: theme,
+            isLarge: isLarge,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: isLarge ? 16 : 12),
         Expanded(
           child: _buildDifficultyCard(
             label: 'Difficile',
@@ -302,6 +417,7 @@ class _SetupScreenState extends State<SetupScreen> {
             difficulty: AIDifficulty.hard,
             color: Colors.red,
             theme: theme,
+            isLarge: isLarge,
           ),
         ),
       ],
@@ -314,44 +430,48 @@ class _SetupScreenState extends State<SetupScreen> {
     required AIDifficulty difficulty,
     required Color color,
     required AppTheme theme,
+    required bool isLarge,
   }) {
     final isSelected = _difficulty == difficulty;
     return GestureDetector(
       onTap: () => setState(() => _difficulty = difficulty),
-      child: Container(
-        height: 80,
-        decoration: BoxDecoration(
-          color: isSelected ? color.withAlpha(30) : theme.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? color : theme.cardBorder,
-            width: 2,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 28,
-              color: isSelected ? color : theme.tertiaryText,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          height: isLarge ? 100 : 80,
+          decoration: BoxDecoration(
+            color: isSelected ? color.withAlpha(30) : theme.cardBackground,
+            borderRadius: BorderRadius.circular(isLarge ? 16 : 12),
+            border: Border.all(
+              color: isSelected ? color : theme.cardBorder,
+              width: 2,
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: isLarge ? 36 : 28,
                 color: isSelected ? color : theme.tertiaryText,
               ),
-            ),
-          ],
+              SizedBox(height: isLarge ? 12 : 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: isLarge ? 15 : 13,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? color : theme.tertiaryText,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSizeSelector(AppTheme theme) {
+  Widget _buildSizeSelector(AppTheme theme, bool isLarge) {
     return Row(
       children: [
         Expanded(
@@ -359,14 +479,16 @@ class _SetupScreenState extends State<SetupScreen> {
             size: 5,
             description: '5 pions par joueur\nParties rapides',
             theme: theme,
+            isLarge: isLarge,
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: isLarge ? 20 : 16),
         Expanded(
           child: _buildSizeCard(
             size: 7,
             description: '7 pions par joueur\nParties longues',
             theme: theme,
+            isLarge: isLarge,
           ),
         ),
       ],
@@ -377,53 +499,57 @@ class _SetupScreenState extends State<SetupScreen> {
     required int size,
     required String description,
     required AppTheme theme,
+    required bool isLarge,
   }) {
     final isSelected = _boardSize == size;
     return GestureDetector(
       onTap: () => setState(() => _boardSize = size),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.accentColor.withAlpha(25)
-              : theme.cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? theme.accentColor : theme.cardBorder,
-            width: 2,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.all(isLarge ? 24 : 20),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.accentColor.withAlpha(25)
+                : theme.cardBackground,
+            borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
+            border: Border.all(
+              color: isSelected ? theme.accentColor : theme.cardBorder,
+              width: 2,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              '$size x $size',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? theme.accentColor : theme.primaryText,
+          child: Column(
+            children: [
+              Text(
+                '$size x $size',
+                style: TextStyle(
+                  fontSize: isLarge ? 34 : 28,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? theme.accentColor : theme.primaryText,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: theme.tertiaryText,
-                height: 1.4,
+              SizedBox(height: isLarge ? 12 : 8),
+              Text(
+                description,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isLarge ? 14 : 12,
+                  color: theme.tertiaryText,
+                  height: 1.4,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStartButton(AppTheme theme) {
+  Widget _buildStartButton(AppTheme theme, bool isLarge) {
     return SizedBox(
-      width: double.infinity,
-      height: 56,
+      width: isLarge ? 400 : double.infinity,
+      height: isLarge ? 64 : 56,
       child: ElevatedButton(
         onPressed: () {
           Navigator.pushReplacement(
@@ -442,14 +568,14 @@ class _SetupScreenState extends State<SetupScreen> {
           backgroundColor: theme.primaryButtonBackground,
           foregroundColor: theme.primaryButtonForeground,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
           ),
           elevation: 4,
         ),
-        child: const Text(
+        child: Text(
           'COMMENCER',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: isLarge ? 20 : 18,
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
           ),
