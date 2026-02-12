@@ -179,10 +179,7 @@ class _GameBoardState extends State<GameBoard> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildModeSelector(),
-        if (_vsAI) ...[
-          const SizedBox(height: 12),
-          _buildDifficultySelector(),
-        ],
+        if (_vsAI) ...[const SizedBox(height: 12), _buildDifficultySelector()],
         const SizedBox(height: 12),
         _buildSizeSelector(),
         const SizedBox(height: 16),
@@ -210,8 +207,9 @@ class _GameBoardState extends State<GameBoard> {
     return ElevatedButton(
       onPressed: _toggleGameMode,
       style: ElevatedButton.styleFrom(
-        backgroundColor:
-            isSelected ? Colors.green.shade700 : Colors.grey.shade700,
+        backgroundColor: isSelected
+            ? Colors.green.shade700
+            : Colors.grey.shade700,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       ),
@@ -274,8 +272,9 @@ class _GameBoardState extends State<GameBoard> {
     return ElevatedButton(
       onPressed: () => _changeBoardSize(size),
       style: ElevatedButton.styleFrom(
-        backgroundColor:
-            isSelected ? Colors.amber.shade700 : Colors.grey.shade700,
+        backgroundColor: isSelected
+            ? Colors.amber.shade700
+            : Colors.grey.shade700,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       ),
@@ -293,29 +292,39 @@ class _GameBoardState extends State<GameBoard> {
     if (gameState.winner != null) {
       String winnerName;
       if (_vsAI) {
-        winnerName = gameState.winner == Player.player1 ? 'Vous avez' : 'L\'ordinateur a';
+        winnerName = gameState.winner == Player.player1
+            ? 'Vous avez'
+            : 'L\'ordinateur a';
       } else {
-        winnerName = gameState.winner == Player.player1 ? 'Joueur 1 a' : 'Joueur 2 a';
+        winnerName = gameState.winner == Player.player1
+            ? 'Joueur 1 a'
+            : 'Joueur 2 a';
       }
       statusText = '$winnerName gagne !';
-      statusColor =
-          gameState.winner == Player.player1 ? Colors.blue : Colors.red;
+      statusColor = gameState.winner == Player.player1
+          ? Colors.blue
+          : Colors.red;
     } else if (_aiThinking) {
       statusText = 'L\'ordinateur reflechit...';
       statusColor = Colors.red;
     } else {
       String playerName;
       if (_vsAI) {
-        playerName = gameState.currentPlayer == Player.player1 ? 'Vous' : 'Ordinateur';
+        playerName = gameState.currentPlayer == Player.player1
+            ? 'Vous'
+            : 'Ordinateur';
       } else {
-        playerName = gameState.currentPlayer == Player.player1 ? 'Joueur 1' : 'Joueur 2';
+        playerName = gameState.currentPlayer == Player.player1
+            ? 'Joueur 1'
+            : 'Joueur 2';
       }
       final phaseText = gameState.phase == GamePhase.moveBuddha
           ? 'Deplacez le Bouddha'
           : 'Deplacez un pion';
       statusText = '$playerName - $phaseText';
-      statusColor =
-          gameState.currentPlayer == Player.player1 ? Colors.blue : Colors.red;
+      statusColor = gameState.currentPlayer == Player.player1
+          ? Colors.blue
+          : Colors.red;
     }
 
     return Container(
@@ -396,8 +405,9 @@ class _GameBoardState extends State<GameBoard> {
     final isSelected = selectedPawn?.position == pos;
 
     final isLightCell = (pos.row + pos.col) % 2 == 0;
-    Color cellColor =
-        isLightCell ? const Color(0xFFE8D4B8) : const Color(0xFFB58863);
+    Color cellColor = isLightCell
+        ? const Color(0xFFE8D4B8)
+        : const Color(0xFFB58863);
 
     if (isValidMove) {
       cellColor = Colors.green.withAlpha(153);

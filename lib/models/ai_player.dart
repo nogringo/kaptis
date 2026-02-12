@@ -66,7 +66,9 @@ class AIPlayer {
   }
 
   (Piece, Position)? _getEasyPawnMove(
-      GameState state, List<(Piece, Position)> allMoves) {
+    GameState state,
+    List<(Piece, Position)> allMoves,
+  ) {
     // Jouer complètement au hasard
     return allMoves[_random.nextInt(allMoves.length)];
   }
@@ -90,7 +92,9 @@ class AIPlayer {
   }
 
   (Piece, Position)? _getNormalPawnMove(
-      GameState state, List<(Piece, Position)> allMoves) {
+    GameState state,
+    List<(Piece, Position)> allMoves,
+  ) {
     final scoredMoves = <(Piece, Position, int)>[];
 
     for (final move in allMoves) {
@@ -124,7 +128,9 @@ class AIPlayer {
   }
 
   (Piece, Position)? _getHardPawnMove(
-      GameState state, List<(Piece, Position)> allMoves) {
+    GameState state,
+    List<(Piece, Position)> allMoves,
+  ) {
     final scoredMoves = <(Piece, Position, int)>[];
 
     for (final move in allMoves) {
@@ -138,7 +144,13 @@ class AIPlayer {
   }
 
   /// Algorithme Minimax avec élagage alpha-beta
-  int _minimax(GameState state, int depth, bool isMaximizing, int alpha, int beta) {
+  int _minimax(
+    GameState state,
+    int depth,
+    bool isMaximizing,
+    int alpha,
+    int beta,
+  ) {
     // Conditions terminales
     if (state.winner == Player.player2) return 1000 + depth;
     if (state.winner == Player.player1) return -1000 - depth;
@@ -215,7 +227,8 @@ class AIPlayer {
 
     // Contrôle du centre
     final center = state.boardSize ~/ 2;
-    final distFromCenter = (buddhaPos.row - center).abs() + (buddhaPos.col - center).abs();
+    final distFromCenter =
+        (buddhaPos.row - center).abs() + (buddhaPos.col - center).abs();
     score -= distFromCenter * 3;
 
     // Position des pions de l'IA
