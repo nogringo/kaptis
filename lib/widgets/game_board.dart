@@ -160,29 +160,27 @@ class GameBoardState extends State<GameBoard> {
   }
 
   Widget _buildStatusBar(AppTheme theme) {
-    String statusText;
+    String playerName;
+    String actionText;
     Color statusColor;
 
     if (gameState.winner != null) {
-      String winnerName;
       if (widget.vsAI) {
-        winnerName = gameState.winner == Player.player1
-            ? 'Vous avez'
-            : 'L\'ordinateur a';
+        playerName = gameState.winner == Player.player1 ? 'Vous' : 'Ordinateur';
       } else {
-        winnerName = gameState.winner == Player.player1
-            ? 'Joueur 1 a'
-            : 'Joueur 2 a';
+        playerName = gameState.winner == Player.player1
+            ? 'Joueur 1'
+            : 'Joueur 2';
       }
-      statusText = '$winnerName gagne !';
+      actionText = 'Gagne !';
       statusColor = gameState.winner == Player.player1
           ? AppTheme.player1Color
           : AppTheme.player2Color;
     } else if (_aiThinking) {
-      statusText = 'L\'ordinateur reflechit...';
+      playerName = 'Ordinateur';
+      actionText = 'Reflechit...';
       statusColor = AppTheme.player2Color;
     } else {
-      String playerName;
       if (widget.vsAI) {
         playerName = gameState.currentPlayer == Player.player1
             ? 'Vous'
@@ -192,42 +190,69 @@ class GameBoardState extends State<GameBoard> {
             ? 'Joueur 1'
             : 'Joueur 2';
       }
-      final phaseText = gameState.phase == GamePhase.moveBuddha
+      actionText = gameState.phase == GamePhase.moveBuddha
           ? 'Deplacez le Bouddha'
           : 'Deplacez un pion';
-      statusText = '$playerName - $phaseText';
       statusColor = gameState.currentPlayer == Player.player1
           ? AppTheme.player1Color
           : AppTheme.player2Color;
     }
 
+    final boardPixelSize = widget.boardSize == 5 ? 350.0 : 420.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      width: boardPixelSize,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: statusColor.withAlpha(25),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: statusColor, width: 2),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_aiThinking)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
                   color: statusColor,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Text(
+                  playerName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
+              if (_aiThinking)
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Text(
-            statusText,
+            actionText,
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
               color: statusColor,
             ),
           ),
