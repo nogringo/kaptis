@@ -247,8 +247,9 @@ class GameBoardState extends State<GameBoard> {
         borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           width: boardPixelSize,
-          height: boardPixelSize,
-          child: GridView.builder(
+          child: AspectRatio(
+            aspectRatio: 1.0,
+            child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: gameState.boardSize,
@@ -260,6 +261,7 @@ class GameBoardState extends State<GameBoard> {
               final pos = Position(row, col);
               return _buildCell(pos);
             },
+          ),
           ),
         ),
       ),
