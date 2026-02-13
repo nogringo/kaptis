@@ -41,6 +41,8 @@ class GameBoardState extends State<GameBoard> {
   List<Position> validMoves = [];
   late AIPlayer _ai;
 
+  AppTheme get _theme => AppTheme.of(context);
+
   // Getters pour exposer l'état au parent
   bool get aiThinking => _aiThinking;
   Player? get winner => gameState.winner;
@@ -239,24 +241,18 @@ class GameBoardState extends State<GameBoard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-
     if (!widget.showStatusBar) {
-      return _buildBoard(theme);
+      return _buildBoard();
     }
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _buildStatusBar(theme),
-        const SizedBox(height: 24),
-        _buildBoard(theme),
-      ],
+      children: [_buildStatusBar(), const SizedBox(height: 24), _buildBoard()],
     );
   }
 
-  Widget _buildStatusBar(AppTheme theme) {
+  Widget _buildStatusBar() {
     String playerName;
     String actionText;
     Color statusColor;
@@ -368,9 +364,9 @@ class GameBoardState extends State<GameBoard> {
     );
   }
 
-  Widget _buildBoard(AppTheme theme) {
+  Widget _buildBoard() {
     if (widget.gameMode == GameMode.hexagonal) {
-      return _buildHexBoard(theme);
+      return _buildHexBoard();
     }
 
     return Container(
@@ -378,7 +374,7 @@ class GameBoardState extends State<GameBoard> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor,
+            color: _theme.shadowColor,
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -402,7 +398,7 @@ class GameBoardState extends State<GameBoard> {
                 // Inverser pour que joueur 1 (row 0) soit en bas
                 final logicalRow = gameState.boardSize - 1 - visualRow;
                 final pos = Position(logicalRow, col);
-                return _buildCell(pos, theme);
+                return _buildCell(pos);
               },
             ),
           ),
@@ -434,7 +430,7 @@ class GameBoardState extends State<GameBoard> {
     return 6 * horizontalSpacing + hexSize;
   }
 
-  Widget _buildHexBoard(AppTheme theme) {
+  Widget _buildHexBoard() {
     final hexSize = _hexSize;
     final horizontalSpacing = hexSize * 0.75;
     final totalWidth = 6 * horizontalSpacing + hexSize;
@@ -445,14 +441,11 @@ class GameBoardState extends State<GameBoard> {
     return SizedBox(
       width: boardWidth,
       height: boardHeight,
-      child: Stack(
-        children: _buildHexCells(theme, hexSize, boardWidth, boardHeight),
-      ),
+      child: Stack(children: _buildHexCells(hexSize, boardWidth, boardHeight)),
     );
   }
 
   List<Widget> _buildHexCells(
-    AppTheme theme,
     double hexSize,
     double boardWidth,
     double boardHeight,
@@ -477,20 +470,14 @@ class GameBoardState extends State<GameBoard> {
         final y = colStartY + invertedRow * hexHeight;
         final pos = Position(row, col);
 
-        cells.add(_buildHexCell(pos, x, y, hexSize, theme));
+        cells.add(_buildHexCell(pos, x, y, hexSize));
       }
     }
 
     return cells;
   }
 
-  Widget _buildHexCell(
-    Position pos,
-    double x,
-    double y,
-    double hexSize,
-    AppTheme theme,
-  ) {
+  Widget _buildHexCell(Position pos, double x, double y, double hexSize) {
     final piece = gameState.getPieceAt(pos);
     final isValidMove = validMoves.contains(pos);
     final isSelected = selectedPawn?.position == pos;
@@ -503,23 +490,27 @@ class GameBoardState extends State<GameBoard> {
     Color cellColor;
     switch (colorIndex) {
       case 0:
-        cellColor = theme.boardLightCell;
+        cellColor = _theme.boardLightCell;
         break;
       case 1:
-        cellColor = theme.boardDarkCell;
+        cellColor = _theme.boardDarkCell;
         break;
       case 2:
       default:
-        cellColor = Color.lerp(theme.boardLightCell, theme.boardDarkCell, 0.5)!;
+        cellColor = Color.lerp(
+          _theme.boardLightCell,
+          _theme.boardDarkCell,
+          0.5,
+        )!;
         break;
     }
 
     if (isValidMove) {
-      cellColor = theme.validMoveColor.withAlpha(180);
+      cellColor = _theme.validMoveColor.withAlpha(180);
     }
 
     if (isSelected) {
-      cellColor = theme.selectedColor.withAlpha(180);
+      cellColor = _theme.selectedColor.withAlpha(180);
     }
 
     final hexPieceSize = hexSize * 0.55;
@@ -541,7 +532,7 @@ class GameBoardState extends State<GameBoard> {
             child: CustomPaint(
               painter: HexagonPainter(
                 fillColor: cellColor,
-                borderColor: theme.boardBorder,
+                borderColor: _theme.boardBorder,
               ),
               child: Stack(
                 children: [
@@ -583,7 +574,6 @@ class GameBoardState extends State<GameBoard> {
                     Center(
                       child: _buildHexPiece(
                         piece,
-                        theme,
                         hexPieceSize,
                         hexPawnSize,
                         hexPawnSelectedSize,
@@ -595,7 +585,7 @@ class GameBoardState extends State<GameBoard> {
                         width: validMoveIndicatorSize,
                         height: validMoveIndicatorSize,
                         decoration: BoxDecoration(
-                          color: theme.validMoveColor.withAlpha(150),
+                          color: _theme.validMoveColor.withAlpha(150),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -611,7 +601,6 @@ class GameBoardState extends State<GameBoard> {
 
   Widget _buildHexPiece(
     Piece piece,
-    AppTheme theme,
     double pieceSize,
     double pawnSize,
     double pawnSelectedSize,
@@ -622,12 +611,12 @@ class GameBoardState extends State<GameBoard> {
         height: pieceSize,
         decoration: BoxDecoration(
           gradient: RadialGradient(
-            colors: [theme.accentColorBright, theme.accentColorSecondary],
+            colors: [_theme.accentColorBright, _theme.accentColorSecondary],
           ),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor,
+              color: _theme.shadowColor,
               blurRadius: 4,
               offset: const Offset(2, 2),
             ),
@@ -655,12 +644,12 @@ class GameBoardState extends State<GameBoard> {
         color: color,
         shape: BoxShape.circle,
         border: Border.all(
-          color: isSelected ? theme.selectedColor : Colors.white,
+          color: isSelected ? _theme.selectedColor : Colors.white,
           width: isSelected ? 3 : 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor,
+            color: _theme.shadowColor,
             blurRadius: 4,
             offset: const Offset(2, 2),
           ),
@@ -669,20 +658,22 @@ class GameBoardState extends State<GameBoard> {
     );
   }
 
-  Widget _buildCell(Position pos, AppTheme theme) {
+  Widget _buildCell(Position pos) {
     final piece = gameState.getPieceAt(pos);
     final isValidMove = validMoves.contains(pos);
     final isSelected = selectedPawn?.position == pos;
 
     final isLightCell = (pos.row + pos.col) % 2 == 0;
-    Color cellColor = isLightCell ? theme.boardLightCell : theme.boardDarkCell;
+    Color cellColor = isLightCell
+        ? _theme.boardLightCell
+        : _theme.boardDarkCell;
 
     if (isValidMove) {
-      cellColor = theme.validMoveColor.withAlpha(153);
+      cellColor = _theme.validMoveColor.withAlpha(153);
     }
 
     if (isSelected) {
-      cellColor = theme.selectedColor.withAlpha(153);
+      cellColor = _theme.selectedColor.withAlpha(153);
     }
 
     final indicatorSize = _cellSize * 0.12;
@@ -725,19 +716,19 @@ class GameBoardState extends State<GameBoard> {
         child: Container(
           decoration: BoxDecoration(
             color: cellColor,
-            border: Border.all(color: theme.boardBorder, width: 0.5),
+            border: Border.all(color: _theme.boardBorder, width: 0.5),
           ),
           child: Stack(
             children: [
               ?zoneIndicator,
-              if (piece != null) _buildPiece(piece, theme),
+              if (piece != null) _buildPiece(piece),
               if (isValidMove && piece == null)
                 Center(
                   child: Container(
                     width: _cellSize * 0.3,
                     height: _cellSize * 0.3,
                     decoration: BoxDecoration(
-                      color: theme.validMoveColor.withAlpha(127),
+                      color: _theme.validMoveColor.withAlpha(127),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -749,7 +740,7 @@ class GameBoardState extends State<GameBoard> {
     );
   }
 
-  Widget _buildPiece(Piece piece, AppTheme theme) {
+  Widget _buildPiece(Piece piece) {
     if (piece.type == PieceType.buddha) {
       return Center(
         child: Container(
@@ -757,12 +748,12 @@ class GameBoardState extends State<GameBoard> {
           height: _buddhaSize,
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              colors: [theme.accentColorBright, theme.accentColorSecondary],
+              colors: [_theme.accentColorBright, _theme.accentColorSecondary],
             ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: theme.shadowColor,
+                color: _theme.shadowColor,
                 blurRadius: 4,
                 offset: const Offset(2, 2),
               ),
@@ -792,12 +783,12 @@ class GameBoardState extends State<GameBoard> {
           color: color,
           shape: BoxShape.circle,
           border: Border.all(
-            color: isSelected ? theme.selectedColor : Colors.white,
+            color: isSelected ? _theme.selectedColor : Colors.white,
             width: isSelected ? 3 : 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor,
+              color: _theme.shadowColor,
               blurRadius: 4,
               offset: const Offset(2, 2),
             ),

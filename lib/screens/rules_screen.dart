@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-class RulesScreen extends StatelessWidget {
+class RulesScreen extends StatefulWidget {
   const RulesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
+  State<RulesScreen> createState() => _RulesScreenState();
+}
 
+class _RulesScreenState extends State<RulesScreen> {
+  AppTheme get _theme => AppTheme.of(context);
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
+      backgroundColor: _theme.primaryBackground,
       appBar: AppBar(
         title: const Text(
           'Regles du jeu',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: theme.appBarBackground,
-        foregroundColor: theme.appBarForeground,
+        backgroundColor: _theme.appBarBackground,
+        foregroundColor: _theme.appBarForeground,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.pop(context),
@@ -38,7 +43,6 @@ class RulesScreen extends StatelessWidget {
                       'Le jeu se joue sur un plateau de 5x5 ou 7x7 cases. '
                       'Chaque joueur possede 5 ou 7 pions places sur sa ligne de depart. '
                       'Le Bouddha (piece doree) est place au centre du plateau.',
-                  theme: theme,
                 ),
                 _buildSection(
                   icon: Icons.emoji_events_rounded,
@@ -47,7 +51,6 @@ class RulesScreen extends StatelessWidget {
                       'Un joueur gagne la partie s\'il reussit a :\n\n'
                       '1. Ramener le Bouddha sur sa propre ligne de depart\n\n'
                       '2. Bloquer le Bouddha de facon a ce qu\'il ne puisse plus etre deplace',
-                  theme: theme,
                 ),
                 _buildSection(
                   icon: Icons.swap_horiz_rounded,
@@ -56,7 +59,6 @@ class RulesScreen extends StatelessWidget {
                       'A son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
                       '1. Deplacer le Bouddha d\'une seule case (dans n\'importe quelle direction)\n\n'
                       '2. Deplacer un de ses pions jusqu\'au bout de la ligne ou jusqu\'a un obstacle',
-                  theme: theme,
                 ),
                 _buildSection(
                   icon: Icons.info_outline_rounded,
@@ -66,9 +68,8 @@ class RulesScreen extends StatelessWidget {
                       '- Les pions doivent aller le plus loin possible dans la direction choisie\n\n'
                       '- Aucun pion ne peut sauter par-dessus un autre pion ou le Bouddha\n\n'
                       '- 8 directions possibles : horizontale, verticale et diagonales',
-                  theme: theme,
                 ),
-                _buildPiecesLegend(theme),
+                _buildPiecesLegend(),
                 const SizedBox(height: 30),
               ],
             ),
@@ -82,15 +83,14 @@ class RulesScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required String content,
-    required AppTheme theme,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.cardBackground,
+        color: _theme.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.cardBorder, width: 1),
+        border: Border.all(color: _theme.cardBorder, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,10 +100,10 @@ class RulesScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: theme.accentColor.withAlpha(50),
+                  color: _theme.accentColor.withAlpha(50),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: theme.accentColor, size: 24),
+                child: Icon(icon, color: _theme.accentColor, size: 24),
               ),
               const SizedBox(width: 14),
               Text(
@@ -111,7 +111,7 @@ class RulesScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: theme.primaryText,
+                  color: _theme.primaryText,
                 ),
               ),
             ],
@@ -121,7 +121,7 @@ class RulesScreen extends StatelessWidget {
             content,
             style: TextStyle(
               fontSize: 15,
-              color: theme.subtitleText,
+              color: _theme.subtitleText,
               height: 1.5,
             ),
           ),
@@ -130,13 +130,13 @@ class RulesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPiecesLegend(AppTheme theme) {
+  Widget _buildPiecesLegend() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.cardBackground,
+        color: _theme.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.cardBorder, width: 1),
+        border: Border.all(color: _theme.cardBorder, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,12 +146,12 @@ class RulesScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: theme.accentColor.withAlpha(50),
+                  color: _theme.accentColor.withAlpha(50),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.category_rounded,
-                  color: theme.accentColor,
+                  color: _theme.accentColor,
                   size: 24,
                 ),
               ),
@@ -161,18 +161,17 @@ class RulesScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: theme.primaryText,
+                  color: _theme.primaryText,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
           _buildPieceRow(
-            color: theme.accentColorBright,
+            color: _theme.accentColorBright,
             icon: '\u2638',
             name: 'Bouddha',
             description: 'Piece centrale, se deplace d\'une case',
-            theme: theme,
           ),
           const SizedBox(height: 16),
           _buildPieceRow(
@@ -180,7 +179,6 @@ class RulesScreen extends StatelessWidget {
             icon: null,
             name: 'Pions Joueur 1',
             description: 'Ligne du haut, vont jusqu\'au bout',
-            theme: theme,
           ),
           const SizedBox(height: 16),
           _buildPieceRow(
@@ -188,7 +186,6 @@ class RulesScreen extends StatelessWidget {
             icon: null,
             name: 'Pions Joueur 2',
             description: 'Ligne du bas, vont jusqu\'au bout',
-            theme: theme,
           ),
         ],
       ),
@@ -200,7 +197,6 @@ class RulesScreen extends StatelessWidget {
     String? icon,
     required String name,
     required String description,
-    required AppTheme theme,
   }) {
     return Row(
       children: [
@@ -232,12 +228,12 @@ class RulesScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: theme.primaryText,
+                  color: _theme.primaryText,
                 ),
               ),
               Text(
                 description,
-                style: TextStyle(fontSize: 13, color: theme.secondaryText),
+                style: TextStyle(fontSize: 13, color: _theme.secondaryText),
               ),
             ],
           ),

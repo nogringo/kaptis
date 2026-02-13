@@ -20,14 +20,15 @@ class _SetupScreenState extends State<SetupScreen> {
   WinCondition _winCondition = WinCondition.ownCamp;
   Player _startingPlayer = Player.player1;
 
+  AppTheme get _theme => AppTheme.of(context);
+
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
     final isLarge = Responsive.isLargeScreen(context);
     final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
+      backgroundColor: _theme.primaryBackground,
       appBar: AppBar(
         title: Text(
           'Nouvelle partie',
@@ -37,8 +38,8 @@ class _SetupScreenState extends State<SetupScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: theme.appBarBackground,
-        foregroundColor: theme.appBarForeground,
+        backgroundColor: _theme.appBarBackground,
+        foregroundColor: _theme.appBarForeground,
         elevation: 0,
       ),
       body: SafeArea(
@@ -54,8 +55,8 @@ class _SetupScreenState extends State<SetupScreen> {
                       maxWidth: Responsive.contentMaxWidth(context),
                     ),
                     child: isDesktop
-                        ? _buildDesktopLayout(theme)
-                        : _buildMobileLayout(theme),
+                        ? _buildDesktopLayout(isLarge)
+                        : _buildMobileLayout(isLarge),
                   ),
                 ),
               ),
@@ -70,7 +71,7 @@ class _SetupScreenState extends State<SetupScreen> {
                   constraints: BoxConstraints(
                     maxWidth: Responsive.contentMaxWidth(context),
                   ),
-                  child: _buildStartButton(theme, isLarge),
+                  child: _buildStartButton(isLarge),
                 ),
               ),
             ),
@@ -80,7 +81,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildDesktopLayout(AppTheme theme) {
+  Widget _buildDesktopLayout(bool isLarge) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -91,9 +92,9 @@ class _SetupScreenState extends State<SetupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Mode de jeu', theme, true),
+                  _buildSectionTitle('Mode de jeu', isLarge),
                   const SizedBox(height: 16),
-                  _buildModeSelector(theme, true),
+                  _buildModeSelector(isLarge),
                   AnimatedSize(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
@@ -102,21 +103,21 @@ class _SetupScreenState extends State<SetupScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 32),
-                              _buildSectionTitle('Difficulte', theme, true),
+                              _buildSectionTitle('Difficulte', isLarge),
                               const SizedBox(height: 16),
-                              _buildDifficultySelector(theme, true),
+                              _buildDifficultySelector(isLarge),
                             ],
                           )
                         : const SizedBox.shrink(),
                   ),
                   const SizedBox(height: 32),
-                  _buildSectionTitle('Condition de victoire', theme, true),
+                  _buildSectionTitle('Condition de victoire', isLarge),
                   const SizedBox(height: 16),
-                  _buildWinConditionSelector(theme, true),
+                  _buildWinConditionSelector(isLarge),
                   const SizedBox(height: 32),
-                  _buildSectionTitle('Premier joueur', theme, true),
+                  _buildSectionTitle('Premier joueur', isLarge),
                   const SizedBox(height: 16),
-                  _buildStartingPlayerSelector(theme, true),
+                  _buildStartingPlayerSelector(isLarge),
                 ],
               ),
             ),
@@ -125,9 +126,9 @@ class _SetupScreenState extends State<SetupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Type de plateau', theme, true),
+                  _buildSectionTitle('Type de plateau', isLarge),
                   const SizedBox(height: 16),
-                  _buildBoardTypeSelector(theme, true),
+                  _buildBoardTypeSelector(isLarge),
                   AnimatedSize(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
@@ -136,13 +137,9 @@ class _SetupScreenState extends State<SetupScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 32),
-                              _buildSectionTitle(
-                                'Taille du plateau',
-                                theme,
-                                true,
-                              ),
+                              _buildSectionTitle('Taille du plateau', isLarge),
                               const SizedBox(height: 16),
-                              _buildSizeSelector(theme, true),
+                              _buildSizeSelector(isLarge),
                             ],
                           )
                         : const SizedBox.shrink(),
@@ -156,13 +153,13 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildMobileLayout(AppTheme theme) {
+  Widget _buildMobileLayout(bool isLarge) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Mode de jeu', theme, false),
+        _buildSectionTitle('Mode de jeu', isLarge),
         const SizedBox(height: 16),
-        _buildModeSelector(theme, false),
+        _buildModeSelector(isLarge),
         const SizedBox(height: 32),
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
@@ -171,17 +168,17 @@ class _SetupScreenState extends State<SetupScreen> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Difficulte', theme, false),
+                    _buildSectionTitle('Difficulte', isLarge),
                     const SizedBox(height: 16),
-                    _buildDifficultySelector(theme, false),
+                    _buildDifficultySelector(isLarge),
                     const SizedBox(height: 32),
                   ],
                 )
               : const SizedBox.shrink(),
         ),
-        _buildSectionTitle('Type de plateau', theme, false),
+        _buildSectionTitle('Type de plateau', isLarge),
         const SizedBox(height: 16),
-        _buildBoardTypeSelector(theme, false),
+        _buildBoardTypeSelector(isLarge),
         const SizedBox(height: 32),
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
@@ -190,38 +187,38 @@ class _SetupScreenState extends State<SetupScreen> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Taille du plateau', theme, false),
+                    _buildSectionTitle('Taille du plateau', isLarge),
                     const SizedBox(height: 16),
-                    _buildSizeSelector(theme, false),
+                    _buildSizeSelector(isLarge),
                     const SizedBox(height: 32),
                   ],
                 )
               : const SizedBox.shrink(),
         ),
-        _buildSectionTitle('Condition de victoire', theme, false),
+        _buildSectionTitle('Condition de victoire', isLarge),
         const SizedBox(height: 16),
-        _buildWinConditionSelector(theme, false),
+        _buildWinConditionSelector(isLarge),
         const SizedBox(height: 32),
-        _buildSectionTitle('Premier joueur', theme, false),
+        _buildSectionTitle('Premier joueur', isLarge),
         const SizedBox(height: 16),
-        _buildStartingPlayerSelector(theme, false),
+        _buildStartingPlayerSelector(isLarge),
         const SizedBox(height: 24),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title, AppTheme theme, bool isLarge) {
+  Widget _buildSectionTitle(String title, bool isLarge) {
     return Text(
       title,
       style: TextStyle(
         fontSize: isLarge ? 22 : 18,
         fontWeight: FontWeight.bold,
-        color: theme.primaryText,
+        color: _theme.primaryText,
       ),
     );
   }
 
-  Widget _buildModeSelector(AppTheme theme, bool isLarge) {
+  Widget _buildModeSelector(bool isLarge) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -233,7 +230,6 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: 'Jouer en local',
               isSelected: !_vsAI,
               onTap: () => setState(() => _vsAI = false),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -245,7 +241,6 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: 'Jouer contre l\'ordinateur',
               isSelected: _vsAI,
               onTap: () => setState(() => _vsAI = true),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -260,7 +255,6 @@ class _SetupScreenState extends State<SetupScreen> {
     required String subtitle,
     required bool isSelected,
     required VoidCallback onTap,
-    required AppTheme theme,
     required bool isLarge,
   }) {
     return GestureDetector(
@@ -272,11 +266,11 @@ class _SetupScreenState extends State<SetupScreen> {
           padding: EdgeInsets.all(isLarge ? 24 : 20),
           decoration: BoxDecoration(
             color: isSelected
-                ? theme.accentColor.withAlpha(25)
-                : theme.cardBackground,
+                ? _theme.accentColor.withAlpha(25)
+                : _theme.cardBackground,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
-              color: isSelected ? theme.accentColor : theme.cardBorder,
+              color: isSelected ? _theme.accentColor : _theme.cardBorder,
               width: 2,
             ),
           ),
@@ -285,7 +279,7 @@ class _SetupScreenState extends State<SetupScreen> {
               Icon(
                 icon,
                 size: isLarge ? 48 : 40,
-                color: isSelected ? theme.accentColor : theme.tertiaryText,
+                color: isSelected ? _theme.accentColor : _theme.tertiaryText,
               ),
               SizedBox(height: isLarge ? 16 : 12),
               Text(
@@ -293,7 +287,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 style: TextStyle(
                   fontSize: isLarge ? 18 : 16,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? theme.accentColor : theme.primaryText,
+                  color: isSelected ? _theme.accentColor : _theme.primaryText,
                 ),
               ),
               SizedBox(height: isLarge ? 6 : 4),
@@ -302,7 +296,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: isLarge ? 14 : 12,
-                  color: theme.tertiaryText,
+                  color: _theme.tertiaryText,
                 ),
               ),
             ],
@@ -312,7 +306,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildBoardTypeSelector(AppTheme theme, bool isLarge) {
+  Widget _buildBoardTypeSelector(bool isLarge) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -324,7 +318,6 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: '5x5 ou 7x7 cases',
               isSelected: _gameMode == GameMode.square,
               onTap: () => setState(() => _gameMode = GameMode.square),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -336,7 +329,6 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: '37 hexagones',
               isSelected: _gameMode == GameMode.hexagonal,
               onTap: () => setState(() => _gameMode = GameMode.hexagonal),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -351,7 +343,6 @@ class _SetupScreenState extends State<SetupScreen> {
     required String subtitle,
     required bool isSelected,
     required VoidCallback onTap,
-    required AppTheme theme,
     required bool isLarge,
   }) {
     return GestureDetector(
@@ -363,11 +354,11 @@ class _SetupScreenState extends State<SetupScreen> {
           padding: EdgeInsets.all(isLarge ? 24 : 20),
           decoration: BoxDecoration(
             color: isSelected
-                ? theme.accentColor.withAlpha(25)
-                : theme.cardBackground,
+                ? _theme.accentColor.withAlpha(25)
+                : _theme.cardBackground,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
-              color: isSelected ? theme.accentColor : theme.cardBorder,
+              color: isSelected ? _theme.accentColor : _theme.cardBorder,
               width: 2,
             ),
           ),
@@ -376,7 +367,7 @@ class _SetupScreenState extends State<SetupScreen> {
               Icon(
                 icon,
                 size: isLarge ? 48 : 40,
-                color: isSelected ? theme.accentColor : theme.tertiaryText,
+                color: isSelected ? _theme.accentColor : _theme.tertiaryText,
               ),
               SizedBox(height: isLarge ? 16 : 12),
               Text(
@@ -384,7 +375,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 style: TextStyle(
                   fontSize: isLarge ? 18 : 16,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? theme.accentColor : theme.primaryText,
+                  color: isSelected ? _theme.accentColor : _theme.primaryText,
                 ),
               ),
               SizedBox(height: isLarge ? 6 : 4),
@@ -393,7 +384,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: isLarge ? 14 : 12,
-                  color: theme.tertiaryText,
+                  color: _theme.tertiaryText,
                 ),
               ),
             ],
@@ -403,7 +394,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildDifficultySelector(AppTheme theme, bool isLarge) {
+  Widget _buildDifficultySelector(bool isLarge) {
     return Row(
       children: [
         Expanded(
@@ -412,7 +403,6 @@ class _SetupScreenState extends State<SetupScreen> {
             icon: Icons.sentiment_satisfied_rounded,
             difficulty: AIDifficulty.easy,
             color: Colors.green,
-            theme: theme,
             isLarge: isLarge,
           ),
         ),
@@ -423,7 +413,6 @@ class _SetupScreenState extends State<SetupScreen> {
             icon: Icons.sentiment_neutral_rounded,
             difficulty: AIDifficulty.normal,
             color: Colors.orange,
-            theme: theme,
             isLarge: isLarge,
           ),
         ),
@@ -434,7 +423,6 @@ class _SetupScreenState extends State<SetupScreen> {
             icon: Icons.sentiment_very_dissatisfied_rounded,
             difficulty: AIDifficulty.hard,
             color: Colors.red,
-            theme: theme,
             isLarge: isLarge,
           ),
         ),
@@ -447,7 +435,6 @@ class _SetupScreenState extends State<SetupScreen> {
     required IconData icon,
     required AIDifficulty difficulty,
     required Color color,
-    required AppTheme theme,
     required bool isLarge,
   }) {
     final isSelected = _difficulty == difficulty;
@@ -458,10 +445,10 @@ class _SetupScreenState extends State<SetupScreen> {
         child: Container(
           height: isLarge ? 100 : 80,
           decoration: BoxDecoration(
-            color: isSelected ? color.withAlpha(30) : theme.cardBackground,
+            color: isSelected ? color.withAlpha(30) : _theme.cardBackground,
             borderRadius: BorderRadius.circular(isLarge ? 16 : 12),
             border: Border.all(
-              color: isSelected ? color : theme.cardBorder,
+              color: isSelected ? color : _theme.cardBorder,
               width: 2,
             ),
           ),
@@ -471,7 +458,7 @@ class _SetupScreenState extends State<SetupScreen> {
               Icon(
                 icon,
                 size: isLarge ? 36 : 28,
-                color: isSelected ? color : theme.tertiaryText,
+                color: isSelected ? color : _theme.tertiaryText,
               ),
               SizedBox(height: isLarge ? 12 : 8),
               Text(
@@ -479,7 +466,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 style: TextStyle(
                   fontSize: isLarge ? 15 : 13,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? color : theme.tertiaryText,
+                  color: isSelected ? color : _theme.tertiaryText,
                 ),
               ),
             ],
@@ -489,14 +476,13 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildSizeSelector(AppTheme theme, bool isLarge) {
+  Widget _buildSizeSelector(bool isLarge) {
     return Row(
       children: [
         Expanded(
           child: _buildSizeCard(
             size: 5,
             description: '5 pions par joueur\nParties rapides',
-            theme: theme,
             isLarge: isLarge,
           ),
         ),
@@ -505,7 +491,6 @@ class _SetupScreenState extends State<SetupScreen> {
           child: _buildSizeCard(
             size: 7,
             description: '7 pions par joueur\nParties longues',
-            theme: theme,
             isLarge: isLarge,
           ),
         ),
@@ -516,7 +501,6 @@ class _SetupScreenState extends State<SetupScreen> {
   Widget _buildSizeCard({
     required int size,
     required String description,
-    required AppTheme theme,
     required bool isLarge,
   }) {
     final isSelected = _boardSize == size;
@@ -529,11 +513,11 @@ class _SetupScreenState extends State<SetupScreen> {
           padding: EdgeInsets.all(isLarge ? 24 : 20),
           decoration: BoxDecoration(
             color: isSelected
-                ? theme.accentColor.withAlpha(25)
-                : theme.cardBackground,
+                ? _theme.accentColor.withAlpha(25)
+                : _theme.cardBackground,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
-              color: isSelected ? theme.accentColor : theme.cardBorder,
+              color: isSelected ? _theme.accentColor : _theme.cardBorder,
               width: 2,
             ),
           ),
@@ -544,7 +528,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 style: TextStyle(
                   fontSize: isLarge ? 34 : 28,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? theme.accentColor : theme.primaryText,
+                  color: isSelected ? _theme.accentColor : _theme.primaryText,
                 ),
               ),
               SizedBox(height: isLarge ? 12 : 8),
@@ -553,7 +537,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: isLarge ? 14 : 12,
-                  color: theme.tertiaryText,
+                  color: _theme.tertiaryText,
                   height: 1.4,
                 ),
               ),
@@ -564,7 +548,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildWinConditionSelector(AppTheme theme, bool isLarge) {
+  Widget _buildWinConditionSelector(bool isLarge) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -576,7 +560,6 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: 'Ramener le Bouddha dans son camp',
               isSelected: _winCondition == WinCondition.ownCamp,
               onTap: () => setState(() => _winCondition = WinCondition.ownCamp),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -589,7 +572,6 @@ class _SetupScreenState extends State<SetupScreen> {
               isSelected: _winCondition == WinCondition.opponentCamp,
               onTap: () =>
                   setState(() => _winCondition = WinCondition.opponentCamp),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -604,7 +586,6 @@ class _SetupScreenState extends State<SetupScreen> {
     required String subtitle,
     required bool isSelected,
     required VoidCallback onTap,
-    required AppTheme theme,
     required bool isLarge,
   }) {
     return GestureDetector(
@@ -616,11 +597,11 @@ class _SetupScreenState extends State<SetupScreen> {
           padding: EdgeInsets.all(isLarge ? 24 : 20),
           decoration: BoxDecoration(
             color: isSelected
-                ? theme.accentColor.withAlpha(25)
-                : theme.cardBackground,
+                ? _theme.accentColor.withAlpha(25)
+                : _theme.cardBackground,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
-              color: isSelected ? theme.accentColor : theme.cardBorder,
+              color: isSelected ? _theme.accentColor : _theme.cardBorder,
               width: 2,
             ),
           ),
@@ -629,7 +610,7 @@ class _SetupScreenState extends State<SetupScreen> {
               Icon(
                 icon,
                 size: isLarge ? 48 : 40,
-                color: isSelected ? theme.accentColor : theme.tertiaryText,
+                color: isSelected ? _theme.accentColor : _theme.tertiaryText,
               ),
               SizedBox(height: isLarge ? 16 : 12),
               Text(
@@ -637,7 +618,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 style: TextStyle(
                   fontSize: isLarge ? 18 : 16,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? theme.accentColor : theme.primaryText,
+                  color: isSelected ? _theme.accentColor : _theme.primaryText,
                 ),
               ),
               SizedBox(height: isLarge ? 6 : 4),
@@ -646,7 +627,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: isLarge ? 14 : 12,
-                  color: theme.tertiaryText,
+                  color: _theme.tertiaryText,
                 ),
               ),
             ],
@@ -656,7 +637,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildStartingPlayerSelector(AppTheme theme, bool isLarge) {
+  Widget _buildStartingPlayerSelector(bool isLarge) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -668,7 +649,6 @@ class _SetupScreenState extends State<SetupScreen> {
               color: AppTheme.player1Color,
               isSelected: _startingPlayer == Player.player1,
               onTap: () => setState(() => _startingPlayer = Player.player1),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -680,7 +660,6 @@ class _SetupScreenState extends State<SetupScreen> {
               color: AppTheme.player2Color,
               isSelected: _startingPlayer == Player.player2,
               onTap: () => setState(() => _startingPlayer = Player.player2),
-              theme: theme,
               isLarge: isLarge,
             ),
           ),
@@ -695,7 +674,6 @@ class _SetupScreenState extends State<SetupScreen> {
     required Color color,
     required bool isSelected,
     required VoidCallback onTap,
-    required AppTheme theme,
     required bool isLarge,
   }) {
     return GestureDetector(
@@ -706,10 +684,10 @@ class _SetupScreenState extends State<SetupScreen> {
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.all(isLarge ? 24 : 20),
           decoration: BoxDecoration(
-            color: isSelected ? color.withAlpha(25) : theme.cardBackground,
+            color: isSelected ? color.withAlpha(25) : _theme.cardBackground,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
-              color: isSelected ? color : theme.cardBorder,
+              color: isSelected ? color : _theme.cardBorder,
               width: 2,
             ),
           ),
@@ -726,7 +704,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 style: TextStyle(
                   fontSize: isLarge ? 18 : 16,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? color : theme.primaryText,
+                  color: isSelected ? color : _theme.primaryText,
                 ),
               ),
               SizedBox(height: isLarge ? 6 : 4),
@@ -735,7 +713,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: isLarge ? 14 : 12,
-                  color: theme.tertiaryText,
+                  color: _theme.tertiaryText,
                 ),
               ),
             ],
@@ -745,7 +723,7 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
-  Widget _buildStartButton(AppTheme theme, bool isLarge) {
+  Widget _buildStartButton(bool isLarge) {
     return SizedBox(
       width: isLarge ? 400 : double.infinity,
       height: isLarge ? 64 : 56,
@@ -766,8 +744,8 @@ class _SetupScreenState extends State<SetupScreen> {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: theme.primaryButtonBackground,
-          foregroundColor: theme.primaryButtonForeground,
+          backgroundColor: _theme.primaryButtonBackground,
+          foregroundColor: _theme.primaryButtonForeground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
           ),

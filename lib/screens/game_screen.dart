@@ -29,33 +29,34 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final GlobalKey<GameBoardState> _gameBoardKey = GlobalKey<GameBoardState>();
 
+  AppTheme get _theme => AppTheme.of(context);
+
   void _triggerRebuild() {
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth >= 1000;
 
     if (isDesktop) {
       return Scaffold(
-        backgroundColor: theme.primaryBackground,
-        body: SafeArea(child: _buildDesktopLayout(theme)),
+        backgroundColor: _theme.primaryBackground,
+        body: SafeArea(child: _buildDesktopLayout()),
       );
     }
 
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
+      backgroundColor: _theme.primaryBackground,
       appBar: AppBar(
         title: const Text(
           "Aboul'",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: theme.appBarBackground,
-        foregroundColor: theme.appBarForeground,
+        backgroundColor: _theme.appBarBackground,
+        foregroundColor: _theme.appBarForeground,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -72,11 +73,11 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
       ),
-      body: SafeArea(child: _buildMobileLayout(theme)),
+      body: SafeArea(child: _buildMobileLayout()),
     );
   }
 
-  Widget _buildMobileLayout(AppTheme theme) {
+  Widget _buildMobileLayout() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final padding = 16.0;
@@ -111,7 +112,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildDesktopLayout(AppTheme theme) {
+  Widget _buildDesktopLayout() {
     return LayoutBuilder(
       builder: (context, constraints) {
         const sidebarWidth = 280.0;
@@ -127,12 +128,12 @@ class _GameScreenState extends State<GameScreen> {
             Container(
               width: sidebarWidth,
               decoration: BoxDecoration(
-                color: theme.cardBackground,
+                color: _theme.cardBackground,
                 border: Border(
-                  right: BorderSide(color: theme.cardBorder, width: 1),
+                  right: BorderSide(color: _theme.cardBorder, width: 1),
                 ),
               ),
-              child: _buildSidebar(theme),
+              child: _buildSidebar(),
             ),
             // Plateau de jeu
             Expanded(
@@ -161,7 +162,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildSidebar(AppTheme theme) {
+  Widget _buildSidebar() {
     return Column(
       children: [
         // Options en haut
@@ -181,7 +182,7 @@ class _GameScreenState extends State<GameScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: theme.primaryText,
+                        color: _theme.primaryText,
                       ),
                     ),
                   ],
@@ -199,8 +200,8 @@ class _GameScreenState extends State<GameScreen> {
                     icon: const Icon(Icons.refresh_rounded),
                     label: const Text('Nouvelle partie'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: theme.accentColor,
-                      side: BorderSide(color: theme.accentColor),
+                      foregroundColor: _theme.accentColor,
+                      side: BorderSide(color: _theme.accentColor),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -212,12 +213,12 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ),
         // Status en bas
-        _buildStatusPanel(theme),
+        _buildStatusPanel(),
       ],
     );
   }
 
-  Widget _buildStatusPanel(AppTheme theme) {
+  Widget _buildStatusPanel() {
     final boardState = _gameBoardKey.currentState;
 
     String playerName;

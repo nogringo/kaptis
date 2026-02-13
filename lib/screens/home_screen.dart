@@ -4,16 +4,22 @@ import 'rules_screen.dart';
 import '../theme/app_theme.dart';
 import '../utils/responsive.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = AppTheme.of(context);
-    final isLarge = Responsive.isLargeScreen(context);
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  AppTheme get _theme => AppTheme.of(context);
+
+  bool get _isLarge => Responsive.isLargeScreen(context);
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
+      backgroundColor: _theme.primaryBackground,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -25,13 +31,13 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildLogo(theme, isLarge),
-                  SizedBox(height: isLarge ? 50 : 40),
-                  _buildTitle(theme, isLarge),
-                  SizedBox(height: isLarge ? 20 : 16),
-                  _buildSubtitle(theme, isLarge),
-                  SizedBox(height: isLarge ? 80 : 60),
-                  _buildButtons(context, theme, isLarge),
+                  _buildLogo(),
+                  SizedBox(height: _isLarge ? 50 : 40),
+                  _buildTitle(),
+                  SizedBox(height: _isLarge ? 20 : 16),
+                  _buildSubtitle(),
+                  SizedBox(height: _isLarge ? 80 : 60),
+                  _buildButtons(),
                 ],
               ),
             ),
@@ -41,9 +47,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogo(AppTheme theme, bool isLarge) {
-    final size = isLarge ? 200.0 : 150.0;
-    final iconSize = isLarge ? 110.0 : 80.0;
+  Widget _buildLogo() {
+    final size = _isLarge ? 200.0 : 150.0;
+    final iconSize = _isLarge ? 110.0 : 80.0;
 
     return Container(
       width: size,
@@ -51,14 +57,14 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: theme.logoGradient,
+          colors: _theme.logoGradient,
           stops: const [0.3, 0.7, 1.0],
         ),
         boxShadow: [
           BoxShadow(
-            color: theme.accentShadow,
-            blurRadius: isLarge ? 40 : 30,
-            spreadRadius: isLarge ? 8 : 5,
+            color: _theme.accentShadow,
+            blurRadius: _isLarge ? 40 : 30,
+            spreadRadius: _isLarge ? 8 : 5,
           ),
         ],
       ),
@@ -81,64 +87,59 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(AppTheme theme, bool isLarge) {
+  Widget _buildTitle() {
     return ShaderMask(
       shaderCallback: (bounds) =>
-          LinearGradient(colors: theme.titleGradient).createShader(bounds),
+          LinearGradient(colors: _theme.titleGradient).createShader(bounds),
       child: Text(
         "Aboul'",
         style: TextStyle(
-          fontSize: isLarge ? 72 : 56,
+          fontSize: _isLarge ? 72 : 56,
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          letterSpacing: isLarge ? 6 : 4,
+          letterSpacing: _isLarge ? 6 : 4,
         ),
       ),
     );
   }
 
-  Widget _buildSubtitle(AppTheme theme, bool isLarge) {
+  Widget _buildSubtitle() {
     return Text(
       'Jeu de strategie pour 2 joueurs',
       style: TextStyle(
-        fontSize: isLarge ? 20 : 16,
-        color: theme.secondaryText,
-        letterSpacing: isLarge ? 2 : 1,
+        fontSize: _isLarge ? 20 : 16,
+        color: _theme.secondaryText,
+        letterSpacing: _isLarge ? 2 : 1,
       ),
     );
   }
 
-  Widget _buildButtons(BuildContext context, AppTheme theme, bool isLarge) {
-    final buttonWidth = isLarge ? 280.0 : 220.0;
-    final buttonHeight = isLarge ? 64.0 : 56.0;
-    final secondaryHeight = isLarge ? 56.0 : 50.0;
+  Widget _buildButtons() {
+    final buttonWidth = _isLarge ? 280.0 : 220.0;
+    final buttonHeight = _isLarge ? 64.0 : 56.0;
+    final secondaryHeight = _isLarge ? 56.0 : 50.0;
 
-    if (isLarge) {
+    if (_isLarge) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildPlayButton(context, theme, buttonWidth, buttonHeight),
+          _buildPlayButton(buttonWidth, buttonHeight),
           const SizedBox(width: 24),
-          _buildRulesButton(context, theme, buttonWidth, secondaryHeight),
+          _buildRulesButton(buttonWidth, secondaryHeight),
         ],
       );
     }
 
     return Column(
       children: [
-        _buildPlayButton(context, theme, buttonWidth, buttonHeight),
+        _buildPlayButton(buttonWidth, buttonHeight),
         const SizedBox(height: 20),
-        _buildRulesButton(context, theme, buttonWidth, secondaryHeight),
+        _buildRulesButton(buttonWidth, secondaryHeight),
       ],
     );
   }
 
-  Widget _buildPlayButton(
-    BuildContext context,
-    AppTheme theme,
-    double width,
-    double height,
-  ) {
+  Widget _buildPlayButton(double width, double height) {
     return SizedBox(
       width: width,
       height: height,
@@ -150,13 +151,13 @@ class HomeScreen extends StatelessWidget {
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: theme.primaryButtonBackground,
-          foregroundColor: theme.primaryButtonForeground,
+          backgroundColor: _theme.primaryButtonBackground,
+          foregroundColor: _theme.primaryButtonForeground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(height / 2),
           ),
           elevation: 8,
-          shadowColor: theme.accentShadow,
+          shadowColor: _theme.accentShadow,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -177,12 +178,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRulesButton(
-    BuildContext context,
-    AppTheme theme,
-    double width,
-    double height,
-  ) {
+  Widget _buildRulesButton(double width, double height) {
     return SizedBox(
       width: width,
       height: height,
@@ -194,8 +190,8 @@ class HomeScreen extends StatelessWidget {
           );
         },
         style: OutlinedButton.styleFrom(
-          foregroundColor: theme.outlineButtonForeground,
-          side: BorderSide(color: theme.outlineButtonBorder, width: 2),
+          foregroundColor: _theme.outlineButtonForeground,
+          side: BorderSide(color: _theme.outlineButtonBorder, width: 2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(height / 2),
           ),
