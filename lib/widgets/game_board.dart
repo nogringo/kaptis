@@ -10,6 +10,7 @@ class GameBoard extends StatefulWidget {
   final AIDifficulty difficulty;
   final GameMode gameMode;
   final WinCondition winCondition;
+  final Player startingPlayer;
   final double? maxWidth;
   final double? maxHeight;
   final bool showStatusBar;
@@ -22,6 +23,7 @@ class GameBoard extends StatefulWidget {
     required this.difficulty,
     this.gameMode = GameMode.square,
     this.winCondition = WinCondition.ownCamp,
+    this.startingPlayer = Player.player1,
     this.maxWidth,
     this.maxHeight,
     this.showStatusBar = true,
@@ -67,11 +69,15 @@ class GameBoardState extends State<GameBoard> {
   void resetGame() {
     setState(() {
       if (widget.gameMode == GameMode.hexagonal) {
-        gameState = GameState.initialHex(winCondition: widget.winCondition);
+        gameState = GameState.initialHex(
+          winCondition: widget.winCondition,
+          startingPlayer: widget.startingPlayer,
+        );
       } else {
         gameState = GameState.initial(
           size: widget.boardSize,
           winCondition: widget.winCondition,
+          startingPlayer: widget.startingPlayer,
         );
       }
       selectedPawn = null;
@@ -79,6 +85,10 @@ class GameBoardState extends State<GameBoard> {
       _aiThinking = false;
     });
     _notifyStateChanged();
+    // Si l'IA commence, déclencher son tour avec délai
+    if (widget.vsAI && widget.startingPlayer == Player.player2) {
+      _startAITurnWithDelay();
+    }
   }
 
   @override
@@ -86,13 +96,35 @@ class GameBoardState extends State<GameBoard> {
     super.initState();
     _ai = AIPlayer(difficulty: widget.difficulty);
     if (widget.gameMode == GameMode.hexagonal) {
-      gameState = GameState.initialHex(winCondition: widget.winCondition);
+      gameState = GameState.initialHex(
+        winCondition: widget.winCondition,
+        startingPlayer: widget.startingPlayer,
+      );
     } else {
       gameState = GameState.initial(
         size: widget.boardSize,
         winCondition: widget.winCondition,
+        startingPlayer: widget.startingPlayer,
       );
     }
+    // Si l'IA commence, déclencher son tour après le build avec délai
+    if (widget.vsAI && widget.startingPlayer == Player.player2) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startAITurnWithDelay();
+      });
+    }
+  }
+
+  void _startAITurnWithDelay() {
+    setState(() {
+      _aiThinking = true;
+    });
+    _notifyStateChanged();
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        _playAITurn();
+      }
+    });
   }
 
   void _handleCellTap(Position pos) {

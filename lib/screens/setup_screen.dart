@@ -18,6 +18,7 @@ class _SetupScreenState extends State<SetupScreen> {
   AIDifficulty _difficulty = AIDifficulty.normal;
   GameMode _gameMode = GameMode.square;
   WinCondition _winCondition = WinCondition.ownCamp;
+  Player _startingPlayer = Player.player1;
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +113,10 @@ class _SetupScreenState extends State<SetupScreen> {
                   _buildSectionTitle('Condition de victoire', theme, true),
                   const SizedBox(height: 16),
                   _buildWinConditionSelector(theme, true),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle('Premier joueur', theme, true),
+                  const SizedBox(height: 16),
+                  _buildStartingPlayerSelector(theme, true),
                 ],
               ),
             ),
@@ -196,6 +201,10 @@ class _SetupScreenState extends State<SetupScreen> {
         _buildSectionTitle('Condition de victoire', theme, false),
         const SizedBox(height: 16),
         _buildWinConditionSelector(theme, false),
+        const SizedBox(height: 32),
+        _buildSectionTitle('Premier joueur', theme, false),
+        const SizedBox(height: 16),
+        _buildStartingPlayerSelector(theme, false),
         const SizedBox(height: 24),
       ],
     );
@@ -647,6 +656,95 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
+  Widget _buildStartingPlayerSelector(AppTheme theme, bool isLarge) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _buildStartingPlayerCard(
+              title: 'Bleus',
+              subtitle: 'Joueur 1 commence',
+              color: AppTheme.player1Color,
+              isSelected: _startingPlayer == Player.player1,
+              onTap: () => setState(() => _startingPlayer = Player.player1),
+              theme: theme,
+              isLarge: isLarge,
+            ),
+          ),
+          SizedBox(width: isLarge ? 20 : 16),
+          Expanded(
+            child: _buildStartingPlayerCard(
+              title: 'Rouges',
+              subtitle: 'Joueur 2 commence',
+              color: AppTheme.player2Color,
+              isSelected: _startingPlayer == Player.player2,
+              onTap: () => setState(() => _startingPlayer = Player.player2),
+              theme: theme,
+              isLarge: isLarge,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStartingPlayerCard({
+    required String title,
+    required String subtitle,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required AppTheme theme,
+    required bool isLarge,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.all(isLarge ? 24 : 20),
+          decoration: BoxDecoration(
+            color: isSelected ? color.withAlpha(25) : theme.cardBackground,
+            borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
+            border: Border.all(
+              color: isSelected ? color : theme.cardBorder,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: isLarge ? 48 : 40,
+                height: isLarge ? 48 : 40,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              SizedBox(height: isLarge ? 16 : 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: isLarge ? 18 : 16,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? color : theme.primaryText,
+                ),
+              ),
+              SizedBox(height: isLarge ? 6 : 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isLarge ? 14 : 12,
+                  color: theme.tertiaryText,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStartButton(AppTheme theme, bool isLarge) {
     return SizedBox(
       width: isLarge ? 400 : double.infinity,
@@ -662,6 +760,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 difficulty: _difficulty,
                 gameMode: _gameMode,
                 winCondition: _winCondition,
+                startingPlayer: _startingPlayer,
               ),
             ),
           );

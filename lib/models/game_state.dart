@@ -70,6 +70,7 @@ class GameState {
   factory GameState.initial({
     int size = 5,
     WinCondition winCondition = WinCondition.ownCamp,
+    Player startingPlayer = Player.player1,
   }) {
     assert(size == 5 || size == 7, 'Board size must be 5 or 7');
 
@@ -110,7 +111,7 @@ class GameState {
     return GameState(
       boardSize: size,
       pieces: pieces,
-      currentPlayer: Player.player1,
+      currentPlayer: startingPlayer,
       phase: GamePhase.moveBuddha,
       winner: null,
       gameMode: GameMode.square,
@@ -121,6 +122,7 @@ class GameState {
   // Initialisation pour le mode hexagonal (37 cellules, 7 colonnes)
   factory GameState.initialHex({
     WinCondition winCondition = WinCondition.ownCamp,
+    Player startingPlayer = Player.player1,
   }) {
     final pieces = <Piece>[];
 
@@ -159,7 +161,7 @@ class GameState {
     return GameState(
       boardSize: 7, // 7 colonnes pour le mode hexagonal
       pieces: pieces,
-      currentPlayer: Player.player1,
+      currentPlayer: startingPlayer,
       phase: GamePhase.moveBuddha,
       winner: null,
       gameMode: GameMode.hexagonal,
