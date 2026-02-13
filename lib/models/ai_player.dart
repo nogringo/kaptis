@@ -51,19 +51,20 @@ class AIPlayer {
   // ============== NIVEAU FACILE ==============
 
   Position _getEasyBuddhaMove(GameState state, List<Position> validMoves) {
-    // 70% de chance de jouer au hasard, 30% de jouer intelligemment
-    if (_random.nextDouble() < 0.7) {
-      return validMoves[_random.nextInt(validMoves.length)];
+    // 1. Chercher un coup gagnant (P2 gagne)
+    for (final move in validMoves) {
+      if (_isWinningMoveForAI(state, move)) {
+        return move;
+      }
     }
 
-    // Éviter juste la victoire adverse
-    // En mode ownCamp: P1 gagne si row == 0, donc éviter row 0
-    // En mode opponentCamp: P1 gagne si row == maxRow, donc éviter maxRow
+    // 2. Éviter les coups perdants (donner la victoire à P1)
     List<Position> safeMoves;
     if (state.winCondition == WinCondition.ownCamp) {
+      // P1 gagne si Buddha arrive à row 0
       safeMoves = validMoves.where((m) => m.row != 0).toList();
     } else {
-      // opponentCamp: éviter les rows max (victoire de P1)
+      // opponentCamp: P1 gagne si Buddha arrive à maxRow
       if (state.gameMode == GameMode.hexagonal) {
         safeMoves = validMoves.where((m) {
           final maxRow = GameState.hexColumnHeights[m.col] - 1;
@@ -75,18 +76,45 @@ class AIPlayer {
             .toList();
       }
     }
-    if (safeMoves.isNotEmpty) {
-      return safeMoves[_random.nextInt(safeMoves.length)];
+
+    // Si tous les coups sont perdants, jouer au hasard
+    if (safeMoves.isEmpty) {
+      return validMoves[_random.nextInt(validMoves.length)];
     }
 
-    return validMoves[_random.nextInt(validMoves.length)];
+    // 3. Jouer au hasard parmi les coups sûrs
+    return safeMoves[_random.nextInt(safeMoves.length)];
+  }
+
+  /// Vérifie si un coup du Buddha fait gagner l'IA (P2)
+  bool _isWinningMoveForAI(GameState state, Position move) {
+    if (state.winCondition == WinCondition.ownCamp) {
+      // P2 gagne si Buddha arrive à maxRow
+      if (state.gameMode == GameMode.hexagonal) {
+        final maxRow = GameState.hexColumnHeights[move.col] - 1;
+        return move.row == maxRow;
+      } else {
+        return move.row == state.boardSize - 1;
+      }
+    } else {
+      // opponentCamp: P2 gagne si Buddha arrive à row 0
+      return move.row == 0;
+    }
   }
 
   (Piece, Position)? _getEasyPawnMove(
     GameState state,
     List<(Piece, Position)> allMoves,
   ) {
-    // Jouer complètement au hasard
+    // 1. Chercher un coup qui bloque le Buddha (victoire)
+    for (final move in allMoves) {
+      final newState = _simulatePawnMove(state, move.$1, move.$2);
+      if (newState.isBuddhaBlocked()) {
+        return move;
+      }
+    }
+
+    // 2. Jouer au hasard
     return allMoves[_random.nextInt(allMoves.length)];
   }
 
