@@ -201,10 +201,13 @@ class AppColors extends ThemeExtension<AppColors> {
       subtitleText: subtitleText ?? this.subtitleText,
       appBarBackground: appBarBackground ?? this.appBarBackground,
       appBarForeground: appBarForeground ?? this.appBarForeground,
-      primaryButtonBackground: primaryButtonBackground ?? this.primaryButtonBackground,
-      primaryButtonForeground: primaryButtonForeground ?? this.primaryButtonForeground,
+      primaryButtonBackground:
+          primaryButtonBackground ?? this.primaryButtonBackground,
+      primaryButtonForeground:
+          primaryButtonForeground ?? this.primaryButtonForeground,
       outlineButtonBorder: outlineButtonBorder ?? this.outlineButtonBorder,
-      outlineButtonForeground: outlineButtonForeground ?? this.outlineButtonForeground,
+      outlineButtonForeground:
+          outlineButtonForeground ?? this.outlineButtonForeground,
       cardBorder: cardBorder ?? this.cardBorder,
       selectedBorder: selectedBorder ?? this.selectedBorder,
       boardLightCell: boardLightCell ?? this.boardLightCell,
@@ -225,23 +228,67 @@ class AppColors extends ThemeExtension<AppColors> {
   AppColors lerp(ThemeExtension<AppColors>? other, double t) {
     if (other is! AppColors) return this;
     return AppColors(
-      primaryBackground: Color.lerp(primaryBackground, other.primaryBackground, t)!,
-      secondaryBackground: Color.lerp(secondaryBackground, other.secondaryBackground, t)!,
+      primaryBackground: Color.lerp(
+        primaryBackground,
+        other.primaryBackground,
+        t,
+      )!,
+      secondaryBackground: Color.lerp(
+        secondaryBackground,
+        other.secondaryBackground,
+        t,
+      )!,
       cardBackground: Color.lerp(cardBackground, other.cardBackground, t)!,
       accentColor: Color.lerp(accentColor, other.accentColor, t)!,
-      accentColorBright: Color.lerp(accentColorBright, other.accentColorBright, t)!,
-      accentColorSecondary: Color.lerp(accentColorSecondary, other.accentColorSecondary, t)!,
-      accentColorTertiary: Color.lerp(accentColorTertiary, other.accentColorTertiary, t)!,
+      accentColorBright: Color.lerp(
+        accentColorBright,
+        other.accentColorBright,
+        t,
+      )!,
+      accentColorSecondary: Color.lerp(
+        accentColorSecondary,
+        other.accentColorSecondary,
+        t,
+      )!,
+      accentColorTertiary: Color.lerp(
+        accentColorTertiary,
+        other.accentColorTertiary,
+        t,
+      )!,
       primaryText: Color.lerp(primaryText, other.primaryText, t)!,
       secondaryText: Color.lerp(secondaryText, other.secondaryText, t)!,
       tertiaryText: Color.lerp(tertiaryText, other.tertiaryText, t)!,
       subtitleText: Color.lerp(subtitleText, other.subtitleText, t)!,
-      appBarBackground: Color.lerp(appBarBackground, other.appBarBackground, t)!,
-      appBarForeground: Color.lerp(appBarForeground, other.appBarForeground, t)!,
-      primaryButtonBackground: Color.lerp(primaryButtonBackground, other.primaryButtonBackground, t)!,
-      primaryButtonForeground: Color.lerp(primaryButtonForeground, other.primaryButtonForeground, t)!,
-      outlineButtonBorder: Color.lerp(outlineButtonBorder, other.outlineButtonBorder, t)!,
-      outlineButtonForeground: Color.lerp(outlineButtonForeground, other.outlineButtonForeground, t)!,
+      appBarBackground: Color.lerp(
+        appBarBackground,
+        other.appBarBackground,
+        t,
+      )!,
+      appBarForeground: Color.lerp(
+        appBarForeground,
+        other.appBarForeground,
+        t,
+      )!,
+      primaryButtonBackground: Color.lerp(
+        primaryButtonBackground,
+        other.primaryButtonBackground,
+        t,
+      )!,
+      primaryButtonForeground: Color.lerp(
+        primaryButtonForeground,
+        other.primaryButtonForeground,
+        t,
+      )!,
+      outlineButtonBorder: Color.lerp(
+        outlineButtonBorder,
+        other.outlineButtonBorder,
+        t,
+      )!,
+      outlineButtonForeground: Color.lerp(
+        outlineButtonForeground,
+        other.outlineButtonForeground,
+        t,
+      )!,
       cardBorder: Color.lerp(cardBorder, other.cardBorder, t)!,
       selectedBorder: Color.lerp(selectedBorder, other.selectedBorder, t)!,
       boardLightCell: Color.lerp(boardLightCell, other.boardLightCell, t)!,

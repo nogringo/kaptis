@@ -41,9 +41,7 @@ class _GameScreenState extends State<GameScreen> {
     final isDesktop = screenWidth >= 1000;
 
     if (isDesktop) {
-      return Scaffold(
-        body: SafeArea(child: _buildDesktopLayout()),
-      );
+      return Scaffold(body: SafeArea(child: _buildDesktopLayout()));
     }
 
     return Scaffold(
