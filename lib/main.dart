@@ -19,12 +19,6 @@ class AboulApp extends StatelessWidget {
           seedColor: const Color(0xFF234d3f),
           brightness: Brightness.light,
         ),
-        scaffoldBackgroundColor: AppColors.light.primaryBackground,
-        appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.light.appBarBackground,
-          foregroundColor: AppColors.light.appBarForeground,
-          elevation: 0,
-        ),
         extensions: const [AppColors.light],
       ),
       darkTheme: ThemeData(
@@ -32,15 +26,9 @@ class AboulApp extends StatelessWidget {
           seedColor: const Color(0xFF234d3f),
           brightness: Brightness.dark,
         ),
-        scaffoldBackgroundColor: AppColors.dark.primaryBackground,
-        appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.dark.appBarBackground,
-          foregroundColor: AppColors.dark.appBarForeground,
-          elevation: 0,
-        ),
         extensions: const [AppColors.dark],
       ),
-      themeMode: kDebugMode ? ThemeMode.dark : null,
+      // themeMode: kDebugMode ? ThemeMode.dark : null,
       home: const HomeScreen(),
     );
   }

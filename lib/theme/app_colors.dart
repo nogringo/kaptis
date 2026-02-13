@@ -122,9 +122,9 @@ class AppColors extends ThemeExtension<AppColors> {
 
   // Dark theme
   static const dark = AppColors(
-    primaryBackground: Color(0xFF1A1A2E),
-    secondaryBackground: Color(0xFF16213E),
-    cardBackground: Color(0xFF16213E),
+    primaryBackground: Color(0xFF0D1F1A),
+    secondaryBackground: Color(0xFF142923),
+    cardBackground: Color(0xFF142923),
     accentColor: Color(0xFF2E6B55),
     accentColorBright: Color(0xFF3A8A6E),
     accentColorSecondary: Color(0xFF234d3f),
@@ -133,7 +133,7 @@ class AppColors extends ThemeExtension<AppColors> {
     secondaryText: Color(0xFFBDBDBD),
     tertiaryText: Color(0xFF9E9E9E),
     subtitleText: Color(0xFFE0E0E0),
-    appBarBackground: Color(0xFF1A1A2E),
+    appBarBackground: Color(0xFF0D1F1A),
     appBarForeground: Colors.white,
     primaryButtonBackground: Color(0xFF234d3f),
     primaryButtonForeground: Colors.white,
