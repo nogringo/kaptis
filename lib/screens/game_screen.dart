@@ -9,6 +9,7 @@ class GameScreen extends StatefulWidget {
   final bool vsAI;
   final AIDifficulty difficulty;
   final GameMode gameMode;
+  final WinCondition winCondition;
 
   const GameScreen({
     super.key,
@@ -16,6 +17,7 @@ class GameScreen extends StatefulWidget {
     required this.vsAI,
     required this.difficulty,
     this.gameMode = GameMode.square,
+    this.winCondition = WinCondition.ownCamp,
   });
 
   @override
@@ -94,6 +96,7 @@ class _GameScreenState extends State<GameScreen> {
               vsAI: widget.vsAI,
               difficulty: widget.difficulty,
               gameMode: widget.gameMode,
+              winCondition: widget.winCondition,
               maxWidth: maxBoardSize.clamp(200.0, 700.0),
               maxHeight: availableHeight.clamp(200.0, 700.0),
               showStatusBar: true,
@@ -139,6 +142,7 @@ class _GameScreenState extends State<GameScreen> {
                     vsAI: widget.vsAI,
                     difficulty: widget.difficulty,
                     gameMode: widget.gameMode,
+                    winCondition: widget.winCondition,
                     maxWidth: maxBoardSize.clamp(200.0, 700.0),
                     maxHeight: availableHeight.clamp(200.0, 700.0),
                     showStatusBar: false,

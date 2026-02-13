@@ -57,7 +57,24 @@ class AIPlayer {
     }
 
     // Éviter juste la victoire adverse
-    final safeMoves = validMoves.where((m) => m.row != 0).toList();
+    // En mode ownCamp: P1 gagne si row == 0, donc éviter row 0
+    // En mode opponentCamp: P1 gagne si row == maxRow, donc éviter maxRow
+    List<Position> safeMoves;
+    if (state.winCondition == WinCondition.ownCamp) {
+      safeMoves = validMoves.where((m) => m.row != 0).toList();
+    } else {
+      // opponentCamp: éviter les rows max (victoire de P1)
+      if (state.gameMode == GameMode.hexagonal) {
+        safeMoves = validMoves.where((m) {
+          final maxRow = GameState.hexColumnHeights[m.col] - 1;
+          return m.row != maxRow;
+        }).toList();
+      } else {
+        safeMoves = validMoves
+            .where((m) => m.row != state.boardSize - 1)
+            .toList();
+      }
+    }
     if (safeMoves.isNotEmpty) {
       return safeMoves[_random.nextInt(safeMoves.length)];
     }
@@ -214,10 +231,21 @@ class AIPlayer {
     int score = 0;
     final buddhaPos = state.buddha.position;
 
+    // En mode ownCamp: P2 veut amener le Buddha vers le bas (row élevée)
+    // En mode opponentCamp: P2 veut amener le Buddha vers le haut (row 0)
+    final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
+
     if (state.gameMode == GameMode.hexagonal) {
       // Mode hexagonal
-      // Position du Bouddha (plus proche du bas = mieux pour P2)
-      score += buddhaPos.row * 15;
+      final maxRow = GameState.hexColumnHeights[buddhaPos.col] - 1;
+
+      if (isOpponentCamp) {
+        // P2 veut amener le Buddha vers le haut (row 0)
+        score += (maxRow - buddhaPos.row) * 15;
+      } else {
+        // P2 veut amener le Buddha vers le bas
+        score += buddhaPos.row * 15;
+      }
 
       // Mobilité du Bouddha
       final buddhaMovesCount = state.getValidBuddhaMoves().length;
@@ -245,8 +273,13 @@ class AIPlayer {
       }
     } else {
       // Mode carré
-      // Position du Bouddha (plus proche de la ligne de l'IA = mieux)
-      score += buddhaPos.row * 15;
+      if (isOpponentCamp) {
+        // P2 veut amener le Buddha vers le haut (row 0)
+        score += (state.boardSize - 1 - buddhaPos.row) * 15;
+      } else {
+        // P2 veut amener le Buddha vers le bas
+        score += buddhaPos.row * 15;
+      }
 
       // Mobilité du Bouddha
       final buddhaMovesCount = state.getValidBuddhaMoves().length;
@@ -282,25 +315,45 @@ class AIPlayer {
 
   int _evaluateBuddhaMove(GameState state, Position move) {
     int score = 0;
+    final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
 
     if (state.gameMode == GameMode.hexagonal) {
       // Mode hexagonal
       final colHeight = GameState.hexColumnHeights[move.col];
       final maxRow = colHeight - 1;
 
-      score += move.row * 10;
+      if (isOpponentCamp) {
+        // P2 veut aller vers le haut (row 0)
+        score += (maxRow - move.row) * 10;
 
-      // Victoire si atteint le bas de la colonne
-      if (move.row == maxRow) {
-        return 1000;
-      }
+        // Victoire si atteint le haut
+        if (move.row == 0) {
+          return 1000;
+        }
 
-      // Pénalité si proche du haut
-      if (move.row == 1) {
-        score -= 20;
-      }
-      if (move.row == 0) {
-        return -1000;
+        // Pénalité si proche du bas (victoire adverse)
+        if (move.row == maxRow - 1) {
+          score -= 20;
+        }
+        if (move.row == maxRow) {
+          return -1000;
+        }
+      } else {
+        // ownCamp: P2 veut aller vers le bas
+        score += move.row * 10;
+
+        // Victoire si atteint le bas de la colonne
+        if (move.row == maxRow) {
+          return 1000;
+        }
+
+        // Pénalité si proche du haut
+        if (move.row == 1) {
+          score -= 20;
+        }
+        if (move.row == 0) {
+          return -1000;
+        }
       }
 
       // Préférer le centre (colonne 3)
@@ -312,17 +365,36 @@ class AIPlayer {
       score += futureMoves.length * 3;
     } else {
       // Mode carré
-      score += move.row * 10;
+      if (isOpponentCamp) {
+        // P2 veut aller vers le haut (row 0)
+        score += (state.boardSize - 1 - move.row) * 10;
 
-      if (move.row == state.boardSize - 1) {
-        return 1000;
-      }
+        // Victoire si atteint le haut
+        if (move.row == 0) {
+          return 1000;
+        }
 
-      if (move.row == 1) {
-        score -= 20;
-      }
-      if (move.row == 0) {
-        return -1000;
+        // Pénalité si proche du bas (victoire adverse)
+        if (move.row == state.boardSize - 2) {
+          score -= 20;
+        }
+        if (move.row == state.boardSize - 1) {
+          return -1000;
+        }
+      } else {
+        // ownCamp: P2 veut aller vers le bas
+        score += move.row * 10;
+
+        if (move.row == state.boardSize - 1) {
+          return 1000;
+        }
+
+        if (move.row == 1) {
+          score -= 20;
+        }
+        if (move.row == 0) {
+          return -1000;
+        }
       }
 
       final center = state.boardSize ~/ 2;
@@ -340,6 +412,7 @@ class AIPlayer {
   int _evaluatePawnMove(GameState state, Piece pawn, Position move) {
     int score = 0;
     final buddhaPos = state.buddha.position;
+    final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
 
     final newState = _simulatePawnMove(state, pawn, move);
 
@@ -351,7 +424,11 @@ class AIPlayer {
     final newBuddhaMoves = newState.getValidBuddhaMoves().length;
     score += (currentBuddhaMoves - newBuddhaMoves) * 15;
 
-    if (_blocksPathToRow(state, move, 0)) {
+    // Bloquer le chemin vers la row de victoire de P1
+    // En ownCamp: P1 gagne à row 0
+    // En opponentCamp: P1 gagne à maxRow
+    final targetRow = isOpponentCamp ? state.boardSize - 1 : 0;
+    if (_blocksPathToRow(state, move, targetRow)) {
       score += 25;
     }
 
@@ -392,6 +469,7 @@ class AIPlayer {
       phase: GamePhase.moveBuddha,
       winner: null,
       gameMode: state.gameMode,
+      winCondition: state.winCondition,
     );
   }
 
@@ -423,16 +501,28 @@ class AIPlayer {
   bool _blocksPathToRow(GameState state, Position pawnPos, int targetRow) {
     final buddhaPos = state.buddha.position;
 
+    // Vérifie si le pion est sur la même colonne que le Buddha
     if (pawnPos.col == buddhaPos.col) {
       if (targetRow < buddhaPos.row) {
+        // Buddha doit aller vers le haut
         return pawnPos.row < buddhaPos.row && pawnPos.row >= targetRow;
+      } else if (targetRow > buddhaPos.row) {
+        // Buddha doit aller vers le bas
+        return pawnPos.row > buddhaPos.row && pawnPos.row <= targetRow;
       }
     }
 
+    // Vérifie les diagonales
     final rowDiff = pawnPos.row - buddhaPos.row;
     final colDiff = pawnPos.col - buddhaPos.col;
-    if (rowDiff.abs() == colDiff.abs() && rowDiff < 0) {
-      return true;
+    if (rowDiff.abs() == colDiff.abs()) {
+      if (targetRow < buddhaPos.row && rowDiff < 0) {
+        // Buddha doit aller vers le haut, pion est en haut
+        return true;
+      } else if (targetRow > buddhaPos.row && rowDiff > 0) {
+        // Buddha doit aller vers le bas, pion est en bas
+        return true;
+      }
     }
 
     return false;

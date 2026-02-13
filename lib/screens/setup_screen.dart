@@ -17,6 +17,7 @@ class _SetupScreenState extends State<SetupScreen> {
   bool _vsAI = false;
   AIDifficulty _difficulty = AIDifficulty.normal;
   GameMode _gameMode = GameMode.square;
+  WinCondition _winCondition = WinCondition.ownCamp;
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +108,10 @@ class _SetupScreenState extends State<SetupScreen> {
                           )
                         : const SizedBox.shrink(),
                   ),
+                  const SizedBox(height: 32),
+                  _buildSectionTitle('Condition de victoire', theme, true),
+                  const SizedBox(height: 16),
+                  _buildWinConditionSelector(theme, true),
                 ],
               ),
             ),
@@ -183,11 +188,15 @@ class _SetupScreenState extends State<SetupScreen> {
                     _buildSectionTitle('Taille du plateau', theme, false),
                     const SizedBox(height: 16),
                     _buildSizeSelector(theme, false),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                   ],
                 )
               : const SizedBox.shrink(),
         ),
+        _buildSectionTitle('Condition de victoire', theme, false),
+        const SizedBox(height: 16),
+        _buildWinConditionSelector(theme, false),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -546,6 +555,98 @@ class _SetupScreenState extends State<SetupScreen> {
     );
   }
 
+  Widget _buildWinConditionSelector(AppTheme theme, bool isLarge) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _buildWinConditionCard(
+              icon: Icons.home_rounded,
+              title: 'Son camp',
+              subtitle: 'Ramener le Bouddha dans son camp',
+              isSelected: _winCondition == WinCondition.ownCamp,
+              onTap: () => setState(() => _winCondition = WinCondition.ownCamp),
+              theme: theme,
+              isLarge: isLarge,
+            ),
+          ),
+          SizedBox(width: isLarge ? 20 : 16),
+          Expanded(
+            child: _buildWinConditionCard(
+              icon: Icons.flag_rounded,
+              title: 'Camp adverse',
+              subtitle: 'Amener le Bouddha chez l\'adversaire',
+              isSelected: _winCondition == WinCondition.opponentCamp,
+              onTap: () =>
+                  setState(() => _winCondition = WinCondition.opponentCamp),
+              theme: theme,
+              isLarge: isLarge,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWinConditionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required AppTheme theme,
+    required bool isLarge,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.all(isLarge ? 24 : 20),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.accentColor.withAlpha(25)
+                : theme.cardBackground,
+            borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
+            border: Border.all(
+              color: isSelected ? theme.accentColor : theme.cardBorder,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: isLarge ? 48 : 40,
+                color: isSelected ? theme.accentColor : theme.tertiaryText,
+              ),
+              SizedBox(height: isLarge ? 16 : 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: isLarge ? 18 : 16,
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? theme.accentColor : theme.primaryText,
+                ),
+              ),
+              SizedBox(height: isLarge ? 6 : 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: isLarge ? 14 : 12,
+                  color: theme.tertiaryText,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStartButton(AppTheme theme, bool isLarge) {
     return SizedBox(
       width: isLarge ? 400 : double.infinity,
@@ -560,6 +661,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 vsAI: _vsAI,
                 difficulty: _difficulty,
                 gameMode: _gameMode,
+                winCondition: _winCondition,
               ),
             ),
           );

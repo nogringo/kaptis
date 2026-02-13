@@ -9,6 +9,7 @@ class GameBoard extends StatefulWidget {
   final bool vsAI;
   final AIDifficulty difficulty;
   final GameMode gameMode;
+  final WinCondition winCondition;
   final double? maxWidth;
   final double? maxHeight;
   final bool showStatusBar;
@@ -20,6 +21,7 @@ class GameBoard extends StatefulWidget {
     required this.vsAI,
     required this.difficulty,
     this.gameMode = GameMode.square,
+    this.winCondition = WinCondition.ownCamp,
     this.maxWidth,
     this.maxHeight,
     this.showStatusBar = true,
@@ -65,9 +67,12 @@ class GameBoardState extends State<GameBoard> {
   void resetGame() {
     setState(() {
       if (widget.gameMode == GameMode.hexagonal) {
-        gameState = GameState.initialHex();
+        gameState = GameState.initialHex(winCondition: widget.winCondition);
       } else {
-        gameState = GameState.initial(size: widget.boardSize);
+        gameState = GameState.initial(
+          size: widget.boardSize,
+          winCondition: widget.winCondition,
+        );
       }
       selectedPawn = null;
       validMoves = [];
@@ -81,9 +86,12 @@ class GameBoardState extends State<GameBoard> {
     super.initState();
     _ai = AIPlayer(difficulty: widget.difficulty);
     if (widget.gameMode == GameMode.hexagonal) {
-      gameState = GameState.initialHex();
+      gameState = GameState.initialHex(winCondition: widget.winCondition);
     } else {
-      gameState = GameState.initial(size: widget.boardSize);
+      gameState = GameState.initial(
+        size: widget.boardSize,
+        winCondition: widget.winCondition,
+      );
     }
   }
 

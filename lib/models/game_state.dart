@@ -6,6 +6,8 @@ enum GamePhase { moveBuddha, movePawn }
 
 enum GameMode { square, hexagonal }
 
+enum WinCondition { ownCamp, opponentCamp }
+
 class Position {
   final int row;
   final int col;
@@ -42,6 +44,7 @@ class GameState {
   final GamePhase phase;
   final Player? winner;
   final GameMode gameMode;
+  final WinCondition winCondition;
 
   // Hauteurs des colonnes pour le mode hexagonal (7 colonnes)
   static const List<int> hexColumnHeights = [4, 5, 6, 7, 6, 5, 4];
@@ -61,9 +64,13 @@ class GameState {
     required this.phase,
     this.winner,
     this.gameMode = GameMode.square,
+    this.winCondition = WinCondition.ownCamp,
   });
 
-  factory GameState.initial({int size = 5}) {
+  factory GameState.initial({
+    int size = 5,
+    WinCondition winCondition = WinCondition.ownCamp,
+  }) {
     assert(size == 5 || size == 7, 'Board size must be 5 or 7');
 
     final pieces = <Piece>[];
@@ -107,11 +114,14 @@ class GameState {
       phase: GamePhase.moveBuddha,
       winner: null,
       gameMode: GameMode.square,
+      winCondition: winCondition,
     );
   }
 
   // Initialisation pour le mode hexagonal (37 cellules, 7 colonnes)
-  factory GameState.initialHex() {
+  factory GameState.initialHex({
+    WinCondition winCondition = WinCondition.ownCamp,
+  }) {
     final pieces = <Piece>[];
 
     // Buddha au centre (col=3, row=3)
@@ -153,6 +163,7 @@ class GameState {
       phase: GamePhase.moveBuddha,
       winner: null,
       gameMode: GameMode.hexagonal,
+      winCondition: winCondition,
     );
   }
 
@@ -343,23 +354,48 @@ class GameState {
     final buddhaPos = buddha.position;
 
     if (gameMode == GameMode.hexagonal) {
-      // Mode hexagonal : victoire si Buddha atteint le bord de sa zone
-      // P1 gagne si Buddha atteint row == 0 (haut de n'importe quelle colonne)
-      if (buddhaPos.row == 0) {
-        return Player.player1;
-      }
-      // P2 gagne si Buddha atteint la dernière row de sa colonne
+      // Mode hexagonal
       final maxRow = hexColumnHeights[buddhaPos.col] - 1;
-      if (buddhaPos.row == maxRow) {
-        return Player.player2;
+
+      if (winCondition == WinCondition.ownCamp) {
+        // P1 gagne si Buddha atteint row == 0 (son camp)
+        if (buddhaPos.row == 0) {
+          return Player.player1;
+        }
+        // P2 gagne si Buddha atteint la dernière row (son camp)
+        if (buddhaPos.row == maxRow) {
+          return Player.player2;
+        }
+      } else {
+        // opponentCamp: P1 gagne si Buddha atteint le camp adverse (bas)
+        if (buddhaPos.row == maxRow) {
+          return Player.player1;
+        }
+        // P2 gagne si Buddha atteint le camp adverse (haut)
+        if (buddhaPos.row == 0) {
+          return Player.player2;
+        }
       }
     } else {
-      // Mode carré : victoire si le Bouddha est sur sa propre ligne de départ
-      if (buddhaPos.row == 0) {
-        return Player.player1; // Joueur 1 a ramené le Bouddha sur son camp
-      }
-      if (buddhaPos.row == boardSize - 1) {
-        return Player.player2; // Joueur 2 a ramené le Bouddha sur son camp
+      // Mode carré
+      if (winCondition == WinCondition.ownCamp) {
+        // P1 gagne si Buddha atteint son camp (row 0)
+        if (buddhaPos.row == 0) {
+          return Player.player1;
+        }
+        // P2 gagne si Buddha atteint son camp (dernière row)
+        if (buddhaPos.row == boardSize - 1) {
+          return Player.player2;
+        }
+      } else {
+        // opponentCamp: P1 gagne si Buddha atteint le camp adverse (dernière row)
+        if (buddhaPos.row == boardSize - 1) {
+          return Player.player1;
+        }
+        // P2 gagne si Buddha atteint le camp adverse (row 0)
+        if (buddhaPos.row == 0) {
+          return Player.player2;
+        }
       }
     }
 
@@ -399,6 +435,7 @@ class GameState {
       phase: GamePhase.movePawn,
       winner: null,
       gameMode: gameMode,
+      winCondition: winCondition,
     );
 
     // Vérifier victoire après déplacement du Bouddha
@@ -411,6 +448,7 @@ class GameState {
         phase: GamePhase.movePawn,
         winner: winner,
         gameMode: gameMode,
+        winCondition: winCondition,
       );
     }
 
@@ -440,6 +478,7 @@ class GameState {
       phase: GamePhase.moveBuddha,
       winner: null,
       gameMode: gameMode,
+      winCondition: winCondition,
     );
 
     // Vérifier si le Bouddha est bloqué (victoire pour le joueur actuel)
@@ -451,6 +490,7 @@ class GameState {
         phase: GamePhase.moveBuddha,
         winner: currentPlayer,
         gameMode: gameMode,
+        winCondition: winCondition,
       );
     }
 
