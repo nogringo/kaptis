@@ -2,7 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/game_state.dart';
 import '../models/ai_player.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 class GameBoard extends StatefulWidget {
   final int boardSize;
@@ -41,7 +41,7 @@ class GameBoardState extends State<GameBoard> {
   List<Position> validMoves = [];
   late AIPlayer _ai;
 
-  AppTheme get _theme => AppTheme.of(context);
+  AppColors get _theme => context.colors;
 
   // Getters pour exposer l'état au parent
   bool get aiThinking => _aiThinking;
@@ -267,12 +267,12 @@ class GameBoardState extends State<GameBoard> {
       }
       actionText = 'Gagne !';
       statusColor = gameState.winner == Player.player1
-          ? AppTheme.player1Color
-          : AppTheme.player2Color;
+          ? _theme.player1Color
+          : _theme.player2Color;
     } else if (_aiThinking) {
       playerName = 'Ordinateur';
       actionText = 'Reflechit...';
-      statusColor = AppTheme.player2Color;
+      statusColor = _theme.player2Color;
     } else {
       if (widget.vsAI) {
         playerName = gameState.currentPlayer == Player.player1
@@ -287,8 +287,8 @@ class GameBoardState extends State<GameBoard> {
           ? 'Deplacez le Bouddha'
           : 'Deplacez un pion';
       statusColor = gameState.currentPlayer == Player.player1
-          ? AppTheme.player1Color
-          : AppTheme.player2Color;
+          ? _theme.player1Color
+          : _theme.player2Color;
     }
 
     final double statusWidth;
@@ -547,7 +547,7 @@ class GameBoardState extends State<GameBoard> {
                           width: indicatorSize,
                           height: indicatorSize,
                           decoration: BoxDecoration(
-                            color: AppTheme.player1Color.withAlpha(180),
+                            color: _theme.player1Color.withAlpha(180),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -564,7 +564,7 @@ class GameBoardState extends State<GameBoard> {
                           width: indicatorSize,
                           height: indicatorSize,
                           decoration: BoxDecoration(
-                            color: AppTheme.player2Color.withAlpha(180),
+                            color: _theme.player2Color.withAlpha(180),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -632,8 +632,8 @@ class GameBoardState extends State<GameBoard> {
     }
 
     final color = piece.owner == Player.player1
-        ? AppTheme.player1Color
-        : AppTheme.player2Color;
+        ? _theme.player1Color
+        : _theme.player2Color;
     final isSelected = selectedPawn == piece;
 
     return AnimatedContainer(
@@ -688,7 +688,7 @@ class GameBoardState extends State<GameBoard> {
           width: indicatorSize,
           height: indicatorSize,
           decoration: BoxDecoration(
-            color: AppTheme.player1Color.withAlpha(127),
+            color: _theme.player1Color.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
@@ -702,7 +702,7 @@ class GameBoardState extends State<GameBoard> {
           width: indicatorSize,
           height: indicatorSize,
           decoration: BoxDecoration(
-            color: AppTheme.player2Color.withAlpha(127),
+            color: _theme.player2Color.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
@@ -770,8 +770,8 @@ class GameBoardState extends State<GameBoard> {
     }
 
     final color = piece.owner == Player.player1
-        ? AppTheme.player1Color
-        : AppTheme.player2Color;
+        ? _theme.player1Color
+        : _theme.player2Color;
     final isSelected = selectedPawn == piece;
 
     return Center(

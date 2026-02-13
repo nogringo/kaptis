@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 class RulesScreen extends StatefulWidget {
   const RulesScreen({super.key});
@@ -9,24 +9,17 @@ class RulesScreen extends StatefulWidget {
 }
 
 class _RulesScreenState extends State<RulesScreen> {
-  AppTheme get _theme => AppTheme.of(context);
+  AppColors get _theme => context.colors;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _theme.primaryBackground,
       appBar: AppBar(
         title: const Text(
           'Regles du jeu',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: _theme.appBarBackground,
-        foregroundColor: _theme.appBarForeground,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -175,14 +168,14 @@ class _RulesScreenState extends State<RulesScreen> {
           ),
           const SizedBox(height: 16),
           _buildPieceRow(
-            color: AppTheme.player1Color,
+            color: _theme.player1Color,
             icon: null,
             name: 'Pions Joueur 1',
             description: 'Ligne du haut, vont jusqu\'au bout',
           ),
           const SizedBox(height: 16),
           _buildPieceRow(
-            color: AppTheme.player2Color,
+            color: _theme.player2Color,
             icon: null,
             name: 'Pions Joueur 2',
             description: 'Ligne du bas, vont jusqu\'au bout',

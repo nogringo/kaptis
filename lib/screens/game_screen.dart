@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
 import '../models/game_state.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/game_board.dart';
 
 class GameScreen extends StatefulWidget {
@@ -29,7 +29,7 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   final GlobalKey<GameBoardState> _gameBoardKey = GlobalKey<GameBoardState>();
 
-  AppTheme get _theme => AppTheme.of(context);
+  AppColors get _theme => context.colors;
 
   void _triggerRebuild() {
     setState(() {});
@@ -42,26 +42,17 @@ class _GameScreenState extends State<GameScreen> {
 
     if (isDesktop) {
       return Scaffold(
-        backgroundColor: _theme.primaryBackground,
         body: SafeArea(child: _buildDesktopLayout()),
       );
     }
 
     return Scaffold(
-      backgroundColor: _theme.primaryBackground,
       appBar: AppBar(
         title: const Text(
           "Aboul'",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: _theme.appBarBackground,
-        foregroundColor: _theme.appBarForeground,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
@@ -229,7 +220,7 @@ class _GameScreenState extends State<GameScreen> {
     if (boardState == null) {
       playerName = widget.vsAI ? 'Vous' : 'Joueur 1';
       actionText = 'Deplacez le Bouddha';
-      statusColor = AppTheme.player1Color;
+      statusColor = _theme.player1Color;
     } else if (boardState.winner != null) {
       if (widget.vsAI) {
         playerName = boardState.winner == Player.player1
@@ -242,12 +233,12 @@ class _GameScreenState extends State<GameScreen> {
       }
       actionText = 'Gagne !';
       statusColor = boardState.winner == Player.player1
-          ? AppTheme.player1Color
-          : AppTheme.player2Color;
+          ? _theme.player1Color
+          : _theme.player2Color;
     } else if (boardState.aiThinking) {
       playerName = 'Ordinateur';
       actionText = 'Reflechit...';
-      statusColor = AppTheme.player2Color;
+      statusColor = _theme.player2Color;
       isThinking = true;
     } else {
       if (widget.vsAI) {
@@ -263,8 +254,8 @@ class _GameScreenState extends State<GameScreen> {
           ? 'Deplacez le Bouddha'
           : 'Deplacez un pion';
       statusColor = boardState.currentPlayer == Player.player1
-          ? AppTheme.player1Color
-          : AppTheme.player2Color;
+          ? _theme.player1Color
+          : _theme.player2Color;
     }
 
     return Container(

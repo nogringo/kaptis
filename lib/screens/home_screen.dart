@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'setup_screen.dart';
 import 'rules_screen.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,14 +12,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  AppTheme get _theme => AppTheme.of(context);
+  AppColors get _theme => context.colors;
 
   bool get _isLarge => Responsive.isLargeScreen(context);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _theme.primaryBackground,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

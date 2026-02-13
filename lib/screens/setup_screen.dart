@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
 import '../models/game_state.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
 import 'game_screen.dart';
 
@@ -20,7 +20,7 @@ class _SetupScreenState extends State<SetupScreen> {
   WinCondition _winCondition = WinCondition.ownCamp;
   Player _startingPlayer = Player.player1;
 
-  AppTheme get _theme => AppTheme.of(context);
+  AppColors get _theme => context.colors;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,6 @@ class _SetupScreenState extends State<SetupScreen> {
     final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: _theme.primaryBackground,
       appBar: AppBar(
         title: Text(
           'Nouvelle partie',
@@ -38,9 +37,6 @@ class _SetupScreenState extends State<SetupScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: _theme.appBarBackground,
-        foregroundColor: _theme.appBarForeground,
-        elevation: 0,
       ),
       body: SafeArea(
         child: Column(
@@ -646,7 +642,7 @@ class _SetupScreenState extends State<SetupScreen> {
             child: _buildStartingPlayerCard(
               title: 'Bleus',
               subtitle: 'Joueur 1 commence',
-              color: AppTheme.player1Color,
+              color: _theme.player1Color,
               isSelected: _startingPlayer == Player.player1,
               onTap: () => setState(() => _startingPlayer = Player.player1),
               isLarge: isLarge,
@@ -657,7 +653,7 @@ class _SetupScreenState extends State<SetupScreen> {
             child: _buildStartingPlayerCard(
               title: 'Rouges',
               subtitle: 'Joueur 2 commence',
-              color: AppTheme.player2Color,
+              color: _theme.player2Color,
               isSelected: _startingPlayer == Player.player2,
               onTap: () => setState(() => _startingPlayer = Player.player2),
               isLarge: isLarge,
