@@ -365,9 +365,11 @@ class GameBoardState extends State<GameBoard> {
               ),
               itemCount: gameState.boardSize * gameState.boardSize,
               itemBuilder: (context, index) {
-                final row = index ~/ gameState.boardSize;
+                final visualRow = index ~/ gameState.boardSize;
                 final col = index % gameState.boardSize;
-                final pos = Position(row, col);
+                // Inverser pour que joueur 1 (row 0) soit en bas
+                final logicalRow = gameState.boardSize - 1 - visualRow;
+                final pos = Position(logicalRow, col);
                 return _buildCell(pos, theme);
               },
             ),
@@ -438,7 +440,9 @@ class GameBoardState extends State<GameBoard> {
 
       for (int row = 0; row < colHeight; row++) {
         final x = startX + hexWidth / 2 + col * horizontalSpacing;
-        final y = colStartY + row * hexHeight;
+        // Inverser pour que joueur 1 (row 0) soit en bas
+        final invertedRow = colHeight - 1 - row;
+        final y = colStartY + invertedRow * hexHeight;
         final pos = Position(row, col);
 
         cells.add(_buildHexCell(pos, x, y, hexSize, theme));
@@ -509,9 +513,10 @@ class GameBoardState extends State<GameBoard> {
               ),
               child: Stack(
                 children: [
+                  // isTopRow = row 0 (joueur 1) -> maintenant en bas visuellement
                   if (isTopRow)
                     Positioned(
-                      top: 6,
+                      bottom: 6,
                       left: 0,
                       right: 0,
                       child: Center(
@@ -525,9 +530,10 @@ class GameBoardState extends State<GameBoard> {
                         ),
                       ),
                     ),
+                  // isBottomRow = row max (joueur 2) -> maintenant en haut visuellement
                   if (isBottomRow)
                     Positioned(
-                      bottom: 6,
+                      top: 6,
                       left: 0,
                       right: 0,
                       child: Center(
@@ -650,9 +656,10 @@ class GameBoardState extends State<GameBoard> {
     final indicatorSize = _cellSize * 0.12;
 
     Widget? zoneIndicator;
+    // row 0 (joueur 1) -> maintenant en bas visuellement
     if (pos.row == 0) {
       zoneIndicator = Positioned(
-        top: 2,
+        bottom: 2,
         right: 2,
         child: Container(
           width: indicatorSize,
@@ -663,6 +670,7 @@ class GameBoardState extends State<GameBoard> {
           ),
         ),
       );
+      // row max (joueur 2) -> maintenant en haut visuellement
     } else if (pos.row == gameState.boardSize - 1) {
       zoneIndicator = Positioned(
         top: 2,
