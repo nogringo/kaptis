@@ -4,16 +4,16 @@ import 'screens/home_screen.dart';
 import 'theme/app_colors.dart';
 
 void main() {
-  runApp(const AboulApp());
+  runApp(const KaptisApp());
 }
 
-class AboulApp extends StatelessWidget {
-  const AboulApp({super.key});
+class KaptisApp extends StatelessWidget {
+  const KaptisApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Aboul'",
+      title: "Kaptis",
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF234d3f),

@@ -9,18 +9,18 @@ class AIPlayer {
 
   AIPlayer({this.difficulty = AIDifficulty.normal});
 
-  /// Calcule le meilleur coup pour le Bouddha
-  Position? getBestBuddhaMove(GameState state) {
-    final validMoves = state.getValidBuddhaMoves();
+  /// Calcule le meilleur coup pour le Nexus
+  Position? getBestNexusMove(GameState state) {
+    final validMoves = state.getValidNexusMoves();
     if (validMoves.isEmpty) return null;
 
     switch (difficulty) {
       case AIDifficulty.easy:
-        return _getEasyBuddhaMove(state, validMoves);
+        return _getEasyNexusMove(state, validMoves);
       case AIDifficulty.normal:
-        return _getNormalBuddhaMove(state, validMoves);
+        return _getNormalNexusMove(state, validMoves);
       case AIDifficulty.hard:
-        return _getHardBuddhaMove(state, validMoves);
+        return _getHardNexusMove(state, validMoves);
     }
   }
 
@@ -50,7 +50,7 @@ class AIPlayer {
 
   // ============== NIVEAU FACILE ==============
 
-  Position _getEasyBuddhaMove(GameState state, List<Position> validMoves) {
+  Position _getEasyNexusMove(GameState state, List<Position> validMoves) {
     // 1. Chercher un coup gagnant (P2 gagne)
     for (final move in validMoves) {
       if (_isWinningMoveForAI(state, move)) {
@@ -61,10 +61,10 @@ class AIPlayer {
     // 2. Éviter les coups perdants (donner la victoire à P1)
     List<Position> safeMoves;
     if (state.winCondition == WinCondition.ownCamp) {
-      // P1 gagne si Buddha arrive à row 0
+      // P1 gagne si Nexus arrive à row 0
       safeMoves = validMoves.where((m) => m.row != 0).toList();
     } else {
-      // opponentCamp: P1 gagne si Buddha arrive à maxRow
+      // opponentCamp: P1 gagne si Nexus arrive à maxRow
       if (state.gameMode == GameMode.hexagonal) {
         safeMoves = validMoves.where((m) {
           final maxRow = GameState.hexColumnHeights[m.col] - 1;
@@ -86,10 +86,10 @@ class AIPlayer {
     return safeMoves[_random.nextInt(safeMoves.length)];
   }
 
-  /// Vérifie si un coup du Buddha fait gagner l'IA (P2)
+  /// Vérifie si un coup du Nexus fait gagner l'IA (P2)
   bool _isWinningMoveForAI(GameState state, Position move) {
     if (state.winCondition == WinCondition.ownCamp) {
-      // P2 gagne si Buddha arrive à maxRow
+      // P2 gagne si Nexus arrive à maxRow
       if (state.gameMode == GameMode.hexagonal) {
         final maxRow = GameState.hexColumnHeights[move.col] - 1;
         return move.row == maxRow;
@@ -97,7 +97,7 @@ class AIPlayer {
         return move.row == state.boardSize - 1;
       }
     } else {
-      // opponentCamp: P2 gagne si Buddha arrive à row 0
+      // opponentCamp: P2 gagne si Nexus arrive à row 0
       return move.row == 0;
     }
   }
@@ -106,10 +106,10 @@ class AIPlayer {
     GameState state,
     List<(Piece, Position)> allMoves,
   ) {
-    // 1. Chercher un coup qui bloque le Buddha (victoire)
+    // 1. Chercher un coup qui bloque le Nexus (victoire)
     for (final move in allMoves) {
       final newState = _simulatePawnMove(state, move.$1, move.$2);
-      if (newState.isBuddhaBlocked()) {
+      if (newState.isNexusBlocked()) {
         return move;
       }
     }
@@ -120,11 +120,11 @@ class AIPlayer {
 
   // ============== NIVEAU NORMAL ==============
 
-  Position _getNormalBuddhaMove(GameState state, List<Position> validMoves) {
+  Position _getNormalNexusMove(GameState state, List<Position> validMoves) {
     final scoredMoves = <MapEntry<Position, int>>[];
 
     for (final move in validMoves) {
-      int score = _evaluateBuddhaMove(state, move);
+      int score = _evaluateNexusMove(state, move);
       scoredMoves.add(MapEntry(move, score));
     }
 
@@ -158,12 +158,12 @@ class AIPlayer {
 
   // ============== NIVEAU DIFFICILE ==============
 
-  Position _getHardBuddhaMove(GameState state, List<Position> validMoves) {
+  Position _getHardNexusMove(GameState state, List<Position> validMoves) {
     final scoredMoves = <MapEntry<Position, int>>[];
 
     for (final move in validMoves) {
       // Simuler le coup et évaluer avec minimax
-      final newState = state.moveBuddha(move);
+      final newState = state.moveNexus(move);
       int score = _minimax(newState, 3, false, -10000, 10000);
       scoredMoves.add(MapEntry(move, score));
     }
@@ -205,9 +205,9 @@ class AIPlayer {
       // Tour de l'IA (Player 2)
       int maxEval = -10000;
 
-      if (state.phase == GamePhase.moveBuddha) {
-        for (final move in state.getValidBuddhaMoves()) {
-          final newState = state.moveBuddha(move);
+      if (state.phase == GamePhase.moveNexus) {
+        for (final move in state.getValidNexusMoves()) {
+          final newState = state.moveNexus(move);
           int eval = _minimax(newState, depth - 1, true, alpha, beta);
           maxEval = max(maxEval, eval);
           alpha = max(alpha, eval);
@@ -230,9 +230,9 @@ class AIPlayer {
       // Tour du joueur (Player 1)
       int minEval = 10000;
 
-      if (state.phase == GamePhase.moveBuddha) {
-        for (final move in state.getValidBuddhaMoves()) {
-          final newState = state.moveBuddha(move);
+      if (state.phase == GamePhase.moveNexus) {
+        for (final move in state.getValidNexusMoves()) {
+          final newState = state.moveNexus(move);
           int eval = _minimax(newState, depth - 1, false, alpha, beta);
           minEval = min(minEval, eval);
           beta = min(beta, eval);
@@ -257,82 +257,82 @@ class AIPlayer {
   /// Évalue l'état du jeu pour l'IA
   int _evaluateState(GameState state) {
     int score = 0;
-    final buddhaPos = state.buddha.position;
+    final nexusPos = state.nexus.position;
 
-    // En mode ownCamp: P2 veut amener le Buddha vers le bas (row élevée)
-    // En mode opponentCamp: P2 veut amener le Buddha vers le haut (row 0)
+    // En mode ownCamp: P2 veut amener le Nexus vers le bas (row élevée)
+    // En mode opponentCamp: P2 veut amener le Nexus vers le haut (row 0)
     final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
 
     if (state.gameMode == GameMode.hexagonal) {
       // Mode hexagonal
-      final maxRow = GameState.hexColumnHeights[buddhaPos.col] - 1;
+      final maxRow = GameState.hexColumnHeights[nexusPos.col] - 1;
 
       if (isOpponentCamp) {
-        // P2 veut amener le Buddha vers le haut (row 0)
-        score += (maxRow - buddhaPos.row) * 15;
+        // P2 veut amener le Nexus vers le haut (row 0)
+        score += (maxRow - nexusPos.row) * 15;
       } else {
-        // P2 veut amener le Buddha vers le bas
-        score += buddhaPos.row * 15;
+        // P2 veut amener le Nexus vers le bas
+        score += nexusPos.row * 15;
       }
 
-      // Mobilité du Bouddha
-      final buddhaMovesCount = state.getValidBuddhaMoves().length;
+      // Mobilité du Nexus
+      final nexusMovesCount = state.getValidNexusMoves().length;
       if (state.currentPlayer == Player.player2) {
-        score += buddhaMovesCount * 5;
+        score += nexusMovesCount * 5;
       } else {
-        score -= buddhaMovesCount * 5;
+        score -= nexusMovesCount * 5;
       }
 
       // Contrôle du centre (col 3 est le centre)
       final centerCol = 3;
-      final distFromCenter = (buddhaPos.col - centerCol).abs();
+      final distFromCenter = (nexusPos.col - centerCol).abs();
       score -= distFromCenter * 3;
 
       // Position des pions de l'IA
       for (final pawn in state.getPawns(Player.player2)) {
-        final distToBuddha = _hexDistance(pawn.position, buddhaPos);
-        if (distToBuddha <= 2) score += 8;
+        final distToNexus = _hexDistance(pawn.position, nexusPos);
+        if (distToNexus <= 2) score += 8;
       }
 
       // Position des pions adverses
       for (final pawn in state.getPawns(Player.player1)) {
-        final distToBuddha = _hexDistance(pawn.position, buddhaPos);
-        if (distToBuddha <= 2) score -= 8;
+        final distToNexus = _hexDistance(pawn.position, nexusPos);
+        if (distToNexus <= 2) score -= 8;
       }
     } else {
       // Mode carré
       if (isOpponentCamp) {
-        // P2 veut amener le Buddha vers le haut (row 0)
-        score += (state.boardSize - 1 - buddhaPos.row) * 15;
+        // P2 veut amener le Nexus vers le haut (row 0)
+        score += (state.boardSize - 1 - nexusPos.row) * 15;
       } else {
-        // P2 veut amener le Buddha vers le bas
-        score += buddhaPos.row * 15;
+        // P2 veut amener le Nexus vers le bas
+        score += nexusPos.row * 15;
       }
 
-      // Mobilité du Bouddha
-      final buddhaMovesCount = state.getValidBuddhaMoves().length;
+      // Mobilité du Nexus
+      final nexusMovesCount = state.getValidNexusMoves().length;
       if (state.currentPlayer == Player.player2) {
-        score += buddhaMovesCount * 5;
+        score += nexusMovesCount * 5;
       } else {
-        score -= buddhaMovesCount * 5;
+        score -= nexusMovesCount * 5;
       }
 
       // Contrôle du centre
       final center = state.boardSize ~/ 2;
       final distFromCenter =
-          (buddhaPos.row - center).abs() + (buddhaPos.col - center).abs();
+          (nexusPos.row - center).abs() + (nexusPos.col - center).abs();
       score -= distFromCenter * 3;
 
       // Position des pions de l'IA
       for (final pawn in state.getPawns(Player.player2)) {
-        final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
-        if (distToBuddha <= 2) score += 8;
+        final distToNexus = _manhattanDistance(pawn.position, nexusPos);
+        if (distToNexus <= 2) score += 8;
       }
 
-      // Position des pions adverses (pénalité si proches du Bouddha)
+      // Position des pions adverses (pénalité si proches du Nexus)
       for (final pawn in state.getPawns(Player.player1)) {
-        final distToBuddha = _manhattanDistance(pawn.position, buddhaPos);
-        if (distToBuddha <= 2) score -= 8;
+        final distToNexus = _manhattanDistance(pawn.position, nexusPos);
+        if (distToNexus <= 2) score -= 8;
       }
     }
 
@@ -341,7 +341,7 @@ class AIPlayer {
 
   // ============== FONCTIONS COMMUNES ==============
 
-  int _evaluateBuddhaMove(GameState state, Position move) {
+  int _evaluateNexusMove(GameState state, Position move) {
     int score = 0;
     final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
 
@@ -388,8 +388,8 @@ class AIPlayer {
       final distanceFromCenter = (move.col - 3).abs();
       score -= distanceFromCenter * 2;
 
-      final tempState = state.moveBuddha(move);
-      final futureMoves = tempState.getValidBuddhaMoves();
+      final tempState = state.moveNexus(move);
+      final futureMoves = tempState.getValidNexusMoves();
       score += futureMoves.length * 3;
     } else {
       // Mode carré
@@ -429,8 +429,8 @@ class AIPlayer {
       final distanceFromCenter = (move.col - center).abs();
       score -= distanceFromCenter * 2;
 
-      final tempState = state.moveBuddha(move);
-      final futureMoves = tempState.getValidBuddhaMoves();
+      final tempState = state.moveNexus(move);
+      final futureMoves = tempState.getValidNexusMoves();
       score += futureMoves.length * 3;
     }
 
@@ -439,18 +439,18 @@ class AIPlayer {
 
   int _evaluatePawnMove(GameState state, Piece pawn, Position move) {
     int score = 0;
-    final buddhaPos = state.buddha.position;
+    final nexusPos = state.nexus.position;
     final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
 
     final newState = _simulatePawnMove(state, pawn, move);
 
-    if (newState.isBuddhaBlocked()) {
+    if (newState.isNexusBlocked()) {
       return 500;
     }
 
-    final currentBuddhaMoves = state.getValidBuddhaMoves().length;
-    final newBuddhaMoves = newState.getValidBuddhaMoves().length;
-    score += (currentBuddhaMoves - newBuddhaMoves) * 15;
+    final currentNexusMoves = state.getValidNexusMoves().length;
+    final newNexusMoves = newState.getValidNexusMoves().length;
+    score += (currentNexusMoves - newNexusMoves) * 15;
 
     // Bloquer le chemin vers la row de victoire de P1
     // En ownCamp: P1 gagne à row 0
@@ -460,8 +460,8 @@ class AIPlayer {
       score += 25;
     }
 
-    final distanceToBuddha = _getDistance(state, move, buddhaPos);
-    if (distanceToBuddha <= 2) {
+    final distanceToNexus = _getDistance(state, move, nexusPos);
+    if (distanceToNexus <= 2) {
       score += 10;
     }
 
@@ -494,7 +494,7 @@ class AIPlayer {
       boardSize: state.boardSize,
       pieces: newPieces,
       currentPlayer: Player.player1,
-      phase: GamePhase.moveBuddha,
+      phase: GamePhase.moveNexus,
       winner: null,
       gameMode: state.gameMode,
       winCondition: state.winCondition,
@@ -527,28 +527,28 @@ class AIPlayer {
   }
 
   bool _blocksPathToRow(GameState state, Position pawnPos, int targetRow) {
-    final buddhaPos = state.buddha.position;
+    final nexusPos = state.nexus.position;
 
-    // Vérifie si le pion est sur la même colonne que le Buddha
-    if (pawnPos.col == buddhaPos.col) {
-      if (targetRow < buddhaPos.row) {
-        // Buddha doit aller vers le haut
-        return pawnPos.row < buddhaPos.row && pawnPos.row >= targetRow;
-      } else if (targetRow > buddhaPos.row) {
-        // Buddha doit aller vers le bas
-        return pawnPos.row > buddhaPos.row && pawnPos.row <= targetRow;
+    // Vérifie si le pion est sur la même colonne que le Nexus
+    if (pawnPos.col == nexusPos.col) {
+      if (targetRow < nexusPos.row) {
+        // Nexus doit aller vers le haut
+        return pawnPos.row < nexusPos.row && pawnPos.row >= targetRow;
+      } else if (targetRow > nexusPos.row) {
+        // Nexus doit aller vers le bas
+        return pawnPos.row > nexusPos.row && pawnPos.row <= targetRow;
       }
     }
 
     // Vérifie les diagonales
-    final rowDiff = pawnPos.row - buddhaPos.row;
-    final colDiff = pawnPos.col - buddhaPos.col;
+    final rowDiff = pawnPos.row - nexusPos.row;
+    final colDiff = pawnPos.col - nexusPos.col;
     if (rowDiff.abs() == colDiff.abs()) {
-      if (targetRow < buddhaPos.row && rowDiff < 0) {
-        // Buddha doit aller vers le haut, pion est en haut
+      if (targetRow < nexusPos.row && rowDiff < 0) {
+        // Nexus doit aller vers le haut, pion est en haut
         return true;
-      } else if (targetRow > buddhaPos.row && rowDiff > 0) {
-        // Buddha doit aller vers le bas, pion est en bas
+      } else if (targetRow > nexusPos.row && rowDiff > 0) {
+        // Nexus doit aller vers le bas, pion est en bas
         return true;
       }
     }
@@ -558,12 +558,12 @@ class AIPlayer {
 
   int _countBlockingPotential(GameState state, Position pos) {
     int count = 0;
-    final buddhaPos = state.buddha.position;
+    final nexusPos = state.nexus.position;
 
     if (state.gameMode == GameMode.hexagonal) {
       // Mode hexagonal : vérifie les 6 directions
       for (int dir = 0; dir < 6; dir++) {
-        Position? check = state.getNextHexCell(buddhaPos, dir);
+        Position? check = state.getNextHexCell(nexusPos, dir);
 
         while (check != null) {
           if (check == pos) {
@@ -576,7 +576,7 @@ class AIPlayer {
     } else {
       // Mode carré : vérifie les 8 directions
       for (final dir in GameState.directions) {
-        Position check = buddhaPos + dir;
+        Position check = nexusPos + dir;
         while (state.isValidPosition(check)) {
           if (check == pos) {
             count++;

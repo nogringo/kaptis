@@ -35,31 +35,31 @@ class _RulesScreenState extends State<RulesScreen> {
                   content:
                       'Le jeu se joue sur un plateau de 5x5 ou 7x7 cases. '
                       'Chaque joueur possede 5 ou 7 pions places sur sa ligne de depart. '
-                      'Le Bouddha (piece doree) est place au centre du plateau.',
+                      'Le Nexus (piece doree) est place au centre du plateau.',
                 ),
                 _buildSection(
                   icon: Icons.emoji_events_rounded,
                   title: 'Objectif',
                   content:
                       'Un joueur gagne la partie s\'il reussit a :\n\n'
-                      '1. Ramener le Bouddha sur sa propre ligne de depart\n\n'
-                      '2. Bloquer le Bouddha de facon a ce qu\'il ne puisse plus etre deplace',
+                      '1. Ramener le Nexus sur sa propre ligne de depart\n\n'
+                      '2. Bloquer le Nexus de facon a ce qu\'il ne puisse plus etre deplace',
                 ),
                 _buildSection(
                   icon: Icons.swap_horiz_rounded,
                   title: 'Deroulement d\'un tour',
                   content:
                       'A son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
-                      '1. Deplacer le Bouddha d\'une seule case (dans n\'importe quelle direction)\n\n'
+                      '1. Deplacer le Nexus d\'une seule case (dans n\'importe quelle direction)\n\n'
                       '2. Deplacer un de ses pions jusqu\'au bout de la ligne ou jusqu\'a un obstacle',
                 ),
                 _buildSection(
                   icon: Icons.info_outline_rounded,
                   title: 'Regles importantes',
                   content:
-                      '- Le Bouddha se deplace d\'une seule case a la fois\n\n'
+                      '- Le Nexus se deplace d\'une seule case a la fois\n\n'
                       '- Les pions doivent aller le plus loin possible dans la direction choisie\n\n'
-                      '- Aucun pion ne peut sauter par-dessus un autre pion ou le Bouddha\n\n'
+                      '- Aucun pion ne peut sauter par-dessus un autre pion ou le Nexus\n\n'
                       '- 8 directions possibles : horizontale, verticale et diagonales',
                 ),
                 _buildPiecesLegend(),
@@ -163,7 +163,7 @@ class _RulesScreenState extends State<RulesScreen> {
           _buildPieceRow(
             color: _theme.accentColorBright,
             icon: '\u2638',
-            name: 'Bouddha',
+            name: 'Nexus',
             description: 'Piece centrale, se deplace d\'une case',
           ),
           const SizedBox(height: 16),

@@ -47,7 +47,7 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Aboul'",
+          "Kaptis",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -167,7 +167,7 @@ class _GameScreenState extends State<GameScreen> {
                     const BackButton(),
                     const SizedBox(width: 4),
                     Text(
-                      "Aboul'",
+                      "Kaptis",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -217,7 +217,7 @@ class _GameScreenState extends State<GameScreen> {
 
     if (boardState == null) {
       playerName = widget.vsAI ? 'Vous' : 'Joueur 1';
-      actionText = 'Deplacez le Bouddha';
+      actionText = 'Deplacez le Nexus';
       statusColor = _theme.player1Color;
     } else if (boardState.winner != null) {
       if (widget.vsAI) {
@@ -248,8 +248,8 @@ class _GameScreenState extends State<GameScreen> {
             ? 'Joueur 1'
             : 'Joueur 2';
       }
-      actionText = boardState.phase == GamePhase.moveBuddha
-          ? 'Deplacez le Bouddha'
+      actionText = boardState.phase == GamePhase.moveNexus
+          ? 'Deplacez le Nexus'
           : 'Deplacez un pion';
       statusColor = boardState.currentPlayer == Player.player1
           ? _theme.player1Color

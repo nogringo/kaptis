@@ -1,8 +1,8 @@
 enum Player { player1, player2 }
 
-enum PieceType { pawn, buddha }
+enum PieceType { pawn, nexus }
 
-enum GamePhase { moveBuddha, movePawn }
+enum GamePhase { moveNexus, movePawn }
 
 enum GameMode { square, hexagonal }
 
@@ -77,10 +77,10 @@ class GameState {
     final pieces = <Piece>[];
     final center = size ~/ 2;
 
-    // Bouddha au centre
+    // Nexus au centre
     pieces.add(
       Piece(
-        type: PieceType.buddha,
+        type: PieceType.nexus,
         owner: null,
         position: Position(center, center),
       ),
@@ -112,7 +112,7 @@ class GameState {
       boardSize: size,
       pieces: pieces,
       currentPlayer: startingPlayer,
-      phase: GamePhase.moveBuddha,
+      phase: GamePhase.moveNexus,
       winner: null,
       gameMode: GameMode.square,
       winCondition: winCondition,
@@ -126,10 +126,10 @@ class GameState {
   }) {
     final pieces = <Piece>[];
 
-    // Buddha au centre (col=3, row=3)
+    // Nexus au centre (col=3, row=3)
     pieces.add(
       Piece(
-        type: PieceType.buddha,
+        type: PieceType.nexus,
         owner: null,
         position: Position(3, 3), // row=3 dans la colonne centrale (hauteur 7)
       ),
@@ -162,14 +162,14 @@ class GameState {
       boardSize: 7, // 7 colonnes pour le mode hexagonal
       pieces: pieces,
       currentPlayer: startingPlayer,
-      phase: GamePhase.moveBuddha,
+      phase: GamePhase.moveNexus,
       winner: null,
       gameMode: GameMode.hexagonal,
       winCondition: winCondition,
     );
   }
 
-  Piece get buddha => pieces.firstWhere((p) => p.type == PieceType.buddha);
+  Piece get nexus => pieces.firstWhere((p) => p.type == PieceType.nexus);
 
   List<Piece> getPawns(Player player) => pieces
       .where((p) => p.type == PieceType.pawn && p.owner == player)
@@ -278,14 +278,14 @@ class GameState {
     Position(1, 1), // diag bas-droite
   ];
 
-  // Mouvements valides pour le Bouddha (1 case dans toutes directions)
-  List<Position> getValidBuddhaMoves() {
-    final buddhaPos = buddha.position;
+  // Mouvements valides pour le Nexus (1 case dans toutes directions)
+  List<Position> getValidNexusMoves() {
+    final nexusPos = nexus.position;
     final validMoves = <Position>[];
 
     if (gameMode == GameMode.hexagonal) {
       // Mode hexagonal : 6 directions
-      final neighbors = getHexNeighbors(buddhaPos);
+      final neighbors = getHexNeighbors(nexusPos);
       for (final newPos in neighbors) {
         if (getPieceAt(newPos) == null) {
           validMoves.add(newPos);
@@ -294,7 +294,7 @@ class GameState {
     } else {
       // Mode carré : 8 directions
       for (final dir in directions) {
-        final newPos = buddhaPos + dir;
+        final newPos = nexusPos + dir;
         if (isValidPosition(newPos) && getPieceAt(newPos) == null) {
           validMoves.add(newPos);
         }
@@ -346,56 +346,56 @@ class GameState {
     return validMoves;
   }
 
-  // Vérifie si le Bouddha est bloqué
-  bool isBuddhaBlocked() {
-    return getValidBuddhaMoves().isEmpty;
+  // Vérifie si le Nexus est bloqué
+  bool isNexusBlocked() {
+    return getValidNexusMoves().isEmpty;
   }
 
   // Vérifie si un joueur a gagné
   Player? checkWinner() {
-    final buddhaPos = buddha.position;
+    final nexusPos = nexus.position;
 
     if (gameMode == GameMode.hexagonal) {
       // Mode hexagonal
-      final maxRow = hexColumnHeights[buddhaPos.col] - 1;
+      final maxRow = hexColumnHeights[nexusPos.col] - 1;
 
       if (winCondition == WinCondition.ownCamp) {
-        // P1 gagne si Buddha atteint row == 0 (son camp)
-        if (buddhaPos.row == 0) {
+        // P1 gagne si Nexus atteint row == 0 (son camp)
+        if (nexusPos.row == 0) {
           return Player.player1;
         }
-        // P2 gagne si Buddha atteint la dernière row (son camp)
-        if (buddhaPos.row == maxRow) {
+        // P2 gagne si Nexus atteint la dernière row (son camp)
+        if (nexusPos.row == maxRow) {
           return Player.player2;
         }
       } else {
-        // opponentCamp: P1 gagne si Buddha atteint le camp adverse (bas)
-        if (buddhaPos.row == maxRow) {
+        // opponentCamp: P1 gagne si Nexus atteint le camp adverse (bas)
+        if (nexusPos.row == maxRow) {
           return Player.player1;
         }
-        // P2 gagne si Buddha atteint le camp adverse (haut)
-        if (buddhaPos.row == 0) {
+        // P2 gagne si Nexus atteint le camp adverse (haut)
+        if (nexusPos.row == 0) {
           return Player.player2;
         }
       }
     } else {
       // Mode carré
       if (winCondition == WinCondition.ownCamp) {
-        // P1 gagne si Buddha atteint son camp (row 0)
-        if (buddhaPos.row == 0) {
+        // P1 gagne si Nexus atteint son camp (row 0)
+        if (nexusPos.row == 0) {
           return Player.player1;
         }
-        // P2 gagne si Buddha atteint son camp (dernière row)
-        if (buddhaPos.row == boardSize - 1) {
+        // P2 gagne si Nexus atteint son camp (dernière row)
+        if (nexusPos.row == boardSize - 1) {
           return Player.player2;
         }
       } else {
-        // opponentCamp: P1 gagne si Buddha atteint le camp adverse (dernière row)
-        if (buddhaPos.row == boardSize - 1) {
+        // opponentCamp: P1 gagne si Nexus atteint le camp adverse (dernière row)
+        if (nexusPos.row == boardSize - 1) {
           return Player.player1;
         }
-        // P2 gagne si Buddha atteint le camp adverse (row 0)
-        if (buddhaPos.row == 0) {
+        // P2 gagne si Nexus atteint le camp adverse (row 0)
+        if (nexusPos.row == 0) {
           return Player.player2;
         }
       }
@@ -406,8 +406,8 @@ class GameState {
 
   // Vérifie si le joueur actuel peut jouer
   bool canCurrentPlayerPlay() {
-    if (phase == GamePhase.moveBuddha) {
-      return getValidBuddhaMoves().isNotEmpty;
+    if (phase == GamePhase.moveNexus) {
+      return getValidNexusMoves().isNotEmpty;
     } else {
       final pawns = getPawns(currentPlayer);
       for (final pawn in pawns) {
@@ -419,12 +419,12 @@ class GameState {
     }
   }
 
-  GameState moveBuddha(Position newPos) {
-    if (phase != GamePhase.moveBuddha) return this;
-    if (!getValidBuddhaMoves().contains(newPos)) return this;
+  GameState moveNexus(Position newPos) {
+    if (phase != GamePhase.moveNexus) return this;
+    if (!getValidNexusMoves().contains(newPos)) return this;
 
     final newPieces = pieces.map((p) {
-      if (p.type == PieceType.buddha) {
+      if (p.type == PieceType.nexus) {
         return p.copyWith(position: newPos);
       }
       return p;
@@ -440,7 +440,7 @@ class GameState {
       winCondition: winCondition,
     );
 
-    // Vérifier victoire après déplacement du Bouddha
+    // Vérifier victoire après déplacement du Nexus
     final winner = newState.checkWinner();
     if (winner != null) {
       return GameState(
@@ -477,19 +477,19 @@ class GameState {
       boardSize: boardSize,
       pieces: newPieces,
       currentPlayer: nextPlayer,
-      phase: GamePhase.moveBuddha,
+      phase: GamePhase.moveNexus,
       winner: null,
       gameMode: gameMode,
       winCondition: winCondition,
     );
 
-    // Vérifier si le Bouddha est bloqué (victoire pour le joueur actuel)
-    if (newState.isBuddhaBlocked()) {
+    // Vérifier si le Nexus est bloqué (victoire pour le joueur actuel)
+    if (newState.isNexusBlocked()) {
       return GameState(
         boardSize: boardSize,
         pieces: newPieces,
         currentPlayer: nextPlayer,
-        phase: GamePhase.moveBuddha,
+        phase: GamePhase.moveNexus,
         winner: currentPlayer,
         gameMode: gameMode,
         winCondition: winCondition,

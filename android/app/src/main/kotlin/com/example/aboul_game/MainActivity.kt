@@ -1,4 +1,4 @@
-package com.example.aboul_game
+package com.example.kaptis
 
 import io.flutter.embedding.android.FlutterActivity
 

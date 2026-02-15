@@ -553,7 +553,7 @@ class _SetupScreenState extends State<SetupScreen> {
             child: _buildWinConditionCard(
               icon: Icons.home_rounded,
               title: 'Son camp',
-              subtitle: 'Ramener le Bouddha dans son camp',
+              subtitle: 'Ramener le Nexus dans son camp',
               isSelected: _winCondition == WinCondition.ownCamp,
               onTap: () => setState(() => _winCondition = WinCondition.ownCamp),
               isLarge: isLarge,
@@ -564,7 +564,7 @@ class _SetupScreenState extends State<SetupScreen> {
             child: _buildWinConditionCard(
               icon: Icons.flag_rounded,
               title: 'Camp adverse',
-              subtitle: 'Amener le Bouddha chez l\'adversaire',
+              subtitle: 'Amener le Nexus chez l\'adversaire',
               isSelected: _winCondition == WinCondition.opponentCamp,
               onTap: () =>
                   setState(() => _winCondition = WinCondition.opponentCamp),

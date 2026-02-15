@@ -1,3 +1,3 @@
-# aboul_game
+# Kaptis
 
-A new Flutter project.
+A strategic board game for 2 players.

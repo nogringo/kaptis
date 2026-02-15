@@ -1,11 +1,11 @@
 {
-    "name": "aboul_game",
-    "short_name": "aboul_game",
+    "name": "Kaptis",
+    "short_name": "Kaptis",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Kaptis - Jeu de strategie pour 2 joueurs",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

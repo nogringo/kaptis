@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
       shaderCallback: (bounds) =>
           LinearGradient(colors: _theme.titleGradient).createShader(bounds),
       child: Text(
-        "Aboul'",
+        "Kaptis",
         style: TextStyle(
           fontSize: _isLarge ? 72 : 56,
           fontWeight: FontWeight.bold,

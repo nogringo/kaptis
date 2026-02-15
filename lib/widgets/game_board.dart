@@ -63,10 +63,10 @@ class GameBoardState extends State<GameBoard> {
 
   double get _cellSize => _boardPixelSize / widget.boardSize;
 
-  double get _buddhaSize => _cellSize * 0.72;
+  double get _nexusSize => _cellSize * 0.72;
   double get _pawnSize => _cellSize * 0.62;
   double get _pawnSelectedSize => _cellSize * 0.68;
-  double get _buddhaFontSize => _cellSize * 0.42;
+  double get _nexusFontSize => _cellSize * 0.42;
 
   void resetGame() {
     setState(() {
@@ -134,17 +134,17 @@ class GameBoardState extends State<GameBoard> {
     if (_aiThinking) return;
     if (widget.vsAI && gameState.currentPlayer == Player.player2) return;
 
-    if (gameState.phase == GamePhase.moveBuddha) {
+    if (gameState.phase == GamePhase.moveNexus) {
       if (validMoves.contains(pos)) {
         setState(() {
-          gameState = gameState.moveBuddha(pos);
+          gameState = gameState.moveNexus(pos);
           validMoves = [];
         });
         _notifyStateChanged();
         _checkAndPlayAI();
       } else {
         setState(() {
-          validMoves = gameState.getValidBuddhaMoves();
+          validMoves = gameState.getValidNexusMoves();
         });
       }
     } else {
@@ -198,11 +198,11 @@ class GameBoardState extends State<GameBoard> {
       return;
     }
 
-    if (gameState.phase == GamePhase.moveBuddha) {
-      final buddhaMove = _ai.getBestBuddhaMove(gameState);
-      if (buddhaMove != null) {
+    if (gameState.phase == GamePhase.moveNexus) {
+      final nexusMove = _ai.getBestNexusMove(gameState);
+      if (nexusMove != null) {
         setState(() {
-          gameState = gameState.moveBuddha(buddhaMove);
+          gameState = gameState.moveNexus(nexusMove);
         });
         _notifyStateChanged();
       }
@@ -283,8 +283,8 @@ class GameBoardState extends State<GameBoard> {
             ? 'Joueur 1'
             : 'Joueur 2';
       }
-      actionText = gameState.phase == GamePhase.moveBuddha
-          ? 'Deplacez le Bouddha'
+      actionText = gameState.phase == GamePhase.moveNexus
+          ? 'Deplacez le Nexus'
           : 'Deplacez un pion';
       statusColor = gameState.currentPlayer == Player.player1
           ? _theme.player1Color
@@ -605,7 +605,7 @@ class GameBoardState extends State<GameBoard> {
     double pawnSize,
     double pawnSelectedSize,
   ) {
-    if (piece.type == PieceType.buddha) {
+    if (piece.type == PieceType.nexus) {
       return Container(
         width: pieceSize,
         height: pieceSize,
@@ -741,11 +741,11 @@ class GameBoardState extends State<GameBoard> {
   }
 
   Widget _buildPiece(Piece piece) {
-    if (piece.type == PieceType.buddha) {
+    if (piece.type == PieceType.nexus) {
       return Center(
         child: Container(
-          width: _buddhaSize,
-          height: _buddhaSize,
+          width: _nexusSize,
+          height: _nexusSize,
           decoration: BoxDecoration(
             gradient: RadialGradient(
               colors: [_theme.accentColorBright, _theme.accentColorSecondary],
@@ -762,7 +762,7 @@ class GameBoardState extends State<GameBoard> {
           child: Center(
             child: Text(
               '\u2638',
-              style: TextStyle(fontSize: _buddhaFontSize, color: Colors.white),
+              style: TextStyle(fontSize: _nexusFontSize, color: Colors.white),
             ),
           ),
         ),
