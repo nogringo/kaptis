@@ -14,7 +14,7 @@ class SetupScreen extends StatefulWidget {
 
 class _SetupScreenState extends State<SetupScreen> {
   int _boardSize = 5;
-  bool _vsAI = false;
+  bool _vsAI = true;
   AIDifficulty _difficulty = AIDifficulty.normal;
   GameMode _gameMode = GameMode.square;
   WinCondition _winCondition = WinCondition.ownCamp;

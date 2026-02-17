@@ -4,7 +4,6 @@ import 'screens/home_screen.dart';
 import 'services/preferences_service.dart';
 import 'theme/app_colors.dart';
 
-// TODO par defaut IA
 // TODO les selections doivent rester en mémoire
 // TODO Utiliser les mots de blobrain
 
