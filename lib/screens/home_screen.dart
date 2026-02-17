@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'setup_screen.dart';
 import 'rules_screen.dart';
 import 'nexus_selection_screen.dart';
+import 'multiplayer_lobby_screen.dart';
 import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
 
@@ -85,11 +86,18 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildPlayButton(buttonWidth, buttonHeight),
               const SizedBox(width: 24),
-              _buildRulesButton(buttonWidth, secondaryHeight),
+              _buildMultiplayerButton(buttonWidth, buttonHeight),
             ],
           ),
           const SizedBox(height: 20),
-          _buildCustomizeButton(buttonWidth, secondaryHeight),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildRulesButton(buttonWidth, secondaryHeight),
+              const SizedBox(width: 24),
+              _buildCustomizeButton(buttonWidth, secondaryHeight),
+            ],
+          ),
         ],
       );
     }
@@ -97,6 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         _buildPlayButton(buttonWidth, buttonHeight),
+        const SizedBox(height: 20),
+        _buildMultiplayerButton(buttonWidth, buttonHeight),
         const SizedBox(height: 20),
         _buildRulesButton(buttonWidth, secondaryHeight),
         const SizedBox(height: 20),
@@ -132,6 +142,47 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 8),
             Text(
               'JOUER',
+              style: TextStyle(
+                fontSize: height * 0.32,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMultiplayerButton(double width, double height) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MultiplayerLobbyScreen(),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _theme.accentColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(height / 2),
+          ),
+          elevation: 8,
+          shadowColor: _theme.accentShadow,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.public_rounded, size: height * 0.5),
+            const SizedBox(width: 8),
+            Text(
+              'EN LIGNE',
               style: TextStyle(
                 fontSize: height * 0.32,
                 fontWeight: FontWeight.bold,

@@ -23,6 +23,11 @@ class Position {
 
   Position operator +(Position other) =>
       Position(row + other.row, col + other.col);
+
+  Map<String, dynamic> toJson() => {'row': row, 'col': col};
+
+  factory Position.fromJson(Map<String, dynamic> json) =>
+      Position(json['row'] as int, json['col'] as int);
 }
 
 class Piece {
@@ -35,6 +40,20 @@ class Piece {
   Piece copyWith({Position? position}) {
     return Piece(type: type, owner: owner, position: position ?? this.position);
   }
+
+  Map<String, dynamic> toJson() => {
+    'type': type.name,
+    'owner': owner?.name,
+    'position': position.toJson(),
+  };
+
+  factory Piece.fromJson(Map<String, dynamic> json) => Piece(
+    type: PieceType.values.byName(json['type'] as String),
+    owner: json['owner'] != null
+        ? Player.values.byName(json['owner'] as String)
+        : null,
+    position: Position.fromJson(json['position'] as Map<String, dynamic>),
+  );
 }
 
 class GameState {
@@ -498,4 +517,28 @@ class GameState {
 
     return newState;
   }
+
+  Map<String, dynamic> toJson() => {
+    'boardSize': boardSize,
+    'pieces': pieces.map((p) => p.toJson()).toList(),
+    'currentPlayer': currentPlayer.name,
+    'phase': phase.name,
+    'winner': winner?.name,
+    'gameMode': gameMode.name,
+    'winCondition': winCondition.name,
+  };
+
+  factory GameState.fromJson(Map<String, dynamic> json) => GameState(
+    boardSize: json['boardSize'] as int,
+    pieces: (json['pieces'] as List)
+        .map((p) => Piece.fromJson(p as Map<String, dynamic>))
+        .toList(),
+    currentPlayer: Player.values.byName(json['currentPlayer'] as String),
+    phase: GamePhase.values.byName(json['phase'] as String),
+    winner: json['winner'] != null
+        ? Player.values.byName(json['winner'] as String)
+        : null,
+    gameMode: GameMode.values.byName(json['gameMode'] as String),
+    winCondition: WinCondition.values.byName(json['winCondition'] as String),
+  );
 }

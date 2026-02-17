@@ -18,11 +18,18 @@ class GameBoard extends StatefulWidget {
   final bool showStatusBar;
   final VoidCallback? onStateChanged;
 
+  // Multiplayer parameters
+  final bool isMultiplayer;
+  final Player? localPlayer;
+  final void Function(GameState, String, Position, Position?)?
+  onMultiplayerMove;
+  final GameState? initialState;
+
   const GameBoard({
     super.key,
     required this.boardSize,
     required this.vsAI,
-    required this.difficulty,
+    this.difficulty = AIDifficulty.normal,
     this.gameMode = GameMode.square,
     this.winCondition = WinCondition.ownCamp,
     this.startingPlayer = Player.player1,
@@ -30,6 +37,10 @@ class GameBoard extends StatefulWidget {
     this.maxHeight,
     this.showStatusBar = true,
     this.onStateChanged,
+    this.isMultiplayer = false,
+    this.localPlayer,
+    this.onMultiplayerMove,
+    this.initialState,
   });
 
   @override
@@ -105,11 +116,26 @@ class GameBoardState extends State<GameBoard> {
     }
   }
 
+  /// Set game state from external source (for multiplayer)
+  void setGameState(GameState newState) {
+    setState(() {
+      gameState = newState;
+      selectedPawn = null;
+      validMoves = [];
+    });
+    _notifyStateChanged();
+  }
+
   @override
   void initState() {
     super.initState();
     _ai = AIPlayer(difficulty: widget.difficulty);
-    if (widget.gameMode == GameMode.hexagonal) {
+    _loadNexusPreferences();
+
+    // Use initial state if provided (for multiplayer)
+    if (widget.initialState != null) {
+      gameState = widget.initialState!;
+    } else if (widget.gameMode == GameMode.hexagonal) {
       gameState = GameState.initialHex(
         winCondition: widget.winCondition,
         startingPlayer: widget.startingPlayer,
@@ -121,6 +147,7 @@ class GameBoardState extends State<GameBoard> {
         startingPlayer: widget.startingPlayer,
       );
     }
+
     // Si l'IA commence, déclencher son tour après le build avec délai
     if (widget.vsAI && widget.startingPlayer == Player.player2) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -146,14 +173,28 @@ class GameBoardState extends State<GameBoard> {
     if (_aiThinking) return;
     if (widget.vsAI && gameState.currentPlayer == Player.player2) return;
 
+    // Block interaction if not local player's turn in multiplayer
+    if (widget.isMultiplayer &&
+        widget.localPlayer != null &&
+        gameState.currentPlayer != widget.localPlayer) {
+      return;
+    }
+
     if (gameState.phase == GamePhase.moveNexus) {
       if (validMoves.contains(pos)) {
+        final newState = gameState.moveNexus(pos);
         setState(() {
-          gameState = gameState.moveNexus(pos);
+          gameState = newState;
           validMoves = [];
         });
         _notifyStateChanged();
-        _checkAndPlayAI();
+
+        // Notify multiplayer service
+        if (widget.isMultiplayer && widget.onMultiplayerMove != null) {
+          widget.onMultiplayerMove!(newState, 'nexus', pos, null);
+        } else {
+          _checkAndPlayAI();
+        }
       } else {
         setState(() {
           validMoves = gameState.getValidNexusMoves();
@@ -163,13 +204,21 @@ class GameBoardState extends State<GameBoard> {
       final piece = gameState.getPieceAt(pos);
 
       if (selectedPawn != null && validMoves.contains(pos)) {
+        final fromPos = selectedPawn!.position;
+        final newState = gameState.movePawn(selectedPawn!, pos);
         setState(() {
-          gameState = gameState.movePawn(selectedPawn!, pos);
+          gameState = newState;
           selectedPawn = null;
           validMoves = [];
         });
         _notifyStateChanged();
-        _checkAndPlayAI();
+
+        // Notify multiplayer service
+        if (widget.isMultiplayer && widget.onMultiplayerMove != null) {
+          widget.onMultiplayerMove!(newState, 'pawn', pos, fromPos);
+        } else {
+          _checkAndPlayAI();
+        }
       } else if (piece != null &&
           piece.type == PieceType.pawn &&
           piece.owner == gameState.currentPlayer) {
