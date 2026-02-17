@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/preferences_service.dart';
 import '../theme/app_colors.dart';
+import '../widgets/nexus_widget.dart';
 
 class RulesScreen extends StatefulWidget {
   const RulesScreen({super.key});
@@ -160,12 +162,7 @@ class _RulesScreenState extends State<RulesScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          _buildPieceRow(
-            color: _theme.accentColorBright,
-            icon: '\u2638',
-            name: 'Nexus',
-            description: 'Piece centrale, se deplace d\'une case',
-          ),
+          _buildNexusRow(),
           const SizedBox(height: 16),
           _buildPieceRow(
             color: _theme.player1Color,
@@ -182,6 +179,41 @@ class _RulesScreenState extends State<RulesScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNexusRow() {
+    return Row(
+      children: [
+        SizedBox(
+          width: 40,
+          height: 40,
+          child: NexusWidget(
+            skin: PreferencesService.nexusSkin,
+            color: PreferencesService.nexusColor,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Nexus',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: _theme.primaryText,
+                ),
+              ),
+              Text(
+                'Piece centrale, se deplace d\'une case',
+                style: TextStyle(fontSize: 13, color: _theme.secondaryText),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

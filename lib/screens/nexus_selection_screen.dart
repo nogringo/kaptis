@@ -1,10 +1,9 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/nexus_skin.dart';
 import '../services/preferences_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
-import '../widgets/nexus_painters/nexus_painters.dart';
+import '../widgets/nexus_widget.dart';
 
 class NexusSelectionScreen extends StatefulWidget {
   const NexusSelectionScreen({super.key});
@@ -13,47 +12,11 @@ class NexusSelectionScreen extends StatefulWidget {
   State<NexusSelectionScreen> createState() => _NexusSelectionScreenState();
 }
 
-class _NexusSelectionScreenState extends State<NexusSelectionScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _rotateController;
-  late AnimationController _glowController;
-  NexusSkin _selectedSkin = NexusSkin.diamond;
-  NexusColor _selectedColor = NexusColor.gold;
+class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
+  NexusSkin _selectedSkin = PreferencesService.nexusSkin;
+  NexusColor _selectedColor = PreferencesService.nexusColor;
 
   Color get _colorBright => _selectedColor.bright;
-  Color get _colorMedium => _selectedColor.medium;
-  Color get _colorDark => _selectedColor.dark;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-
-    _rotateController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 4),
-    )..repeat();
-
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-
-    _loadPreferences();
-  }
-
-  Future<void> _loadPreferences() async {
-    final skin = await PreferencesService.getNexusSkin();
-    final color = await PreferencesService.getNexusColor();
-    setState(() {
-      _selectedSkin = skin;
-      _selectedColor = color;
-    });
-  }
 
   Future<void> _selectSkin(NexusSkin skin) async {
     setState(() => _selectedSkin = skin);
@@ -63,14 +26,6 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen>
   Future<void> _selectColor(NexusColor color) async {
     setState(() => _selectedColor = color);
     await PreferencesService.setNexusColor(color);
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _rotateController.dispose();
-    _glowController.dispose();
-    super.dispose();
   }
 
   @override
@@ -96,84 +51,77 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen>
             child: Column(
               children: [
                 Text(
-              'Couleur',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: theme.primaryText,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildColorSelector(theme),
-            const SizedBox(height: 32),
-            Text(
-              'Forme',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: theme.primaryText,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.center,
-              child: Wrap(
-                spacing: 24,
-                runSpacing: 24,
-                alignment: WrapAlignment.center,
-                children: [
-                  _buildDesignCard(
-                    context,
-                    skin: NexusSkin.diamond,
-                    title: 'Diamant',
-                    subtitle: 'Forme diamant',
-                    child: _buildDiamondNexus(),
+                  'Couleur',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: theme.primaryText,
                   ),
-                  _buildDesignCard(
-                    context,
-                    skin: NexusSkin.crystal,
-                    title: 'Cristal',
-                    subtitle: 'Gemme hexagonale',
-                    child: _buildCrystalNexus(),
+                ),
+                const SizedBox(height: 16),
+                _buildColorSelector(theme),
+                const SizedBox(height: 32),
+                Text(
+                  'Forme',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: theme.primaryText,
                   ),
-                  _buildDesignCard(
-                    context,
-                    skin: NexusSkin.pulsingOrb,
-                    title: 'Orbe',
-                    subtitle: 'Sphere pulsante',
-                    child: _buildPulsingOrbNexus(),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.center,
+                  child: Wrap(
+                    spacing: 24,
+                    runSpacing: 24,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildDesignCard(
+                        context,
+                        skin: NexusSkin.diamond,
+                        title: 'Diamant',
+                        subtitle: 'Forme diamant',
+                      ),
+                      _buildDesignCard(
+                        context,
+                        skin: NexusSkin.crystal,
+                        title: 'Cristal',
+                        subtitle: 'Gemme hexagonale',
+                      ),
+                      _buildDesignCard(
+                        context,
+                        skin: NexusSkin.pulsingOrb,
+                        title: 'Orbe',
+                        subtitle: 'Sphere pulsante',
+                      ),
+                      _buildDesignCard(
+                        context,
+                        skin: NexusSkin.vortex,
+                        title: 'Vortex',
+                        subtitle: 'Spirale rotative',
+                      ),
+                      _buildDesignCard(
+                        context,
+                        skin: NexusSkin.star,
+                        title: 'Etoile',
+                        subtitle: 'Etoile brillante',
+                      ),
+                      _buildDesignCard(
+                        context,
+                        skin: NexusSkin.core,
+                        title: 'Noyau',
+                        subtitle: 'Noyau energetique',
+                      ),
+                      _buildDesignCard(
+                        context,
+                        skin: NexusSkin.sun,
+                        title: 'Soleil',
+                        subtitle: 'Soleil rayonnant',
+                      ),
+                    ],
                   ),
-                  _buildDesignCard(
-                    context,
-                    skin: NexusSkin.vortex,
-                    title: 'Vortex',
-                    subtitle: 'Spirale rotative',
-                    child: _buildVortexNexus(),
-                  ),
-                  _buildDesignCard(
-                    context,
-                    skin: NexusSkin.star,
-                    title: 'Etoile',
-                    subtitle: 'Etoile brillante',
-                    child: _buildStarNexus(),
-                  ),
-                  _buildDesignCard(
-                    context,
-                    skin: NexusSkin.core,
-                    title: 'Noyau',
-                    subtitle: 'Noyau energetique',
-                    child: _buildCoreNexus(),
-                  ),
-                  _buildDesignCard(
-                    context,
-                    skin: NexusSkin.sun,
-                    title: 'Soleil',
-                    subtitle: 'Soleil rayonnant',
-                    child: _buildSunNexus(),
-                  ),
-                ],
-              ),
-            ),
+                ),
               ],
             ),
           ),
@@ -228,7 +176,6 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen>
     required NexusSkin skin,
     required String title,
     required String subtitle,
-    required Widget child,
   }) {
     final theme = context.colors;
     final isSelected = _selectedSkin == skin;
@@ -278,11 +225,12 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen>
                 Container(
                   width: 100,
                   height: 100,
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: theme.boardLightCell,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Center(child: child),
+                  child: NexusWidget(skin: skin, color: _selectedColor),
                 ),
               ],
             ),
@@ -302,183 +250,6 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen>
             ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCrystalNexus() {
-    return AnimatedBuilder(
-      animation: _glowController,
-      builder: (context, child) {
-        return SizedBox(
-          width: 60,
-          height: 60,
-          child: CustomPaint(
-            painter: CrystalPainter(
-              color1: _colorBright,
-              color2: _colorDark,
-              glowValue: _glowController.value,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPulsingOrbNexus() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        final scale = 1.0 + _pulseController.value * 0.15;
-        return Transform.scale(
-          scale: scale,
-          child: Container(
-            width: 55,
-            height: 55,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [Colors.white, _colorBright, _colorMedium, _colorDark],
-                stops: const [0.0, 0.3, 0.7, 1.0],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildVortexNexus() {
-    return AnimatedBuilder(
-      animation: _rotateController,
-      builder: (context, child) {
-        return SizedBox(
-          width: 60,
-          height: 60,
-          child: CustomPaint(
-            painter: VortexPainter(
-              rotation: _rotateController.value * 2 * math.pi,
-              color1: _colorBright,
-              color2: _colorDark,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStarNexus() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return SizedBox(
-          width: 60,
-          height: 60,
-          child: CustomPaint(
-            painter: StarPainter(
-              color1: Colors.white,
-              color2: _colorBright,
-              color3: _colorDark,
-              glowValue: _pulseController.value,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCoreNexus() {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_rotateController, _pulseController]),
-      builder: (context, child) {
-        return SizedBox(
-          width: 60,
-          height: 60,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Transform.rotate(
-                angle: _rotateController.value * 2 * math.pi,
-                child: Container(
-                  width: 55,
-                  height: 55,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _colorBright.withAlpha(153),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              Transform.rotate(
-                angle: -_rotateController.value * 2 * math.pi,
-                child: Container(
-                  width: 45,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _colorMedium.withAlpha(204),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: 25 + _pulseController.value * 5,
-                height: 25 + _pulseController.value * 5,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [Colors.white, _colorBright, _colorDark],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDiamondNexus() {
-    return AnimatedBuilder(
-      animation: _glowController,
-      builder: (context, child) {
-        return SizedBox(
-          width: 60,
-          height: 60,
-          child: CustomPaint(
-            painter: DiamondPainter(
-              color1: Colors.white,
-              color2: _colorBright,
-              color3: _colorDark,
-              glowValue: _glowController.value,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSunNexus() {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_rotateController, _pulseController]),
-      builder: (context, child) {
-        return SizedBox(
-          width: 60,
-          height: 60,
-          child: CustomPaint(
-            painter: SunPainter(
-              rotation: _rotateController.value * math.pi / 6,
-              color1: Colors.white,
-              color2: _colorBright,
-              color3: _colorDark,
-              pulseValue: _pulseController.value,
-            ),
-          ),
-        );
-      },
     );
   }
 }

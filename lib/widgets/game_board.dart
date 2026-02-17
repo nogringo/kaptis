@@ -2,10 +2,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/game_state.dart';
 import '../models/ai_player.dart';
-import '../models/nexus_skin.dart';
 import '../services/preferences_service.dart';
-import 'nexus_painters/nexus_painters.dart';
 import '../theme/app_colors.dart';
+import 'nexus_widget.dart';
 
 class GameBoard extends StatefulWidget {
   final int boardSize;
@@ -43,8 +42,6 @@ class GameBoardState extends State<GameBoard> {
   Piece? selectedPawn;
   List<Position> validMoves = [];
   late AIPlayer _ai;
-  NexusSkin _nexusSkin = NexusSkin.diamond;
-  NexusColor _nexusColor = NexusColor.gold;
 
   AppColors get _theme => context.colors;
 
@@ -72,49 +69,15 @@ class GameBoardState extends State<GameBoard> {
   double get _pawnSize => _cellSize * 0.62;
   double get _pawnSelectedSize => _cellSize * 0.68;
 
-  Future<void> _loadNexusPreferences() async {
-    final skin = await PreferencesService.getNexusSkin();
-    final color = await PreferencesService.getNexusColor();
-    if (mounted) {
-      setState(() {
-        _nexusSkin = skin;
-        _nexusColor = color;
-      });
-    }
-  }
-
   Widget _buildNexus(double size) {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _getNexusPainter()),
+      child: NexusWidget(
+        skin: PreferencesService.nexusSkin,
+        color: PreferencesService.nexusColor,
+      ),
     );
-  }
-
-  CustomPainter _getNexusPainter() {
-    final bright = _nexusColor.bright;
-    final dark = _nexusColor.dark;
-
-    switch (_nexusSkin) {
-      case NexusSkin.diamond:
-        return DiamondPainter(
-          color1: Colors.white,
-          color2: bright,
-          color3: dark,
-        );
-      case NexusSkin.crystal:
-        return CrystalPainter(color1: bright, color2: dark);
-      case NexusSkin.pulsingOrb:
-        return PulsingOrbPainter(color: _nexusColor);
-      case NexusSkin.vortex:
-        return VortexPainter(color1: bright, color2: dark);
-      case NexusSkin.star:
-        return StarPainter(color1: Colors.white, color2: bright, color3: dark);
-      case NexusSkin.core:
-        return CorePainter(color: _nexusColor);
-      case NexusSkin.sun:
-        return SunPainter(color1: Colors.white, color2: bright, color3: dark);
-    }
   }
 
   void resetGame() {
@@ -146,7 +109,6 @@ class GameBoardState extends State<GameBoard> {
   void initState() {
     super.initState();
     _ai = AIPlayer(difficulty: widget.difficulty);
-    _loadNexusPreferences();
     if (widget.gameMode == GameMode.hexagonal) {
       gameState = GameState.initialHex(
         winCondition: widget.winCondition,

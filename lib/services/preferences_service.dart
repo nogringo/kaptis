@@ -5,24 +5,30 @@ class PreferencesService {
   static const _nexusSkinKey = 'nexus_skin';
   static const _nexusColorKey = 'nexus_color';
 
-  static Future<NexusSkin> getNexusSkin() async {
+  static NexusSkin _nexusSkin = NexusSkin.diamond;
+  static NexusColor _nexusColor = NexusColor.gold;
+
+  static NexusSkin get nexusSkin => _nexusSkin;
+  static NexusColor get nexusColor => _nexusColor;
+
+  static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final index = prefs.getInt(_nexusSkinKey) ?? 0;
-    return NexusSkin.values[index.clamp(0, NexusSkin.values.length - 1)];
+    final skinIndex = prefs.getInt(_nexusSkinKey) ?? 0;
+    final colorIndex = prefs.getInt(_nexusColorKey) ?? 0;
+    _nexusSkin =
+        NexusSkin.values[skinIndex.clamp(0, NexusSkin.values.length - 1)];
+    _nexusColor =
+        NexusColor.values[colorIndex.clamp(0, NexusColor.values.length - 1)];
   }
 
   static Future<void> setNexusSkin(NexusSkin skin) async {
+    _nexusSkin = skin;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_nexusSkinKey, skin.index);
   }
 
-  static Future<NexusColor> getNexusColor() async {
-    final prefs = await SharedPreferences.getInstance();
-    final index = prefs.getInt(_nexusColorKey) ?? 0;
-    return NexusColor.values[index.clamp(0, NexusColor.values.length - 1)];
-  }
-
   static Future<void> setNexusColor(NexusColor color) async {
+    _nexusColor = color;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_nexusColorKey, color.index);
   }
