@@ -7,6 +7,20 @@ import '../models/game_state.dart';
 import 'key_service.dart';
 import 'nostr_service.dart';
 
+// TODO: Améliorations futures du multijoueur
+//
+// Problèmes potentiels:
+// - Si un guest quitte, le host garde guestPubkey et ne peut plus accueillir quelqu'un d'autre
+// - Un bot malveillant peut spam "join" sur toutes les rooms publiques
+// - Pas de détection de déconnexion (joueur AFK en pleine partie)
+//
+// Solutions possibles:
+// - Implémenter kick (host) et leave (guest) avec republication de la session
+// - Système d'approbation: join-request → host accept/reject
+// - Heartbeat pour détecter les déconnexions
+// - Web of trust (limiter aux follows)
+// - Proof of Work (NIP-13) pour ralentir les bots
+
 /// Player profile info
 class PlayerProfile {
   final String pubkey;
