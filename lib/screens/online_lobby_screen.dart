@@ -27,6 +27,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   int _boardSize = 5;
   GameMode _gameMode = GameMode.square;
   WinCondition _winCondition = WinCondition.ownCamp;
+  Player _startingPlayer = Player.player1;
 
   bool _isLoading = false;
   bool _copied = false;
@@ -73,6 +74,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       _boardSize = room.boardSize;
       _gameMode = room.gameMode;
       _winCondition = room.winCondition;
+      _startingPlayer = room.startingPlayer;
     }
     setState(() {});
   }
@@ -91,6 +93,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       gameMode: _gameMode,
       winCondition: _winCondition,
       hostPlayer: Player.player1,
+      startingPlayer: _startingPlayer,
     );
 
     _isCreatingRoom = false;
@@ -138,6 +141,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       _boardSize = room.boardSize;
       _gameMode = room.gameMode;
       _winCondition = room.winCondition;
+      _startingPlayer = room.startingPlayer;
     }
   }
 
@@ -158,6 +162,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       boardSize: _boardSize,
       gameMode: _gameMode,
       winCondition: _winCondition,
+      startingPlayer: _startingPlayer,
     );
   }
 
@@ -166,7 +171,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
     // Initialize game state
     final room = _multiplayerService.currentRoom!;
-    final gameState = room.createInitialGameState(Player.player1);
+    final gameState = room.createInitialGameState(room.startingPlayer);
     _multiplayerService.updateGameState(gameState);
 
     // Notify guest that game is starting
@@ -512,6 +517,86 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                     onChanged: (value) {
                       if (value != null) {
                         setState(() => _winCondition = value);
+                        _updateConfig();
+                      }
+                    },
+                  ),
+          ),
+
+          SizedBox(height: isLarge ? 12 : 8),
+
+          // Starting player
+          _buildConfigRow(
+            isLarge,
+            'Commence',
+            readOnly
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: _startingPlayer == Player.player1
+                              ? _theme.player1Color
+                              : _theme.player2Color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _startingPlayer == Player.player1 ? 'Bleu' : 'Rouge',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: _theme.primaryText,
+                        ),
+                      ),
+                    ],
+                  )
+                : DropdownButton<Player>(
+                    value: _startingPlayer,
+                    underline: const SizedBox(),
+                    items: [
+                      DropdownMenuItem(
+                        value: Player.player1,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: _theme.player1Color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('Bleu'),
+                          ],
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: Player.player2,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: _theme.player2Color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('Rouge'),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _startingPlayer = value);
                         _updateConfig();
                       }
                     },

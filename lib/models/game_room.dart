@@ -13,6 +13,7 @@ class GameRoom {
   final GameMode gameMode;
   final WinCondition winCondition;
   final Player hostPlayer; // Which player the host is (player1 or player2)
+  final Player startingPlayer; // Who starts first (player1=blue, player2=red)
   final DateTime createdAt;
 
   const GameRoom({
@@ -24,6 +25,7 @@ class GameRoom {
     required this.gameMode,
     required this.winCondition,
     required this.hostPlayer,
+    this.startingPlayer = Player.player1,
     required this.createdAt,
   });
 
@@ -40,6 +42,7 @@ class GameRoom {
     GameMode? gameMode,
     WinCondition? winCondition,
     Player? hostPlayer,
+    Player? startingPlayer,
     DateTime? createdAt,
   }) {
     return GameRoom(
@@ -51,6 +54,7 @@ class GameRoom {
       gameMode: gameMode ?? this.gameMode,
       winCondition: winCondition ?? this.winCondition,
       hostPlayer: hostPlayer ?? this.hostPlayer,
+      startingPlayer: startingPlayer ?? this.startingPlayer,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -108,6 +112,7 @@ class GameRoom {
     final boardSize = rules['boardSize'] as int? ?? 5;
     final winConditionStr = rules['winCondition'] as String? ?? 'ownCamp';
     final hostPlayerStr = rules['hostPlayer'] as String? ?? 'player1';
+    final startingPlayerStr = rules['startingPlayer'] as String? ?? 'player1';
 
     // Parse enums
     RoomStatus status;
@@ -150,6 +155,13 @@ class GameRoom {
       hostPlayer = Player.player1;
     }
 
+    Player startingPlayer;
+    if (startingPlayerStr == 'player2') {
+      startingPlayer = Player.player2;
+    } else {
+      startingPlayer = Player.player1;
+    }
+
     return GameRoom(
       code: code ?? '',
       hostPubkey: hostPubkey ?? event.pubKey,
@@ -159,6 +171,7 @@ class GameRoom {
       gameMode: gameMode,
       winCondition: winCondition,
       hostPlayer: hostPlayer,
+      startingPlayer: startingPlayer,
       createdAt: DateTime.fromMillisecondsSinceEpoch(event.createdAt * 1000),
     );
   }
@@ -176,6 +189,7 @@ class GameRoom {
     'boardSize': boardSize,
     'winCondition': winCondition.name,
     'hostPlayer': hostPlayer.name,
+    'startingPlayer': startingPlayer.name,
   };
 
   /// Create initial GameState for this room

@@ -217,6 +217,7 @@ class MultiplayerService extends ChangeNotifier {
     required int boardSize,
     required GameMode gameMode,
     required WinCondition winCondition,
+    required Player startingPlayer,
   }) async {
     if (_currentRoom == null) return;
 
@@ -228,6 +229,7 @@ class MultiplayerService extends ChangeNotifier {
       gameMode: gameMode,
       winCondition: winCondition,
       hostPlayer: _currentRoom!.hostPlayer,
+      startingPlayer: startingPlayer,
       guestPubkey: _currentRoom!.guestPubkey,
       createdAt: _currentRoom!.createdAt,
     );
@@ -255,6 +257,7 @@ class MultiplayerService extends ChangeNotifier {
     required GameMode gameMode,
     required WinCondition winCondition,
     required Player hostPlayer,
+    required Player startingPlayer,
   }) async {
     try {
       await init();
@@ -269,6 +272,7 @@ class MultiplayerService extends ChangeNotifier {
         gameMode: gameMode,
         winCondition: winCondition,
         hostPlayer: hostPlayer,
+        startingPlayer: startingPlayer,
         createdAt: DateTime.now(),
       );
 
@@ -471,11 +475,13 @@ class MultiplayerService extends ChangeNotifier {
     if (!isHost) {
       if (_currentRoom!.boardSize != room.boardSize ||
           _currentRoom!.gameMode != room.gameMode ||
-          _currentRoom!.winCondition != room.winCondition) {
+          _currentRoom!.winCondition != room.winCondition ||
+          _currentRoom!.startingPlayer != room.startingPlayer) {
         _currentRoom = _currentRoom!.copyWith(
           boardSize: room.boardSize,
           gameMode: room.gameMode,
           winCondition: room.winCondition,
+          startingPlayer: room.startingPlayer,
         );
         changed = true;
       }
@@ -490,7 +496,9 @@ class MultiplayerService extends ChangeNotifier {
 
       // Initialize game state if we're the host
       if (isHost) {
-        _gameState = _currentRoom!.createInitialGameState(Player.player1);
+        _gameState = _currentRoom!.createInitialGameState(
+          _currentRoom!.startingPlayer,
+        );
       }
 
       changed = true;
@@ -539,7 +547,9 @@ class MultiplayerService extends ChangeNotifier {
         if (action == 'start') {
           if (!isHost && _currentRoom != null) {
             _currentRoom = _currentRoom!.copyWith(status: RoomStatus.playing);
-            _gameState = _currentRoom!.createInitialGameState(Player.player1);
+            _gameState = _currentRoom!.createInitialGameState(
+              _currentRoom!.startingPlayer,
+            );
             _gameStartController.add(null);
             notifyListeners();
           }
