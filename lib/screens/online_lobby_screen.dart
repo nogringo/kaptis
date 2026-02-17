@@ -461,11 +461,11 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                       color: _theme.primaryText,
                     ),
                   )
-                : DropdownButton<String>(
+                : _buildStyledDropdown<String>(
                     value: _gameMode == GameMode.hexagonal
                         ? 'hex'
                         : '${_boardSize}x$_boardSize',
-                    underline: const SizedBox(),
+                    isLarge: isLarge,
                     items: const [
                       DropdownMenuItem(value: '5x5', child: Text('5x5')),
                       DropdownMenuItem(value: '7x7', child: Text('7x7')),
@@ -501,9 +501,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                       color: _theme.primaryText,
                     ),
                   )
-                : DropdownButton<WinCondition>(
+                : _buildStyledDropdown<WinCondition>(
                     value: _winCondition,
-                    underline: const SizedBox(),
+                    isLarge: isLarge,
                     items: const [
                       DropdownMenuItem(
                         value: WinCondition.ownCamp,
@@ -553,9 +553,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                       ),
                     ],
                   )
-                : DropdownButton<Player>(
+                : _buildStyledDropdown<Player>(
                     value: _startingPlayer,
-                    underline: const SizedBox(),
+                    isLarge: isLarge,
                     items: [
                       DropdownMenuItem(
                         value: Player.player1,
@@ -620,6 +620,38 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         ),
         value,
       ],
+    );
+  }
+
+  Widget _buildStyledDropdown<T>({
+    required T value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+    required bool isLarge,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isLarge ? 12 : 10,
+        vertical: isLarge ? 6 : 4,
+      ),
+      decoration: BoxDecoration(
+        color: _theme.cardBackground,
+        borderRadius: BorderRadius.circular(isLarge ? 12 : 10),
+        border: Border.all(color: _theme.cardBorder),
+      ),
+      child: DropdownButton<T>(
+        value: value,
+        underline: const SizedBox(),
+        isDense: true,
+        borderRadius: BorderRadius.circular(12),
+        icon: Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: _theme.secondaryText,
+          size: isLarge ? 20 : 18,
+        ),
+        items: items,
+        onChanged: onChanged,
+      ),
     );
   }
 
