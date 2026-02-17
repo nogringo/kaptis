@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'setup_screen.dart';
 import 'rules_screen.dart';
 import 'nexus_selection_screen.dart';
-import 'multiplayer_lobby_screen.dart';
+import 'online_lobby_screen.dart';
 import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
 
@@ -159,14 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
       width: width,
       height: height,
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const MultiplayerLobbyScreen(),
-            ),
-          );
-        },
+        onPressed: () => _showMultiplayerOptions(),
         style: ElevatedButton.styleFrom(
           backgroundColor: _theme.accentColor,
           foregroundColor: Colors.white,
@@ -188,6 +181,164 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.bold,
                 letterSpacing: 2,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMultiplayerOptions() {
+    if (_isLarge) {
+      _showMultiplayerDialog();
+    } else {
+      _showMultiplayerBottomSheet();
+    }
+  }
+
+  void _showMultiplayerDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: _theme.cardBackground,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Multijoueur',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: _theme.primaryText,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildOptionButton(
+                  icon: Icons.add_circle_outline,
+                  label: 'Créer une partie',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const OnlineLobbyScreen(mode: LobbyMode.create),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildOptionButton(
+                  icon: Icons.login_rounded,
+                  label: 'Rejoindre une partie',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const OnlineLobbyScreen(mode: LobbyMode.join),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showMultiplayerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _theme.cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Multijoueur',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: _theme.primaryText,
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildOptionButton(
+              icon: Icons.add_circle_outline,
+              label: 'Créer une partie',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const OnlineLobbyScreen(mode: LobbyMode.create),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildOptionButton(
+              icon: Icons.login_rounded,
+              label: 'Rejoindre une partie',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const OnlineLobbyScreen(mode: LobbyMode.join),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _theme.cardBackground,
+          foregroundColor: _theme.primaryText,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: _theme.cardBorder),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),

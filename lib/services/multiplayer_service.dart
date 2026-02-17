@@ -7,6 +7,22 @@ import '../models/game_state.dart';
 import 'key_service.dart';
 import 'nostr_service.dart';
 
+/// Player profile info
+class PlayerProfile {
+  final String pubkey;
+  final String? name;
+  final String? picture;
+
+  PlayerProfile({required this.pubkey, this.name, this.picture});
+
+  String get displayName {
+    if (name != null) return name!;
+    // npub raccourci : npub1abc...xyz
+    final npub = Nip19.encodePubKey(pubkey);
+    return '${npub.substring(0, 10)}...${npub.substring(npub.length - 4)}';
+  }
+}
+
 /// Represents a move received from the network
 class NetworkMove {
   final String moveType; // 'nexus' or 'pawn'
@@ -70,6 +86,11 @@ class MultiplayerService extends ChangeNotifier {
   StreamSubscription<Nip01Event>? _movesSubscription;
 
   final _moveController = StreamController<NetworkMove>.broadcast();
+  final _gameStartController = StreamController<void>.broadcast();
+
+  // Player profiles cache
+  final Map<String, PlayerProfile> _profileCache = {};
+  PlayerProfile? _localProfile;
 
   // Getters
   GameRoom? get currentRoom => _currentRoom;
@@ -82,6 +103,14 @@ class MultiplayerService extends ChangeNotifier {
       _gameState != null && _localPlayer == _gameState!.currentPlayer;
 
   Stream<NetworkMove> get onMoveReceived => _moveController.stream;
+  Stream<void> get onGameStarted => _gameStartController.stream;
+
+  PlayerProfile? get localProfile => _localProfile;
+  PlayerProfile? get hostProfile =>
+      _currentRoom != null ? _profileCache[_currentRoom!.hostPubkey] : null;
+  PlayerProfile? get guestProfile => _currentRoom?.guestPubkey != null
+      ? _profileCache[_currentRoom!.guestPubkey!]
+      : null;
 
   String? _localPublicKey;
 
@@ -89,6 +118,41 @@ class MultiplayerService extends ChangeNotifier {
   Future<void> init() async {
     _localPublicKey = await KeyService.getPublicKey();
     await _nostrService.connect();
+
+    // Crée le profil immédiatement (npub dispo)
+    _localProfile = _getOrCreateProfile(_localPublicKey!);
+    notifyListeners();
+
+    // Charge les métadonnées en arrière-plan
+    loadPlayerProfile(_localPublicKey!).then((_) {
+      _localProfile = _profileCache[_localPublicKey!];
+    });
+  }
+
+  /// Get or create a player's profile (instant, then enriches with metadata)
+  PlayerProfile _getOrCreateProfile(String pubkey) {
+    if (!_profileCache.containsKey(pubkey)) {
+      // Crée immédiatement avec juste la pubkey (npub dispo instantanément)
+      _profileCache[pubkey] = PlayerProfile(pubkey: pubkey);
+    }
+    return _profileCache[pubkey]!;
+  }
+
+  /// Load profile metadata from network and update cache
+  Future<void> loadPlayerProfile(String pubkey) async {
+    // S'assurer que le profil existe
+    _getOrCreateProfile(pubkey);
+
+    // Charger les métadonnées en arrière-plan
+    final metadata = await _nostrService.getUserMetadata(pubkey);
+    if (metadata != null) {
+      _profileCache[pubkey] = PlayerProfile(
+        pubkey: pubkey,
+        name: metadata.name ?? metadata.displayName,
+        picture: metadata.picture,
+      );
+      notifyListeners();
+    }
   }
 
   /// Create a new game room
@@ -148,6 +212,93 @@ class MultiplayerService extends ChangeNotifier {
     }
   }
 
+  /// Update room config (republish addressable event)
+  Future<void> updateRoomConfig({
+    required int boardSize,
+    required GameMode gameMode,
+    required WinCondition winCondition,
+  }) async {
+    if (_currentRoom == null) return;
+
+    final updatedRoom = GameRoom(
+      code: _currentRoom!.code,
+      hostPubkey: _currentRoom!.hostPubkey,
+      status: _currentRoom!.status,
+      boardSize: boardSize,
+      gameMode: gameMode,
+      winCondition: winCondition,
+      hostPlayer: _currentRoom!.hostPlayer,
+      guestPubkey: _currentRoom!.guestPubkey,
+      createdAt: _currentRoom!.createdAt,
+    );
+
+    // Republish - l'événement addressable remplace l'ancien
+    await _nostrService.publishGameSession(
+      sessionId: updatedRoom.code,
+      status: updatedRoom.status == RoomStatus.waiting ? 'waiting' : 'playing',
+      maxPlayers: 2,
+      currentPlayers: updatedRoom.guestPubkey != null ? 2 : 1,
+      gameMode: updatedRoom.gameModeString,
+      rules: updatedRoom.rulesMap,
+      hostPubkey: updatedRoom.hostPubkey,
+      guestPubkey: updatedRoom.guestPubkey,
+    );
+
+    _currentRoom = updatedRoom;
+    notifyListeners();
+  }
+
+  /// Create a room with a specific code (for config updates)
+  Future<GameRoom?> createRoomWithCode({
+    required String code,
+    required int boardSize,
+    required GameMode gameMode,
+    required WinCondition winCondition,
+    required Player hostPlayer,
+  }) async {
+    try {
+      await init();
+
+      final hostPubkey = await KeyService.getPublicKey();
+
+      final room = GameRoom(
+        code: code,
+        hostPubkey: hostPubkey,
+        status: RoomStatus.waiting,
+        boardSize: boardSize,
+        gameMode: gameMode,
+        winCondition: winCondition,
+        hostPlayer: hostPlayer,
+        createdAt: DateTime.now(),
+      );
+
+      // Publish to Nostr
+      await _nostrService.publishGameSession(
+        sessionId: code,
+        status: 'waiting',
+        maxPlayers: 2,
+        currentPlayers: 1,
+        gameMode: room.gameModeString,
+        rules: room.rulesMap,
+        hostPubkey: hostPubkey,
+      );
+
+      _currentRoom = room;
+      _localPlayer = hostPlayer;
+      _sequenceNumber = 0;
+
+      // Subscribe to events
+      _subscribeToRoom(code, hostPubkey);
+
+      notifyListeners();
+      return room;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
   /// Join an existing room by code
   Future<GameRoom?> joinRoom(String code) async {
     _isConnecting = true;
@@ -190,10 +341,10 @@ class MultiplayerService extends ChangeNotifier {
         hostPubkey: room.hostPubkey,
       );
 
-      // Update room with guest
+      // Update room with guest (still waiting for host to start)
       final updatedRoom = room.copyWith(
         guestPubkey: localPubkey,
-        status: RoomStatus.playing,
+        status: RoomStatus.waiting,
       );
 
       _currentRoom = updatedRoom;
@@ -202,8 +353,10 @@ class MultiplayerService extends ChangeNotifier {
           : Player.player1;
       _sequenceNumber = 0;
 
-      // Create initial game state
-      _gameState = updatedRoom.createInitialGameState(Player.player1);
+      // Load host profile
+      loadPlayerProfile(room.hostPubkey);
+
+      // Don't create game state yet - wait for host to start
 
       // Subscribe to events
       _subscribeToRoom(code, room.hostPubkey);
@@ -254,6 +407,22 @@ class MultiplayerService extends ChangeNotifier {
     }
   }
 
+  /// Publish game start event (host only)
+  Future<void> publishGameStart() async {
+    if (_currentRoom == null || !isHost) return;
+
+    await _nostrService.publishGameAction(
+      sessionId: _currentRoom!.code,
+      hostPubkey: _currentRoom!.hostPubkey,
+      action: 'start',
+      opponentPubkey: _currentRoom!.guestPubkey,
+    );
+
+    // Update room status
+    _currentRoom = _currentRoom!.copyWith(status: RoomStatus.playing);
+    notifyListeners();
+  }
+
   /// Apply a move to local state
   void applyMove(NetworkMove move) {
     if (_gameState == null) return;
@@ -294,11 +463,26 @@ class MultiplayerService extends ChangeNotifier {
   /// Handle session event (player join, status change)
   void _handleSessionEvent(Nip01Event event) {
     final room = GameRoom.fromNostrEvent(event);
+    if (_currentRoom == null) return;
+
+    bool changed = false;
+
+    // Sync config changes (pour le guest quand l'host modifie)
+    if (!isHost) {
+      if (_currentRoom!.boardSize != room.boardSize ||
+          _currentRoom!.gameMode != room.gameMode ||
+          _currentRoom!.winCondition != room.winCondition) {
+        _currentRoom = _currentRoom!.copyWith(
+          boardSize: room.boardSize,
+          gameMode: room.gameMode,
+          winCondition: room.winCondition,
+        );
+        changed = true;
+      }
+    }
 
     // Check if a guest joined
-    if (_currentRoom != null &&
-        _currentRoom!.guestPubkey == null &&
-        room.guestPubkey != null) {
+    if (_currentRoom!.guestPubkey == null && room.guestPubkey != null) {
       _currentRoom = _currentRoom!.copyWith(
         guestPubkey: room.guestPubkey,
         status: RoomStatus.playing,
@@ -309,42 +493,58 @@ class MultiplayerService extends ChangeNotifier {
         _gameState = _currentRoom!.createInitialGameState(Player.player1);
       }
 
+      changed = true;
+    }
+
+    if (changed) {
       notifyListeners();
     }
   }
 
   /// Handle move event
   void _handleMoveEvent(Nip01Event event) {
-    // Check if it's a join action
+    // Check action type
     for (final tag in event.tags) {
-      if (tag.length > 1 && tag[0] == 'action' && tag[1] == 'join') {
+      if (tag.length > 1 && tag[0] == 'action') {
+        final action = tag[1];
+
         // Handle player join
-        if (isHost &&
-            _currentRoom != null &&
-            _currentRoom!.guestPubkey == null) {
-          _currentRoom = _currentRoom!.copyWith(
-            guestPubkey: event.pubKey,
-            status: RoomStatus.playing,
-          );
+        if (action == 'join') {
+          if (isHost &&
+              _currentRoom != null &&
+              _currentRoom!.guestPubkey == null) {
+            _currentRoom = _currentRoom!.copyWith(guestPubkey: event.pubKey);
 
-          // Initialize game state
-          _gameState = _currentRoom!.createInitialGameState(Player.player1);
+            // Load guest profile
+            loadPlayerProfile(event.pubKey);
 
-          // Update session on Nostr
-          _nostrService.publishGameSession(
-            sessionId: _currentRoom!.code,
-            status: 'in-progress',
-            maxPlayers: 2,
-            currentPlayers: 2,
-            gameMode: _currentRoom!.gameModeString,
-            rules: _currentRoom!.rulesMap,
-            hostPubkey: _currentRoom!.hostPubkey,
-            guestPubkey: _currentRoom!.guestPubkey,
-          );
+            // Update session on Nostr
+            _nostrService.publishGameSession(
+              sessionId: _currentRoom!.code,
+              status: 'waiting',
+              maxPlayers: 2,
+              currentPlayers: 2,
+              gameMode: _currentRoom!.gameModeString,
+              rules: _currentRoom!.rulesMap,
+              hostPubkey: _currentRoom!.hostPubkey,
+              guestPubkey: _currentRoom!.guestPubkey,
+            );
 
-          notifyListeners();
+            notifyListeners();
+          }
+          return;
         }
-        return;
+
+        // Handle game start
+        if (action == 'start') {
+          if (!isHost && _currentRoom != null) {
+            _currentRoom = _currentRoom!.copyWith(status: RoomStatus.playing);
+            _gameState = _currentRoom!.createInitialGameState(Player.player1);
+            _gameStartController.add(null);
+            notifyListeners();
+          }
+          return;
+        }
       }
     }
 
@@ -406,6 +606,7 @@ class MultiplayerService extends ChangeNotifier {
     _sessionSubscription?.cancel();
     _movesSubscription?.cancel();
     _moveController.close();
+    _gameStartController.close();
     super.dispose();
   }
 }

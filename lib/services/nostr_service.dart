@@ -208,6 +208,35 @@ class NostrService {
     return await _publishEvent(event);
   }
 
+  /// Publish a game action (start, pause, etc.)
+  Future<Nip01Event?> publishGameAction({
+    required String sessionId,
+    required String hostPubkey,
+    required String action,
+    String? opponentPubkey,
+  }) async {
+    if (_ndk == null) await connect();
+
+    final tags = [
+      ['a', '38743:$hostPubkey:kaptis-$sessionId'],
+      ['action', action],
+    ];
+
+    if (opponentPubkey != null) {
+      tags.add(['p', opponentPubkey]);
+    }
+
+    final event = Nip01Event(
+      kind: NostrEventKinds.gameAction,
+      pubKey: _keyPair!.publicKey,
+      content: '',
+      tags: tags,
+      createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    );
+
+    return await _publishEvent(event);
+  }
+
   /// Publish game result (kind 8343)
   Future<Nip01Event?> publishGameResult({
     required String sessionId,
@@ -270,7 +299,18 @@ class NostrService {
     return controller.stream;
   }
 
+  /// Get user metadata (profile)
+  Future<Metadata?> getUserMetadata(String pubkey) async {
+    await _ensureConnected();
+    try {
+      return await _ndk!.metadata.loadMetadata(pubkey);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Find a game session by room code
+  // TODO: Gérer le cas où plusieurs parties ont le même code (afficher la liste avec les créateurs)
   Future<Nip01Event?> findGameSession(String sessionId) async {
     await _ensureConnected();
 
