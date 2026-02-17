@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'setup_screen.dart';
 import 'rules_screen.dart';
+import 'nexus_selection_screen.dart';
 import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
 
@@ -30,8 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildLogo(),
-                  SizedBox(height: _isLarge ? 50 : 40),
                   _buildTitle(),
                   SizedBox(height: _isLarge ? 20 : 16),
                   _buildSubtitle(),
@@ -40,46 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLogo() {
-    final size = _isLarge ? 200.0 : 150.0;
-    final iconSize = _isLarge ? 110.0 : 80.0;
-
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: _theme.logoGradient,
-          stops: const [0.3, 0.7, 1.0],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _theme.accentShadow,
-            blurRadius: _isLarge ? 40 : 30,
-            spreadRadius: _isLarge ? 8 : 5,
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          '\u2638',
-          style: TextStyle(
-            fontSize: iconSize,
-            color: Colors.white,
-            shadows: const [
-              Shadow(
-                color: Colors.black54,
-                blurRadius: 10,
-                offset: Offset(2, 2),
-              ),
-            ],
           ),
         ),
       ),
@@ -119,12 +78,18 @@ class _HomeScreenState extends State<HomeScreen> {
     final secondaryHeight = _isLarge ? 56.0 : 50.0;
 
     if (_isLarge) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      return Column(
         children: [
-          _buildPlayButton(buttonWidth, buttonHeight),
-          const SizedBox(width: 24),
-          _buildRulesButton(buttonWidth, secondaryHeight),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildPlayButton(buttonWidth, buttonHeight),
+              const SizedBox(width: 24),
+              _buildRulesButton(buttonWidth, secondaryHeight),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildCustomizeButton(buttonWidth, secondaryHeight),
         ],
       );
     }
@@ -134,6 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _buildPlayButton(buttonWidth, buttonHeight),
         const SizedBox(height: 20),
         _buildRulesButton(buttonWidth, secondaryHeight),
+        const SizedBox(height: 20),
+        _buildCustomizeButton(buttonWidth, secondaryHeight),
       ],
     );
   }
@@ -202,6 +169,45 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(width: 8),
             Text(
               'REGLES',
+              style: TextStyle(
+                fontSize: height * 0.3,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomizeButton(double width, double height) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: OutlinedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const NexusSelectionScreen(),
+            ),
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _theme.outlineButtonForeground,
+          side: BorderSide(color: _theme.outlineButtonBorder, width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(height / 2),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.auto_awesome, size: height * 0.45),
+            const SizedBox(width: 8),
+            Text(
+              'NEXUS',
               style: TextStyle(
                 fontSize: height * 0.3,
                 fontWeight: FontWeight.w600,

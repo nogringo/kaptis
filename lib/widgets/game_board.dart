@@ -2,6 +2,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/game_state.dart';
 import '../models/ai_player.dart';
+import '../models/nexus_skin.dart';
+import '../services/preferences_service.dart';
+import 'nexus_painters/nexus_painters.dart';
 import '../theme/app_colors.dart';
 
 class GameBoard extends StatefulWidget {
@@ -40,6 +43,8 @@ class GameBoardState extends State<GameBoard> {
   Piece? selectedPawn;
   List<Position> validMoves = [];
   late AIPlayer _ai;
+  NexusSkin _nexusSkin = NexusSkin.diamond;
+  NexusColor _nexusColor = NexusColor.gold;
 
   AppColors get _theme => context.colors;
 
@@ -66,7 +71,51 @@ class GameBoardState extends State<GameBoard> {
   double get _nexusSize => _cellSize * 0.72;
   double get _pawnSize => _cellSize * 0.62;
   double get _pawnSelectedSize => _cellSize * 0.68;
-  double get _nexusFontSize => _cellSize * 0.42;
+
+  Future<void> _loadNexusPreferences() async {
+    final skin = await PreferencesService.getNexusSkin();
+    final color = await PreferencesService.getNexusColor();
+    if (mounted) {
+      setState(() {
+        _nexusSkin = skin;
+        _nexusColor = color;
+      });
+    }
+  }
+
+  Widget _buildNexus(double size) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _getNexusPainter()),
+    );
+  }
+
+  CustomPainter _getNexusPainter() {
+    final bright = _nexusColor.bright;
+    final dark = _nexusColor.dark;
+
+    switch (_nexusSkin) {
+      case NexusSkin.diamond:
+        return DiamondPainter(
+          color1: Colors.white,
+          color2: bright,
+          color3: dark,
+        );
+      case NexusSkin.crystal:
+        return CrystalPainter(color1: bright, color2: dark);
+      case NexusSkin.pulsingOrb:
+        return PulsingOrbPainter(color: _nexusColor);
+      case NexusSkin.vortex:
+        return VortexPainter(color1: bright, color2: dark);
+      case NexusSkin.star:
+        return StarPainter(color1: Colors.white, color2: bright, color3: dark);
+      case NexusSkin.core:
+        return CorePainter(color: _nexusColor);
+      case NexusSkin.sun:
+        return SunPainter(color1: Colors.white, color2: bright, color3: dark);
+    }
+  }
 
   void resetGame() {
     setState(() {
@@ -97,6 +146,7 @@ class GameBoardState extends State<GameBoard> {
   void initState() {
     super.initState();
     _ai = AIPlayer(difficulty: widget.difficulty);
+    _loadNexusPreferences();
     if (widget.gameMode == GameMode.hexagonal) {
       gameState = GameState.initialHex(
         winCondition: widget.winCondition,
@@ -606,29 +656,7 @@ class GameBoardState extends State<GameBoard> {
     double pawnSelectedSize,
   ) {
     if (piece.type == PieceType.nexus) {
-      return Container(
-        width: pieceSize,
-        height: pieceSize,
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            colors: [_theme.accentColorBright, _theme.accentColorSecondary],
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: _theme.shadowColor,
-              blurRadius: 4,
-              offset: const Offset(2, 2),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            '\u2638',
-            style: TextStyle(fontSize: pieceSize * 0.55, color: Colors.white),
-          ),
-        ),
-      );
+      return _buildNexus(pieceSize);
     }
 
     final color = piece.owner == Player.player1
@@ -742,31 +770,7 @@ class GameBoardState extends State<GameBoard> {
 
   Widget _buildPiece(Piece piece) {
     if (piece.type == PieceType.nexus) {
-      return Center(
-        child: Container(
-          width: _nexusSize,
-          height: _nexusSize,
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              colors: [_theme.accentColorBright, _theme.accentColorSecondary],
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: _theme.shadowColor,
-                blurRadius: 4,
-                offset: const Offset(2, 2),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              '\u2638',
-              style: TextStyle(fontSize: _nexusFontSize, color: Colors.white),
-            ),
-          ),
-        ),
-      );
+      return Center(child: _buildNexus(_nexusSize));
     }
 
     final color = piece.owner == Player.player1
