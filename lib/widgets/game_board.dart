@@ -456,7 +456,8 @@ class GameBoardState extends State<GameBoard> {
                 final visualRow = index ~/ gameState.boardSize;
                 final col = index % gameState.boardSize;
                 // Inverser pour que le joueur local soit en bas
-                final shouldInvert = !widget.isMultiplayer ||
+                final shouldInvert =
+                    !widget.isMultiplayer ||
                     widget.localPlayer == Player.player1;
                 final logicalRow = shouldInvert
                     ? gameState.boardSize - 1 - visualRow

@@ -30,7 +30,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https"
-                      android:host="aboul-cbc38--online2-r8nhkyg4.web.app"
+                      android:host="aboul-cbc38.web.app"
                       android:pathPrefix="/join" />
             </intent-filter>
         </activity>

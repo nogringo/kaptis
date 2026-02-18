@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 
 class DeepLinkService {
-  static const String baseUrl = 'https://aboul-cbc38--online2-r8nhkyg4.web.app';
+  static const String baseUrl = 'https://aboul-cbc38.web.app';
 
   final AppLinks _appLinks = AppLinks();
   final _roomCodeController = StreamController<String>.broadcast();
