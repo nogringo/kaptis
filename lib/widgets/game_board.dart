@@ -130,7 +130,6 @@ class GameBoardState extends State<GameBoard> {
   void initState() {
     super.initState();
     _ai = AIPlayer(difficulty: widget.difficulty);
-    _loadNexusPreferences();
 
     // Use initial state if provided (for multiplayer)
     if (widget.initialState != null) {

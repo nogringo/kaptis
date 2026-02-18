@@ -9,6 +9,7 @@ import 'theme/app_colors.dart';
 
 // TODO les selections doivent rester en mémoire
 // TODO Utiliser les mots de blobrain
+// TODO Migrer vers Riverpod pour une meilleure gestion du state et de l'init async des services
 
 final deepLinkService = DeepLinkService();
 
