@@ -35,7 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildTitle(),
                   SizedBox(height: _isLarge ? 20 : 16),
                   _buildSubtitle(),
-                  SizedBox(height: _isLarge ? 80 : 60),
+                  SizedBox(height: _isLarge ? 16 : 12),
+                  _buildTagline(),
+                  SizedBox(height: _isLarge ? 60 : 48),
                   _buildButtons(),
                 ],
               ),
@@ -64,11 +66,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSubtitle() {
     return Text(
-      'Jeu de strategie pour 2 joueurs',
+      'Jeu de stratégie pour 2 joueurs',
       style: TextStyle(
         fontSize: _isLarge ? 20 : 16,
         color: _theme.secondaryText,
         letterSpacing: _isLarge ? 2 : 1,
+      ),
+    );
+  }
+
+  Widget _buildTagline() {
+    return Text(
+      'Capture, Bloque, Domine... le Nexus !',
+      style: TextStyle(
+        fontSize: _isLarge ? 24 : 18,
+        fontWeight: FontWeight.w600,
+        color: _theme.accentColor,
+        letterSpacing: _isLarge ? 1.5 : 1,
       ),
     );
   }
@@ -370,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(Icons.menu_book_rounded, size: height * 0.45),
             const SizedBox(width: 8),
             Text(
-              'REGLES',
+              'RÈGLES',
               style: TextStyle(
                 fontSize: height * 0.3,
                 fontWeight: FontWeight.w600,

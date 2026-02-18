@@ -18,7 +18,7 @@ class _RulesScreenState extends State<RulesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Regles du jeu',
+          'Règles du jeu',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -35,34 +35,34 @@ class _RulesScreenState extends State<RulesScreen> {
                   icon: Icons.grid_on_rounded,
                   title: 'Le plateau',
                   content:
-                      'Le jeu se joue sur un plateau de 5x5 ou 7x7 cases. '
-                      'Chaque joueur possede 5 ou 7 pions places sur sa ligne de depart. '
-                      'Le Nexus (piece doree) est place au centre du plateau.',
+                      'Le jeu se joue sur un plateau carré (5x5 ou 7x7 cases) ou hexagonal. '
+                      'Chaque joueur possède 5 ou 7 pions placés sur sa ligne de départ. '
+                      'Le Nexus est placé au centre du plateau.',
                 ),
                 _buildSection(
                   icon: Icons.emoji_events_rounded,
                   title: 'Objectif',
                   content:
-                      'Un joueur gagne la partie s\'il reussit a :\n\n'
-                      '1. Ramener le Nexus sur sa propre ligne de depart\n\n'
-                      '2. Bloquer le Nexus de facon a ce qu\'il ne puisse plus etre deplace',
+                      'Un joueur gagne la partie s\'il réussit à :\n\n'
+                      '1. Amener le Nexus sur la ligne de sa couleur\n\n'
+                      '2. Bloquer le Nexus de façon à ce qu\'il ne puisse plus être déplacé',
                 ),
                 _buildSection(
                   icon: Icons.swap_horiz_rounded,
-                  title: 'Deroulement d\'un tour',
+                  title: 'Déroulement d\'un tour',
                   content:
-                      'A son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
-                      '1. Deplacer le Nexus d\'une seule case (dans n\'importe quelle direction)\n\n'
-                      '2. Deplacer un de ses pions jusqu\'au bout de la ligne ou jusqu\'a un obstacle',
+                      'À son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
+                      '1. Déplacer le Nexus d\'une seule case (dans n\'importe quelle direction)\n\n'
+                      '2. Déplacer un de ses pions jusqu\'au bout de la ligne ou jusqu\'à un obstacle',
                 ),
                 _buildSection(
                   icon: Icons.info_outline_rounded,
-                  title: 'Regles importantes',
+                  title: 'Règles importantes',
                   content:
-                      '- Le Nexus se deplace d\'une seule case a la fois\n\n'
+                      '- Le Nexus se déplace d\'une seule case à la fois\n\n'
                       '- Les pions doivent aller le plus loin possible dans la direction choisie\n\n'
                       '- Aucun pion ne peut sauter par-dessus un autre pion ou le Nexus\n\n'
-                      '- 8 directions possibles : horizontale, verticale et diagonales',
+                      '- 8 directions sur le plateau carré, 6 sur le plateau hexagonal',
                 ),
                 _buildPiecesLegend(),
                 const SizedBox(height: 30),
@@ -152,7 +152,7 @@ class _RulesScreenState extends State<RulesScreen> {
               ),
               const SizedBox(width: 14),
               Text(
-                'Les pieces',
+                'Les pièces',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -168,14 +168,14 @@ class _RulesScreenState extends State<RulesScreen> {
             color: _theme.player1Color,
             icon: null,
             name: 'Pions Joueur 1',
-            description: 'Ligne du haut, vont jusqu\'au bout',
+            description: 'Vont jusqu\'au bout de la ligne',
           ),
           const SizedBox(height: 16),
           _buildPieceRow(
             color: _theme.player2Color,
             icon: null,
             name: 'Pions Joueur 2',
-            description: 'Ligne du bas, vont jusqu\'au bout',
+            description: 'Vont jusqu\'au bout de la ligne',
           ),
         ],
       ),
@@ -207,7 +207,7 @@ class _RulesScreenState extends State<RulesScreen> {
                 ),
               ),
               Text(
-                'Piece centrale, se deplace d\'une case',
+                'Pièce centrale, se déplace d\'une case',
                 style: TextStyle(fontSize: 13, color: _theme.secondaryText),
               ),
             ],
