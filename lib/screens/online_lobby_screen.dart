@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
+import '../main.dart' show deepLinkService;
 import '../models/game_state.dart';
 import '../services/multiplayer_service.dart';
 import '../theme/app_colors.dart';
@@ -12,8 +14,9 @@ enum LobbyMode { create, join }
 
 class OnlineLobbyScreen extends StatefulWidget {
   final LobbyMode mode;
+  final String? initialCode;
 
-  const OnlineLobbyScreen({super.key, required this.mode});
+  const OnlineLobbyScreen({super.key, required this.mode, this.initialCode});
 
   @override
   State<OnlineLobbyScreen> createState() => _OnlineLobbyScreenState();
@@ -56,6 +59,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
     if (_isHost) {
       _createRoom();
+    } else if (widget.initialCode != null) {
+      // Auto-fill and auto-join when opened via deep link
+      _codeController.text = widget.initialCode!;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _joinRoom());
     }
   }
 
@@ -199,6 +206,13 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         if (mounted) setState(() => _copied = false);
       });
     }
+  }
+
+  void _shareLink(String code) {
+    final link = deepLinkService.generateShareLink(code);
+    SharePlus.instance.share(
+      ShareParams(text: 'Rejoins ma partie Kaptis!\n$link'),
+    );
   }
 
   Future<void> _cancel() async {
@@ -349,24 +363,46 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
             ),
           ),
           SizedBox(height: isLarge ? 16 : 12),
-          ElevatedButton.icon(
-            onPressed: _copyCode,
-            icon: Icon(
-              _copied ? Icons.check : Icons.copy,
-              size: isLarge ? 20 : 18,
-            ),
-            label: Text(
-              'Copier',
-              style: TextStyle(fontSize: isLarge ? 16 : 14),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _theme.accentColor,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isLarge ? 24 : 16,
-                vertical: isLarge ? 12 : 10,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                onPressed: _copyCode,
+                icon: Icon(
+                  _copied ? Icons.check : Icons.copy,
+                  size: isLarge ? 20 : 18,
+                ),
+                label: Text(
+                  'Copier',
+                  style: TextStyle(fontSize: isLarge ? 16 : 14),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _theme.accentColor,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isLarge ? 24 : 16,
+                    vertical: isLarge ? 12 : 10,
+                  ),
+                ),
               ),
-            ),
+              SizedBox(width: isLarge ? 12 : 8),
+              ElevatedButton.icon(
+                onPressed: () => _shareLink(code),
+                icon: Icon(Icons.share, size: isLarge ? 20 : 18),
+                label: Text(
+                  'Partager',
+                  style: TextStyle(fontSize: isLarge ? 16 : 14),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _theme.accentColor,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isLarge ? 24 : 16,
+                    vertical: isLarge ? 12 : 10,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
