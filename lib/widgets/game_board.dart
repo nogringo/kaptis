@@ -455,8 +455,12 @@ class GameBoardState extends State<GameBoard> {
               itemBuilder: (context, index) {
                 final visualRow = index ~/ gameState.boardSize;
                 final col = index % gameState.boardSize;
-                // Inverser pour que joueur 1 (row 0) soit en bas
-                final logicalRow = gameState.boardSize - 1 - visualRow;
+                // Inverser pour que le joueur local soit en bas
+                final shouldInvert = !widget.isMultiplayer ||
+                    widget.localPlayer == Player.player1;
+                final logicalRow = shouldInvert
+                    ? gameState.boardSize - 1 - visualRow
+                    : visualRow;
                 final pos = Position(logicalRow, col);
                 return _buildCell(pos);
               },
@@ -525,8 +529,10 @@ class GameBoardState extends State<GameBoard> {
 
       for (int row = 0; row < colHeight; row++) {
         final x = startX + hexWidth / 2 + col * horizontalSpacing;
-        // Inverser pour que joueur 1 (row 0) soit en bas
-        final invertedRow = colHeight - 1 - row;
+        // Inverser pour que le joueur local soit en bas
+        final shouldInvert =
+            !widget.isMultiplayer || widget.localPlayer == Player.player1;
+        final invertedRow = shouldInvert ? colHeight - 1 - row : row;
         final y = colStartY + invertedRow * hexHeight;
         final pos = Position(row, col);
 
