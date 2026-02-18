@@ -548,7 +548,7 @@ class GameBoardState extends State<GameBoard> {
               ),
               child: Stack(
                 children: [
-                  // isTopRow = row 0 (joueur 1) -> maintenant en bas visuellement
+                  // isTopRow = row 0 (camp joueur 1) -> objectif selon winCondition
                   if (isTopRow)
                     Positioned(
                       bottom: 6,
@@ -559,13 +559,15 @@ class GameBoardState extends State<GameBoard> {
                           width: indicatorSize,
                           height: indicatorSize,
                           decoration: BoxDecoration(
-                            color: _theme.player1Color.withAlpha(180),
+                            color: widget.winCondition == WinCondition.ownCamp
+                                ? _theme.player1Color.withAlpha(180)
+                                : _theme.player2Color.withAlpha(180),
                             shape: BoxShape.circle,
                           ),
                         ),
                       ),
                     ),
-                  // isBottomRow = row max (joueur 2) -> maintenant en haut visuellement
+                  // isBottomRow = row max (camp joueur 2) -> objectif selon winCondition
                   if (isBottomRow)
                     Positioned(
                       top: 6,
@@ -576,7 +578,9 @@ class GameBoardState extends State<GameBoard> {
                           width: indicatorSize,
                           height: indicatorSize,
                           decoration: BoxDecoration(
-                            color: _theme.player2Color.withAlpha(180),
+                            color: widget.winCondition == WinCondition.ownCamp
+                                ? _theme.player2Color.withAlpha(180)
+                                : _theme.player1Color.withAlpha(180),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -669,7 +673,7 @@ class GameBoardState extends State<GameBoard> {
     final indicatorSize = _cellSize * 0.12;
 
     Widget? zoneIndicator;
-    // row 0 (joueur 1) -> maintenant en bas visuellement
+    // row 0 (camp joueur 1) -> objectif selon winCondition
     if (pos.row == 0) {
       zoneIndicator = Positioned(
         bottom: 2,
@@ -678,12 +682,14 @@ class GameBoardState extends State<GameBoard> {
           width: indicatorSize,
           height: indicatorSize,
           decoration: BoxDecoration(
-            color: _theme.player1Color.withAlpha(127),
+            color: widget.winCondition == WinCondition.ownCamp
+                ? _theme.player1Color.withAlpha(127)
+                : _theme.player2Color.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
       );
-      // row max (joueur 2) -> maintenant en haut visuellement
+      // row max (camp joueur 2) -> objectif selon winCondition
     } else if (pos.row == gameState.boardSize - 1) {
       zoneIndicator = Positioned(
         top: 2,
@@ -692,7 +698,9 @@ class GameBoardState extends State<GameBoard> {
           width: indicatorSize,
           height: indicatorSize,
           decoration: BoxDecoration(
-            color: _theme.player2Color.withAlpha(127),
+            color: widget.winCondition == WinCondition.ownCamp
+                ? _theme.player2Color.withAlpha(127)
+                : _theme.player1Color.withAlpha(127),
             shape: BoxShape.circle,
           ),
         ),
