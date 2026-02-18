@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 enum NexusSkin { diamond, crystal, pulsingOrb, vortex, star, core, sun }
 
 enum NexusColor {
-  gold('Dore', Color(0xFFFFD700), Color(0xFFDAA520), Color(0xFFB8860B)),
+  gold('Doré', Color(0xFFFDD835), Color(0xFFFBC02D), Color(0xFFF57F17)),
   blue('Bleu', Color(0xFF64B5F6), Color(0xFF2196F3), Color(0xFF1565C0)),
   red('Rouge', Color(0xFFEF5350), Color(0xFFE53935), Color(0xFFC62828)),
   green('Vert', Color(0xFF81C784), Color(0xFF4CAF50), Color(0xFF2E7D32)),
