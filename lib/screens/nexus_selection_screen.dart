@@ -32,14 +32,12 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
   Widget build(BuildContext context) {
     final theme = context.colors;
     return Scaffold(
-      backgroundColor: theme.primaryBackground,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Style du Nexus',
-          style: TextStyle(color: theme.appBarForeground),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: theme.appBarBackground,
-        iconTheme: IconThemeData(color: theme.appBarForeground),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: Responsive.screenPadding(context),
@@ -239,14 +237,7 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
             Positioned(
               top: 8,
               right: 8,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.check_circle, color: _colorBright, size: 20),
-              ),
+              child: Icon(Icons.check_circle, color: _colorBright, size: 24),
             ),
         ],
       ),
