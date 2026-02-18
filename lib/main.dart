@@ -68,14 +68,14 @@ class _KaptisAppState extends State<KaptisApp> {
           seedColor: const Color(0xFF234d3f),
           brightness: Brightness.light,
         ),
-        extensions: const [AppColors.light],
+        extensions: [AppColors.light],
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF234d3f),
           brightness: Brightness.dark,
         ),
-        extensions: const [AppColors.dark],
+        extensions: [AppColors.dark],
       ),
       themeMode: kDebugMode ? ThemeMode.dark : null,
       home: const HomeScreen(),

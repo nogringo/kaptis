@@ -87,7 +87,7 @@ class AppColors extends ThemeExtension<AppColors> {
   });
 
   // Light theme
-  static const light = AppColors(
+  static final light = AppColors(
     primaryBackground: Color(0xFFF5F5F5),
     secondaryBackground: Colors.white,
     cardBackground: Color(0xFFFAFAFA),
@@ -112,8 +112,8 @@ class AppColors extends ThemeExtension<AppColors> {
     boardBorder: Colors.transparent,
     validMoveColor: Color(0xFF2E7D32),
     selectedColor: Color(0xFFFF8F00),
-    player1Color: Colors.blue,
-    player2Color: Colors.red,
+    player1Color: Colors.blue[900]!,
+    player2Color: Colors.red[900]!,
     shadowColor: Color(0x4C000000),
     accentShadow: Color(0x32000000),
     logoGradient: [Color(0xFF3A8A6E), Color(0xFF234d3f), Color(0xFF1A3A2F)],
@@ -121,7 +121,7 @@ class AppColors extends ThemeExtension<AppColors> {
   );
 
   // Dark theme
-  static const dark = AppColors(
+  static final dark = AppColors(
     primaryBackground: Color(0xFF0D1F1A),
     secondaryBackground: Color(0xFF142923),
     cardBackground: Color(0xFF142923),
@@ -146,8 +146,8 @@ class AppColors extends ThemeExtension<AppColors> {
     boardBorder: Colors.black26,
     validMoveColor: Colors.green,
     selectedColor: Colors.yellow,
-    player1Color: Colors.blue,
-    player2Color: Colors.red,
+    player1Color: Colors.blue[900]!,
+    player2Color: Colors.red[900]!,
     shadowColor: Color(0x4C000000),
     accentShadow: Color(0x64234d3f),
     logoGradient: [Color(0xFF3A8A6E), Color(0xFF234d3f), Color(0xFF1A3A2F)],
