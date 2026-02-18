@@ -77,7 +77,7 @@ class _KaptisAppState extends State<KaptisApp> {
         ),
         extensions: [AppColors.dark],
       ),
-      themeMode: kDebugMode ? ThemeMode.dark : null,
+      // themeMode: kDebugMode ? ThemeMode.dark : null,
       home: const HomeScreen(),
     );
   }

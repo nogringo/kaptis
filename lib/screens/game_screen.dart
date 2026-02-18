@@ -117,7 +117,7 @@ class _GameScreenState extends State<GameScreen> {
             Container(
               width: sidebarWidth,
               decoration: BoxDecoration(
-                color: _theme.cardBackground,
+                color: Theme.of(context).colorScheme.surface,
                 border: Border(
                   right: BorderSide(color: _theme.cardBorder, width: 1),
                 ),
@@ -217,7 +217,7 @@ class _GameScreenState extends State<GameScreen> {
 
     if (boardState == null) {
       playerName = widget.vsAI ? 'Vous' : 'Joueur 1';
-      actionText = 'Deplacez le Nexus';
+      actionText = 'Déplacez le Nexus';
       statusColor = _theme.player1Color;
     } else if (boardState.winner != null) {
       if (widget.vsAI) {
@@ -249,8 +249,8 @@ class _GameScreenState extends State<GameScreen> {
             : 'Joueur 2';
       }
       actionText = boardState.phase == GamePhase.moveNexus
-          ? 'Deplacez le Nexus'
-          : 'Deplacez un pion';
+          ? 'Déplacez le Nexus'
+          : 'Déplacez un pion';
       statusColor = boardState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;

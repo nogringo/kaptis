@@ -344,8 +344,8 @@ class GameBoardState extends State<GameBoard> {
             : 'Joueur 2';
       }
       actionText = gameState.phase == GamePhase.moveNexus
-          ? 'Deplacez le Nexus'
-          : 'Deplacez un pion';
+          ? 'Déplacez le Nexus'
+          : 'Déplacez un pion';
       statusColor = gameState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;

@@ -339,7 +339,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     return Container(
       padding: EdgeInsets.all(isLarge ? 32 : 24),
       decoration: BoxDecoration(
-        color: _theme.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
         border: Border.all(color: _theme.accentColor, width: 2),
       ),
@@ -413,7 +413,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     return Container(
       padding: EdgeInsets.all(isLarge ? 32 : 24),
       decoration: BoxDecoration(
-        color: _theme.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
         border: Border.all(color: _theme.cardBorder),
       ),
@@ -466,7 +466,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     return Container(
       padding: EdgeInsets.all(isLarge ? 24 : 16),
       decoration: BoxDecoration(
-        color: _theme.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(isLarge ? 16 : 12),
         border: Border.all(color: _theme.cardBorder),
       ),
@@ -671,7 +671,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         vertical: isLarge ? 6 : 4,
       ),
       decoration: BoxDecoration(
-        color: _theme.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(isLarge ? 12 : 10),
         border: Border.all(color: _theme.cardBorder),
       ),
@@ -695,7 +695,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     return Container(
       padding: EdgeInsets.all(isLarge ? 24 : 16),
       decoration: BoxDecoration(
-        color: _theme.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(isLarge ? 16 : 12),
         border: Border.all(color: _theme.cardBorder),
       ),

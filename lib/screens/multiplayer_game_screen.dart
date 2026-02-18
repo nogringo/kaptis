@@ -244,7 +244,7 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
             Container(
               width: sidebarWidth,
               decoration: BoxDecoration(
-                color: _theme.cardBackground,
+                color: Theme.of(context).colorScheme.surface,
                 border: Border(
                   right: BorderSide(color: _theme.cardBorder, width: 1),
                 ),
@@ -409,8 +409,8 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
       final isMyTurn = boardState.currentPlayer == localPlayer;
       playerName = isMyTurn ? 'Vous' : 'Adversaire';
       actionText = boardState.phase == GamePhase.moveNexus
-          ? 'Deplacez le Nexus'
-          : 'Deplacez un pion';
+          ? 'Déplacez le Nexus'
+          : 'Déplacez un pion';
       statusColor = boardState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;

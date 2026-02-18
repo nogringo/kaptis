@@ -149,20 +149,23 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 8,
           shadowColor: _theme.accentShadow,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.play_arrow_rounded, size: height * 0.5),
-            const SizedBox(width: 8),
-            Text(
-              'JOUER',
-              style: TextStyle(
-                fontSize: height * 0.32,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.play_arrow_rounded, size: height * 0.5),
+              const SizedBox(width: 8),
+              Text(
+                'JOUER EN LOCAL',
+                style: TextStyle(
+                  fontSize: height * 0.32,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -183,20 +186,23 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 8,
           shadowColor: _theme.accentShadow,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.public_rounded, size: height * 0.5),
-            const SizedBox(width: 8),
-            Text(
-              'EN LIGNE',
-              style: TextStyle(
-                fontSize: height * 0.32,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.public_rounded, size: height * 0.5),
+              const SizedBox(width: 8),
+              Text(
+                'JOUER EN LIGNE',
+                style: TextStyle(
+                  fontSize: height * 0.32,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -214,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: _theme.cardBackground,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
@@ -272,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showMultiplayerBottomSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: _theme.cardBackground,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -337,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: _theme.cardBackground,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           foregroundColor: _theme.primaryText,
           elevation: 0,
           shape: RoundedRectangleBorder(

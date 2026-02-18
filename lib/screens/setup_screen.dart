@@ -99,7 +99,7 @@ class _SetupScreenState extends State<SetupScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 32),
-                              _buildSectionTitle('Difficulte', isLarge),
+                              _buildSectionTitle('Difficulté', isLarge),
                               const SizedBox(height: 16),
                               _buildDifficultySelector(isLarge),
                             ],
@@ -111,7 +111,7 @@ class _SetupScreenState extends State<SetupScreen> {
                   const SizedBox(height: 16),
                   _buildWinConditionSelector(isLarge),
                   const SizedBox(height: 32),
-                  _buildSectionTitle('Premier joueur', isLarge),
+                  _buildSectionTitle('Commence en premier', isLarge),
                   const SizedBox(height: 16),
                   _buildStartingPlayerSelector(isLarge),
                 ],
@@ -164,7 +164,7 @@ class _SetupScreenState extends State<SetupScreen> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Difficulte', isLarge),
+                    _buildSectionTitle('Difficulté', isLarge),
                     const SizedBox(height: 16),
                     _buildDifficultySelector(isLarge),
                     const SizedBox(height: 32),
@@ -195,7 +195,7 @@ class _SetupScreenState extends State<SetupScreen> {
         const SizedBox(height: 16),
         _buildWinConditionSelector(isLarge),
         const SizedBox(height: 32),
-        _buildSectionTitle('Premier joueur', isLarge),
+        _buildSectionTitle('Commence en premier', isLarge),
         const SizedBox(height: 16),
         _buildStartingPlayerSelector(isLarge),
         const SizedBox(height: 24),
@@ -221,22 +221,22 @@ class _SetupScreenState extends State<SetupScreen> {
         children: [
           Expanded(
             child: _buildModeCard(
-              icon: Icons.people_rounded,
-              title: '2 Joueurs',
-              subtitle: 'Jouer en local',
-              isSelected: !_vsAI,
-              onTap: () => setState(() => _vsAI = false),
+              icon: Icons.smart_toy_rounded,
+              title: 'vs IA',
+              subtitle: 'Jouer avec Blob',
+              isSelected: _vsAI,
+              onTap: () => setState(() => _vsAI = true),
               isLarge: isLarge,
             ),
           ),
           SizedBox(width: isLarge ? 20 : 16),
           Expanded(
             child: _buildModeCard(
-              icon: Icons.smart_toy_rounded,
-              title: 'vs IA',
-              subtitle: 'Jouer contre l\'ordinateur',
-              isSelected: _vsAI,
-              onTap: () => setState(() => _vsAI = true),
+              icon: Icons.people_rounded,
+              title: '2 Joueurs',
+              subtitle: 'Jouer avec un ami',
+              isSelected: !_vsAI,
+              onTap: () => setState(() => _vsAI = false),
               isLarge: isLarge,
             ),
           ),
@@ -263,7 +263,7 @@ class _SetupScreenState extends State<SetupScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? _theme.accentColor.withAlpha(25)
-                : _theme.cardBackground,
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
               color: isSelected ? _theme.accentColor : _theme.cardBorder,
@@ -310,7 +310,7 @@ class _SetupScreenState extends State<SetupScreen> {
           Expanded(
             child: _buildBoardTypeCard(
               icon: Icons.grid_4x4_rounded,
-              title: 'Carre',
+              title: 'Carré',
               subtitle: '5x5 ou 7x7 cases',
               isSelected: _gameMode == GameMode.square,
               onTap: () => setState(() => _gameMode = GameMode.square),
@@ -351,7 +351,7 @@ class _SetupScreenState extends State<SetupScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? _theme.accentColor.withAlpha(25)
-                : _theme.cardBackground,
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
               color: isSelected ? _theme.accentColor : _theme.cardBorder,
@@ -405,7 +405,7 @@ class _SetupScreenState extends State<SetupScreen> {
         SizedBox(width: isLarge ? 16 : 12),
         Expanded(
           child: _buildDifficultyCard(
-            label: 'Normal',
+            label: 'Avancé',
             icon: Icons.sentiment_neutral_rounded,
             difficulty: AIDifficulty.normal,
             color: Colors.orange,
@@ -415,7 +415,7 @@ class _SetupScreenState extends State<SetupScreen> {
         SizedBox(width: isLarge ? 16 : 12),
         Expanded(
           child: _buildDifficultyCard(
-            label: 'Difficile',
+            label: 'Expert',
             icon: Icons.sentiment_very_dissatisfied_rounded,
             difficulty: AIDifficulty.hard,
             color: Colors.red,
@@ -441,7 +441,9 @@ class _SetupScreenState extends State<SetupScreen> {
         child: Container(
           height: isLarge ? 100 : 80,
           decoration: BoxDecoration(
-            color: isSelected ? color.withAlpha(30) : _theme.cardBackground,
+            color: isSelected
+                ? color.withAlpha(30)
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(isLarge ? 16 : 12),
             border: Border.all(
               color: isSelected ? color : _theme.cardBorder,
@@ -510,7 +512,7 @@ class _SetupScreenState extends State<SetupScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? _theme.accentColor.withAlpha(25)
-                : _theme.cardBackground,
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
               color: isSelected ? _theme.accentColor : _theme.cardBorder,
@@ -594,7 +596,7 @@ class _SetupScreenState extends State<SetupScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? _theme.accentColor.withAlpha(25)
-                : _theme.cardBackground,
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
               color: isSelected ? _theme.accentColor : _theme.cardBorder,
@@ -680,7 +682,9 @@ class _SetupScreenState extends State<SetupScreen> {
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.all(isLarge ? 24 : 20),
           decoration: BoxDecoration(
-            color: isSelected ? color.withAlpha(25) : _theme.cardBackground,
+            color: isSelected
+                ? color.withAlpha(25)
+                : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(isLarge ? 20 : 16),
             border: Border.all(
               color: isSelected ? color : _theme.cardBorder,

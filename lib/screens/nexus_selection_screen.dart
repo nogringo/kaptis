@@ -34,7 +34,7 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Style du Nexus',
+          'Personnaliser le Nexus',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -159,9 +159,6 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
                     ),
                 ],
               ),
-              child: isSelected
-                  ? const Icon(Icons.check, color: Colors.white, size: 28)
-                  : null,
             ),
           );
         }).toList(),
@@ -187,7 +184,7 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
             width: 180,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.cardBackground,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected ? _colorBright : theme.cardBorder,
@@ -233,12 +230,6 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
               ],
             ),
           ),
-          if (isSelected)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Icon(Icons.check_circle, color: _colorBright, size: 24),
-            ),
         ],
       ),
     );

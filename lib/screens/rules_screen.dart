@@ -45,24 +45,24 @@ class _RulesScreenState extends State<RulesScreen> {
                   content:
                       'Un joueur gagne la partie s\'il réussit à :\n\n'
                       '1. Amener le Nexus sur la ligne de sa couleur\n\n'
-                      '2. Bloquer le Nexus de façon à ce qu\'il ne puisse plus être déplacé',
+                      '2. Immobiliser le Nexus par encerclement stratégique (inspiré du Go)',
                 ),
                 _buildSection(
                   icon: Icons.swap_horiz_rounded,
                   title: 'Déroulement d\'un tour',
                   content:
                       'À son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
-                      '1. Déplacer le Nexus d\'une seule case (dans n\'importe quelle direction)\n\n'
-                      '2. Déplacer un de ses pions jusqu\'au bout de la ligne ou jusqu\'à un obstacle',
+                      '1. Déplacer le Nexus d\'une seule case (comme le Roi aux échecs)\n\n'
+                      '2. Déplacer un de ses pions jusqu\'au bout de la ligne (comme la Dame aux échecs)',
                 ),
                 _buildSection(
                   icon: Icons.info_outline_rounded,
                   title: 'Règles importantes',
                   content:
-                      '- Le Nexus se déplace d\'une seule case à la fois\n\n'
-                      '- Les pions doivent aller le plus loin possible dans la direction choisie\n\n'
-                      '- Aucun pion ne peut sauter par-dessus un autre pion ou le Nexus\n\n'
-                      '- 8 directions sur le plateau carré, 6 sur le plateau hexagonal',
+                      '• Le Nexus se déplace d\'une case dans toutes les directions (Roi)\n\n'
+                      '• Les pions filent jusqu\'au bout dans la direction choisie (Dame)\n\n'
+                      '• Aucune pièce ne peut sauter par-dessus une autre\n\n'
+                      '• 8 directions sur plateau carré, 6 sur plateau hexagonal',
                 ),
                 _buildPiecesLegend(),
                 const SizedBox(height: 30),
@@ -83,7 +83,7 @@ class _RulesScreenState extends State<RulesScreen> {
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _theme.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _theme.cardBorder, width: 1),
       ),
@@ -129,7 +129,7 @@ class _RulesScreenState extends State<RulesScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _theme.cardBackground,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _theme.cardBorder, width: 1),
       ),
@@ -168,14 +168,14 @@ class _RulesScreenState extends State<RulesScreen> {
             color: _theme.player1Color,
             icon: null,
             name: 'Pions Joueur 1',
-            description: 'Vont jusqu\'au bout de la ligne',
+            description: 'Se déplacent comme la Dame aux échecs',
           ),
           const SizedBox(height: 16),
           _buildPieceRow(
             color: _theme.player2Color,
             icon: null,
             name: 'Pions Joueur 2',
-            description: 'Vont jusqu\'au bout de la ligne',
+            description: 'Se déplacent comme la Dame aux échecs',
           ),
         ],
       ),
@@ -207,7 +207,7 @@ class _RulesScreenState extends State<RulesScreen> {
                 ),
               ),
               Text(
-                'Pièce centrale, se déplace d\'une case',
+                'Se déplace comme le Roi aux échecs',
                 style: TextStyle(fontSize: 13, color: _theme.secondaryText),
               ),
             ],
@@ -231,7 +231,6 @@ class _RulesScreenState extends State<RulesScreen> {
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
             boxShadow: [BoxShadow(color: color.withAlpha(100), blurRadius: 8)],
           ),
           child: icon != null

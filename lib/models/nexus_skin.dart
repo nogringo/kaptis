@@ -9,8 +9,7 @@ enum NexusColor {
   green('Vert', Color(0xFF81C784), Color(0xFF4CAF50), Color(0xFF2E7D32)),
   purple('Violet', Color(0xFFBA68C8), Color(0xFF9C27B0), Color(0xFF6A1B9A)),
   cyan('Cyan', Color(0xFF4DD0E1), Color(0xFF00BCD4), Color(0xFF00838F)),
-  pink('Rose', Color(0xFFF48FB1), Color(0xFFE91E63), Color(0xFFAD1457)),
-  orange('Orange', Color(0xFFFFB74D), Color(0xFFFF9800), Color(0xFFE65100));
+  pink('Rose', Color(0xFFF48FB1), Color(0xFFE91E63), Color(0xFFAD1457));
 
   final String label;
   final Color bright;
