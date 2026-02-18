@@ -245,9 +245,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           ),
         ),
         body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: Responsive.screenPadding(context),
+          child: SingleChildScrollView(
+            padding: Responsive.screenPadding(context),
+            child: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: Responsive.contentMaxWidth(context),
