@@ -5,7 +5,7 @@ class PreferencesService {
   static const _nexusSkinKey = 'nexus_skin';
   static const _nexusColorKey = 'nexus_color';
 
-  static NexusSkin _nexusSkin = NexusSkin.diamond;
+  static NexusSkin _nexusSkin = NexusSkin.core;
   static NexusColor _nexusColor = NexusColor.gold;
 
   static NexusSkin get nexusSkin => _nexusSkin;
@@ -13,7 +13,7 @@ class PreferencesService {
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final skinIndex = prefs.getInt(_nexusSkinKey) ?? 0;
+    final skinIndex = prefs.getInt(_nexusSkinKey) ?? NexusSkin.core.index;
     final colorIndex = prefs.getInt(_nexusColorKey) ?? 0;
     _nexusSkin =
         NexusSkin.values[skinIndex.clamp(0, NexusSkin.values.length - 1)];

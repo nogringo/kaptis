@@ -137,12 +137,10 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
       return PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, result) async {
-          if (!didPop) {
-            final canPop = await _onWillPop();
-            if (canPop && mounted) {
-              Navigator.pop(context);
-            }
-          }
+          if (didPop) return;
+          final canPop = await _onWillPop();
+          if (!canPop || !context.mounted) return;
+          Navigator.pop(context);
         },
         child: Scaffold(body: SafeArea(child: _buildDesktopLayout())),
       );
@@ -151,12 +149,10 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
-        if (!didPop) {
-          final canPop = await _onWillPop();
-          if (canPop && mounted) {
-            Navigator.pop(context);
-          }
-        }
+        if (didPop) return;
+        final canPop = await _onWillPop();
+        if (!canPop || !context.mounted) return;
+        Navigator.pop(context);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -169,9 +165,8 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
             icon: const Icon(Icons.close),
             onPressed: () async {
               final canPop = await _onWillPop();
-              if (canPop && mounted) {
-                Navigator.pop(context);
-              }
+              if (!canPop || !context.mounted) return;
+              Navigator.pop(context);
             },
           ),
         ),

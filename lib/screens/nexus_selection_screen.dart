@@ -77,6 +77,12 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
                     children: [
                       _buildDesignCard(
                         context,
+                        skin: NexusSkin.core,
+                        title: 'Noyau',
+                        subtitle: 'Noyau energetique',
+                      ),
+                      _buildDesignCard(
+                        context,
                         skin: NexusSkin.diamond,
                         title: 'Diamant',
                         subtitle: 'Forme diamant',
@@ -104,12 +110,6 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
                         skin: NexusSkin.star,
                         title: 'Etoile',
                         subtitle: 'Etoile brillante',
-                      ),
-                      _buildDesignCard(
-                        context,
-                        skin: NexusSkin.core,
-                        title: 'Noyau',
-                        subtitle: 'Noyau energetique',
                       ),
                       _buildDesignCard(
                         context,
