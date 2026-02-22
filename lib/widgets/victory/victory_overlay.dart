@@ -67,15 +67,17 @@ class _VictoryOverlayState extends State<VictoryOverlay>
 
   void _initParticles() {
     if (!mounted) return;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenSize = MediaQuery.of(context).size;
 
     _particles.clear();
     for (int i = 0; i < _particleCount; i++) {
       _particles.add(
         ConfettiParticle.random(
-          screenWidth: screenWidth,
+          screenWidth: screenSize.width,
+          screenHeight: screenSize.height,
           baseColor: widget.winnerColor,
           random: _random,
+          initialSpawn: true,
         ),
       );
     }
@@ -92,6 +94,7 @@ class _VictoryOverlayState extends State<VictoryOverlay>
         if (particle.isOffScreen(screenSize.height)) {
           final newParticle = ConfettiParticle.random(
             screenWidth: screenSize.width,
+            screenHeight: screenSize.height,
             baseColor: widget.winnerColor,
             random: _random,
           );

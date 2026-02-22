@@ -26,8 +26,10 @@ class ConfettiParticle {
 
   factory ConfettiParticle.random({
     required double screenWidth,
+    required double screenHeight,
     required Color baseColor,
     required math.Random random,
+    bool initialSpawn = false,
   }) {
     // Generate color variations based on the winner's color
     final hslColor = HSLColor.fromColor(baseColor);
@@ -49,9 +51,14 @@ class ConfettiParticle {
       Colors.white,
     ];
 
+    // Initial spawn: stagger above screen to avoid waves, respawn: just above
+    final y = initialSpawn
+        ? -random.nextDouble() * screenHeight * 1.5
+        : -random.nextDouble() * 50 - 20;
+
     return ConfettiParticle(
       x: random.nextDouble() * screenWidth,
-      y: -random.nextDouble() * 100 - 20,
+      y: y,
       velocityX: (random.nextDouble() - 0.5) * 4,
       velocityY: random.nextDouble() * 3 + 2,
       rotation: random.nextDouble() * 2 * math.pi,
