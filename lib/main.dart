@@ -7,8 +7,6 @@ import 'services/deep_link_service.dart';
 import 'services/preferences_service.dart';
 import 'theme/app_colors.dart';
 
-// TODO les selections doivent rester en mémoire
-
 final deepLinkService = DeepLinkService();
 
 void main() async {

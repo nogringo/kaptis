@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/ai_player.dart';
 import '../models/game_state.dart';
+import '../services/preferences_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
 import 'game_screen.dart';
@@ -13,12 +14,12 @@ class SetupScreen extends StatefulWidget {
 }
 
 class _SetupScreenState extends State<SetupScreen> {
-  int _boardSize = 5;
-  bool _vsAI = true;
-  AIDifficulty _difficulty = AIDifficulty.normal;
-  GameMode _gameMode = GameMode.square;
-  WinCondition _winCondition = WinCondition.ownCamp;
-  Player _startingPlayer = Player.player1;
+  int _boardSize = PreferencesService.boardSize;
+  bool _vsAI = PreferencesService.vsAI;
+  AIDifficulty _difficulty = PreferencesService.difficulty;
+  GameMode _gameMode = PreferencesService.gameMode;
+  WinCondition _winCondition = PreferencesService.winCondition;
+  Player _startingPlayer = PreferencesService.startingPlayer;
 
   AppColors get _theme => context.colors;
 
@@ -225,7 +226,10 @@ class _SetupScreenState extends State<SetupScreen> {
               title: 'vs IA',
               subtitle: 'Jouer avec Blob',
               isSelected: _vsAI,
-              onTap: () => setState(() => _vsAI = true),
+              onTap: () {
+                setState(() => _vsAI = true);
+                PreferencesService.setVsAI(true);
+              },
               isLarge: isLarge,
             ),
           ),
@@ -236,7 +240,10 @@ class _SetupScreenState extends State<SetupScreen> {
               title: '2 Joueurs',
               subtitle: 'Jouer avec un ami',
               isSelected: !_vsAI,
-              onTap: () => setState(() => _vsAI = false),
+              onTap: () {
+                setState(() => _vsAI = false);
+                PreferencesService.setVsAI(false);
+              },
               isLarge: isLarge,
             ),
           ),
@@ -313,7 +320,10 @@ class _SetupScreenState extends State<SetupScreen> {
               title: 'Carré',
               subtitle: '5x5 ou 7x7 cases',
               isSelected: _gameMode == GameMode.square,
-              onTap: () => setState(() => _gameMode = GameMode.square),
+              onTap: () {
+                setState(() => _gameMode = GameMode.square);
+                PreferencesService.setGameMode(GameMode.square);
+              },
               isLarge: isLarge,
             ),
           ),
@@ -324,7 +334,10 @@ class _SetupScreenState extends State<SetupScreen> {
               title: 'Hexagonal',
               subtitle: '37 hexagones',
               isSelected: _gameMode == GameMode.hexagonal,
-              onTap: () => setState(() => _gameMode = GameMode.hexagonal),
+              onTap: () {
+                setState(() => _gameMode = GameMode.hexagonal);
+                PreferencesService.setGameMode(GameMode.hexagonal);
+              },
               isLarge: isLarge,
             ),
           ),
@@ -435,7 +448,10 @@ class _SetupScreenState extends State<SetupScreen> {
   }) {
     final isSelected = _difficulty == difficulty;
     return GestureDetector(
-      onTap: () => setState(() => _difficulty = difficulty),
+      onTap: () {
+        setState(() => _difficulty = difficulty);
+        PreferencesService.setDifficulty(difficulty);
+      },
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Container(
@@ -503,7 +519,10 @@ class _SetupScreenState extends State<SetupScreen> {
   }) {
     final isSelected = _boardSize == size;
     return GestureDetector(
-      onTap: () => setState(() => _boardSize = size),
+      onTap: () {
+        setState(() => _boardSize = size);
+        PreferencesService.setBoardSize(size);
+      },
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: AnimatedContainer(
@@ -557,7 +576,10 @@ class _SetupScreenState extends State<SetupScreen> {
               title: 'Son camp',
               subtitle: 'Ramener le Nexus dans son camp',
               isSelected: _winCondition == WinCondition.ownCamp,
-              onTap: () => setState(() => _winCondition = WinCondition.ownCamp),
+              onTap: () {
+                setState(() => _winCondition = WinCondition.ownCamp);
+                PreferencesService.setWinCondition(WinCondition.ownCamp);
+              },
               isLarge: isLarge,
             ),
           ),
@@ -568,8 +590,10 @@ class _SetupScreenState extends State<SetupScreen> {
               title: 'Camp adverse',
               subtitle: 'Amener le Nexus chez l\'adversaire',
               isSelected: _winCondition == WinCondition.opponentCamp,
-              onTap: () =>
-                  setState(() => _winCondition = WinCondition.opponentCamp),
+              onTap: () {
+                setState(() => _winCondition = WinCondition.opponentCamp);
+                PreferencesService.setWinCondition(WinCondition.opponentCamp);
+              },
               isLarge: isLarge,
             ),
           ),
@@ -646,7 +670,10 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: 'Joueur 1 commence',
               color: _theme.player1Color,
               isSelected: _startingPlayer == Player.player1,
-              onTap: () => setState(() => _startingPlayer = Player.player1),
+              onTap: () {
+                setState(() => _startingPlayer = Player.player1);
+                PreferencesService.setStartingPlayer(Player.player1);
+              },
               isLarge: isLarge,
             ),
           ),
@@ -657,7 +684,10 @@ class _SetupScreenState extends State<SetupScreen> {
               subtitle: 'Joueur 2 commence',
               color: _theme.player2Color,
               isSelected: _startingPlayer == Player.player2,
-              onTap: () => setState(() => _startingPlayer = Player.player2),
+              onTap: () {
+                setState(() => _startingPlayer = Player.player2);
+                PreferencesService.setStartingPlayer(Player.player2);
+              },
               isLarge: isLarge,
             ),
           ),
