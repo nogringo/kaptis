@@ -3,6 +3,7 @@ import '../models/ai_player.dart';
 import '../models/game_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/game_board.dart';
+import '../widgets/victory/victory_overlay.dart';
 
 class GameScreen extends StatefulWidget {
   final int boardSize;
@@ -28,11 +29,61 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final GlobalKey<GameBoardState> _gameBoardKey = GlobalKey<GameBoardState>();
+  bool _showVictoryOverlay = false;
+  Player? _lastWinner;
 
   AppColors get _theme => context.colors;
 
   void _triggerRebuild() {
+    final boardState = _gameBoardKey.currentState;
+    final currentWinner = boardState?.winner;
+
+    // Detect winner transition: null -> Player
+    if (currentWinner != null && _lastWinner == null) {
+      _showVictoryOverlay = true;
+    }
+    _lastWinner = currentWinner;
+
     setState(() {});
+  }
+
+  void _handleReplay() {
+    _gameBoardKey.currentState?.resetGame();
+    setState(() {
+      _showVictoryOverlay = false;
+      _lastWinner = null;
+    });
+  }
+
+  void _handleMenu() {
+    Navigator.pop(context);
+  }
+
+  Widget _buildVictoryOverlay() {
+    final boardState = _gameBoardKey.currentState;
+    if (boardState == null || boardState.winner == null) {
+      return const SizedBox.shrink();
+    }
+
+    final winner = boardState.winner!;
+    String winnerName;
+    if (widget.vsAI) {
+      winnerName = winner == Player.player1 ? 'Vous' : 'Ordinateur';
+    } else {
+      winnerName = winner == Player.player1 ? 'Joueur 1' : 'Joueur 2';
+    }
+
+    final winnerColor = winner == Player.player1
+        ? _theme.player1Color
+        : _theme.player2Color;
+
+    return VictoryOverlay(
+      winner: winner,
+      winnerName: winnerName,
+      winnerColor: winnerColor,
+      onReplay: _handleReplay,
+      onMenu: _handleMenu,
+    );
   }
 
   @override
@@ -40,29 +91,34 @@ class _GameScreenState extends State<GameScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth >= 1000;
 
+    Widget scaffold;
     if (isDesktop) {
-      return Scaffold(body: SafeArea(child: _buildDesktopLayout()));
+      scaffold = Scaffold(body: SafeArea(child: _buildDesktopLayout()));
+    } else {
+      scaffold = Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            "Kaptis",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              tooltip: 'Nouvelle partie',
+              onPressed: () {
+                _gameBoardKey.currentState?.resetGame();
+                _triggerRebuild();
+              },
+            ),
+          ],
+        ),
+        body: SafeArea(child: _buildMobileLayout()),
+      );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Kaptis",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Nouvelle partie',
-            onPressed: () {
-              _gameBoardKey.currentState?.resetGame();
-              _triggerRebuild();
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(child: _buildMobileLayout()),
+    return Stack(
+      children: [scaffold, if (_showVictoryOverlay) _buildVictoryOverlay()],
     );
   }
 

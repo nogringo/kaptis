@@ -4,6 +4,7 @@ import '../models/game_state.dart';
 import '../services/multiplayer_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/game_board.dart';
+import '../widgets/victory/victory_overlay.dart';
 
 class MultiplayerGameScreen extends StatefulWidget {
   final MultiplayerService multiplayerService;
@@ -17,6 +18,8 @@ class MultiplayerGameScreen extends StatefulWidget {
 class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
   final GlobalKey<GameBoardState> _gameBoardKey = GlobalKey<GameBoardState>();
   StreamSubscription<NetworkMove>? _moveSubscription;
+  bool _showVictoryOverlay = false;
+  Player? _lastWinner;
 
   AppColors get _theme => context.colors;
 
@@ -80,7 +83,47 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
   }
 
   void _triggerRebuild() {
+    final boardState = _gameBoardKey.currentState;
+    final currentWinner = boardState?.winner;
+
+    // Detect winner transition: null -> Player
+    if (currentWinner != null && _lastWinner == null) {
+      _showVictoryOverlay = true;
+    }
+    _lastWinner = currentWinner;
+
     setState(() {});
+  }
+
+  Future<void> _handleMenu() async {
+    await widget.multiplayerService.leaveRoom();
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  Widget _buildVictoryOverlay() {
+    final boardState = _gameBoardKey.currentState;
+    if (boardState == null || boardState.winner == null) {
+      return const SizedBox.shrink();
+    }
+
+    final winner = boardState.winner!;
+    final localPlayer = widget.multiplayerService.localPlayer;
+    final isLocalWinner = winner == localPlayer;
+    final winnerName = isLocalWinner ? 'Vous' : 'Adversaire';
+
+    final winnerColor = winner == Player.player1
+        ? _theme.player1Color
+        : _theme.player2Color;
+
+    return VictoryOverlay(
+      winner: winner,
+      winnerName: winnerName,
+      winnerColor: winnerColor,
+      onReplay: null, // No replay in multiplayer
+      onMenu: _handleMenu,
+    );
   }
 
   Future<bool> _onWillPop() async {
@@ -133,8 +176,9 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
       );
     }
 
+    Widget scaffold;
     if (isDesktop) {
-      return PopScope(
+      scaffold = PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return;
@@ -144,34 +188,38 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
         },
         child: Scaffold(body: SafeArea(child: _buildDesktopLayout())),
       );
+    } else {
+      scaffold = PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          final canPop = await _onWillPop();
+          if (!canPop || !context.mounted) return;
+          Navigator.pop(context);
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text(
+              "Kaptis",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () async {
+                final canPop = await _onWillPop();
+                if (!canPop || !context.mounted) return;
+                Navigator.pop(context);
+              },
+            ),
+          ),
+          body: SafeArea(child: _buildMobileLayout()),
+        ),
+      );
     }
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final canPop = await _onWillPop();
-        if (!canPop || !context.mounted) return;
-        Navigator.pop(context);
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Kaptis",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () async {
-              final canPop = await _onWillPop();
-              if (!canPop || !context.mounted) return;
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        body: SafeArea(child: _buildMobileLayout()),
-      ),
+    return Stack(
+      children: [scaffold, if (_showVictoryOverlay) _buildVictoryOverlay()],
     );
   }
 
