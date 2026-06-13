@@ -7,19 +7,19 @@ import '../models/game_state.dart';
 import 'key_service.dart';
 import 'nostr_service.dart';
 
-// TODO: Améliorations futures du multijoueur
+// TODO: Future multiplayer improvements
 //
-// Problèmes potentiels:
-// - Si un guest quitte, le host garde guestPubkey et ne peut plus accueillir quelqu'un d'autre
-// - Un bot malveillant peut spam "join" sur toutes les rooms publiques
-// - Pas de détection de déconnexion (joueur AFK en pleine partie)
+// Potential issues:
+// - If a guest leaves, the host keeps guestPubkey and can no longer accept anyone else
+// - A malicious bot can spam "join" on all public rooms
+// - No disconnection detection (AFK player during a game)
 //
-// Solutions possibles:
-// - Implémenter kick (host) et leave (guest) avec republication de la session
-// - Système d'approbation: join-request → host accept/reject
-// - Heartbeat pour détecter les déconnexions
-// - Web of trust (limiter aux follows)
-// - Proof of Work (NIP-13) pour ralentir les bots
+// Possible solutions:
+// - Implement kick (host) and leave (guest) with session republication
+// - Approval system: join-request → host accept/reject
+// - Heartbeat to detect disconnections
+// - Web of trust (limit to follows)
+// - Proof of Work (NIP-13) to slow down bots
 
 /// Player profile info
 class PlayerProfile {
@@ -31,7 +31,7 @@ class PlayerProfile {
 
   String get displayName {
     if (name != null) return name!;
-    // npub raccourci : npub1abc...xyz
+    // shortened npub: npub1abc...xyz
     final npub = Nip19.encodePubKey(pubkey);
     return '${npub.substring(0, 10)}...${npub.substring(npub.length - 4)}';
   }
@@ -133,11 +133,11 @@ class MultiplayerService extends ChangeNotifier {
     _localPublicKey = await KeyService.getPublicKey();
     await _nostrService.connect();
 
-    // Crée le profil immédiatement (npub dispo)
+    // Create the profile immediately (npub available)
     _localProfile = _getOrCreateProfile(_localPublicKey!);
     notifyListeners();
 
-    // Charge les métadonnées en arrière-plan
+    // Load metadata in the background
     loadPlayerProfile(_localPublicKey!).then((_) {
       _localProfile = _profileCache[_localPublicKey!];
     });
@@ -146,7 +146,7 @@ class MultiplayerService extends ChangeNotifier {
   /// Get or create a player's profile (instant, then enriches with metadata)
   PlayerProfile _getOrCreateProfile(String pubkey) {
     if (!_profileCache.containsKey(pubkey)) {
-      // Crée immédiatement avec juste la pubkey (npub dispo instantanément)
+      // Create immediately with just the pubkey (npub available instantly)
       _profileCache[pubkey] = PlayerProfile(pubkey: pubkey);
     }
     return _profileCache[pubkey]!;
@@ -154,10 +154,10 @@ class MultiplayerService extends ChangeNotifier {
 
   /// Load profile metadata from network and update cache
   Future<void> loadPlayerProfile(String pubkey) async {
-    // S'assurer que le profil existe
+    // Ensure the profile exists
     _getOrCreateProfile(pubkey);
 
-    // Charger les métadonnées en arrière-plan
+    // Load metadata in the background
     final metadata = await _nostrService.getUserMetadata(pubkey);
     if (metadata != null) {
       _profileCache[pubkey] = PlayerProfile(
@@ -248,7 +248,7 @@ class MultiplayerService extends ChangeNotifier {
       createdAt: _currentRoom!.createdAt,
     );
 
-    // Republish - l'événement addressable remplace l'ancien
+    // Republish - the addressable event replaces the old one
     await _nostrService.publishGameSession(
       sessionId: updatedRoom.code,
       status: updatedRoom.status == RoomStatus.waiting ? 'waiting' : 'playing',
@@ -485,7 +485,7 @@ class MultiplayerService extends ChangeNotifier {
 
     bool changed = false;
 
-    // Sync config changes (pour le guest quand l'host modifie)
+    // Sync config changes (for the guest when the host modifies)
     if (!isHost) {
       if (_currentRoom!.boardSize != room.boardSize ||
           _currentRoom!.gameMode != room.gameMode ||

@@ -9,7 +9,7 @@ class AIPlayer {
 
   AIPlayer({this.difficulty = AIDifficulty.normal});
 
-  /// Calcule le meilleur coup pour le Nexus
+  /// Calculates the best move for the Nexus
   Position? getBestNexusMove(GameState state) {
     final validMoves = state.getValidNexusMoves();
     if (validMoves.isEmpty) return null;
@@ -24,7 +24,7 @@ class AIPlayer {
     }
   }
 
-  /// Calcule le meilleur coup pour un pion
+  /// Calculates the best move for a pawn
   (Piece, Position)? getBestPawnMove(GameState state) {
     final pawns = state.getPawns(Player.player2);
     final allMoves = <(Piece, Position)>[];
@@ -48,23 +48,23 @@ class AIPlayer {
     }
   }
 
-  // ============== NIVEAU FACILE ==============
+  // ============== EASY LEVEL ==============
 
   Position _getEasyNexusMove(GameState state, List<Position> validMoves) {
-    // 1. Chercher un coup gagnant (P2 gagne)
+    // 1. Look for a winning move (P2 wins)
     for (final move in validMoves) {
       if (_isWinningMoveForAI(state, move)) {
         return move;
       }
     }
 
-    // 2. Éviter les coups perdants (donner la victoire à P1)
+    // 2. Avoid losing moves (giving the win to P1)
     List<Position> safeMoves;
     if (state.winCondition == WinCondition.ownCamp) {
-      // P1 gagne si Nexus arrive à row 0
+      // P1 wins if the Nexus reaches row 0
       safeMoves = validMoves.where((m) => m.row != 0).toList();
     } else {
-      // opponentCamp: P1 gagne si Nexus arrive à maxRow
+      // opponentCamp: P1 wins if the Nexus reaches maxRow
       if (state.gameMode == GameMode.hexagonal) {
         safeMoves = validMoves.where((m) {
           final maxRow = GameState.hexColumnHeights[m.col] - 1;
@@ -77,19 +77,19 @@ class AIPlayer {
       }
     }
 
-    // Si tous les coups sont perdants, jouer au hasard
+    // If all moves are losing, play randomly
     if (safeMoves.isEmpty) {
       return validMoves[_random.nextInt(validMoves.length)];
     }
 
-    // 3. Jouer au hasard parmi les coups sûrs
+    // 3. Play randomly among the safe moves
     return safeMoves[_random.nextInt(safeMoves.length)];
   }
 
-  /// Vérifie si un coup du Nexus fait gagner l'IA (P2)
+  /// Checks if a Nexus move makes the AI (P2) win
   bool _isWinningMoveForAI(GameState state, Position move) {
     if (state.winCondition == WinCondition.ownCamp) {
-      // P2 gagne si Nexus arrive à maxRow
+      // P2 wins if the Nexus reaches maxRow
       if (state.gameMode == GameMode.hexagonal) {
         final maxRow = GameState.hexColumnHeights[move.col] - 1;
         return move.row == maxRow;
@@ -97,7 +97,7 @@ class AIPlayer {
         return move.row == state.boardSize - 1;
       }
     } else {
-      // opponentCamp: P2 gagne si Nexus arrive à row 0
+      // opponentCamp: P2 wins if the Nexus reaches row 0
       return move.row == 0;
     }
   }
@@ -106,7 +106,7 @@ class AIPlayer {
     GameState state,
     List<(Piece, Position)> allMoves,
   ) {
-    // 1. Chercher un coup qui bloque le Nexus (victoire)
+    // 1. Look for a move that blocks the Nexus (win)
     for (final move in allMoves) {
       final newState = _simulatePawnMove(state, move.$1, move.$2);
       if (newState.isNexusBlocked()) {
@@ -114,11 +114,11 @@ class AIPlayer {
       }
     }
 
-    // 2. Jouer au hasard
+    // 2. Play randomly
     return allMoves[_random.nextInt(allMoves.length)];
   }
 
-  // ============== NIVEAU NORMAL ==============
+  // ============== NORMAL LEVEL ==============
 
   Position _getNormalNexusMove(GameState state, List<Position> validMoves) {
     final scoredMoves = <MapEntry<Position, int>>[];
@@ -156,7 +156,7 @@ class AIPlayer {
     return (chosen.$1, chosen.$2);
   }
 
-  // ============== NIVEAU DIFFICILE ==============
+  // ============== HARD LEVEL ==============
 
   Position _getHardNexusMove(GameState state, List<Position> validMoves) {
     final scoredMoves = <MapEntry<Position, int>>[];
@@ -190,7 +190,7 @@ class AIPlayer {
     return (scoredMoves.first.$1, scoredMoves.first.$2);
   }
 
-  /// Algorithme Minimax avec élagage alpha-beta
+  /// Minimax algorithm with alpha-beta pruning
   int _minimax(
     GameState state,
     int depth,
@@ -198,13 +198,13 @@ class AIPlayer {
     int alpha,
     int beta,
   ) {
-    // Conditions terminales
+    // Terminal conditions
     if (state.winner == Player.player2) return 1000 + depth;
     if (state.winner == Player.player1) return -1000 - depth;
     if (depth == 0) return _evaluateState(state);
 
     if (isMaximizing) {
-      // Tour de l'IA (Player 2)
+      // AI's turn (Player 2)
       int maxEval = -10000;
 
       if (state.phase == GamePhase.moveNexus) {
@@ -229,7 +229,7 @@ class AIPlayer {
 
       return maxEval;
     } else {
-      // Tour du joueur (Player 1)
+      // Player's turn (Player 1)
       int minEval = 10000;
 
       if (state.phase == GamePhase.moveNexus) {
@@ -256,28 +256,28 @@ class AIPlayer {
     }
   }
 
-  /// Évalue l'état du jeu pour l'IA
+  /// Evaluates the game state for the AI
   int _evaluateState(GameState state) {
     int score = 0;
     final nexusPos = state.nexus.position;
 
-    // En mode ownCamp: P2 veut amener le Nexus vers le bas (row élevée)
-    // En mode opponentCamp: P2 veut amener le Nexus vers le haut (row 0)
+    // In ownCamp mode: P2 wants to bring the Nexus down (high row)
+    // In opponentCamp mode: P2 wants to bring the Nexus up (row 0)
     final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
 
     if (state.gameMode == GameMode.hexagonal) {
-      // Mode hexagonal
+      // Hexagonal mode
       final maxRow = GameState.hexColumnHeights[nexusPos.col] - 1;
 
       if (isOpponentCamp) {
-        // P2 veut amener le Nexus vers le haut (row 0)
+        // P2 wants to bring the Nexus up (row 0)
         score += (maxRow - nexusPos.row) * 15;
       } else {
-        // P2 veut amener le Nexus vers le bas
+        // P2 wants to bring the Nexus down
         score += nexusPos.row * 15;
       }
 
-      // Mobilité du Nexus
+      // Nexus mobility
       final nexusMovesCount = state.getValidNexusMoves().length;
       if (state.currentPlayer == Player.player2) {
         score += nexusMovesCount * 5;
@@ -285,33 +285,33 @@ class AIPlayer {
         score -= nexusMovesCount * 5;
       }
 
-      // Contrôle du centre (col 3 est le centre)
+      // Center control (col 3 is the center)
       final centerCol = 3;
       final distFromCenter = (nexusPos.col - centerCol).abs();
       score -= distFromCenter * 3;
 
-      // Position des pions de l'IA
+      // Position of the AI's pawns
       for (final pawn in state.getPawns(Player.player2)) {
         final distToNexus = _hexDistance(pawn.position, nexusPos);
         if (distToNexus <= 2) score += 8;
       }
 
-      // Position des pions adverses
+      // Position of the opponent's pawns
       for (final pawn in state.getPawns(Player.player1)) {
         final distToNexus = _hexDistance(pawn.position, nexusPos);
         if (distToNexus <= 2) score -= 8;
       }
     } else {
-      // Mode carré
+      // Square mode
       if (isOpponentCamp) {
-        // P2 veut amener le Nexus vers le haut (row 0)
+        // P2 wants to bring the Nexus up (row 0)
         score += (state.boardSize - 1 - nexusPos.row) * 15;
       } else {
-        // P2 veut amener le Nexus vers le bas
+        // P2 wants to bring the Nexus down
         score += nexusPos.row * 15;
       }
 
-      // Mobilité du Nexus
+      // Nexus mobility
       final nexusMovesCount = state.getValidNexusMoves().length;
       if (state.currentPlayer == Player.player2) {
         score += nexusMovesCount * 5;
@@ -319,19 +319,19 @@ class AIPlayer {
         score -= nexusMovesCount * 5;
       }
 
-      // Contrôle du centre
+      // Center control
       final center = state.boardSize ~/ 2;
       final distFromCenter =
           (nexusPos.row - center).abs() + (nexusPos.col - center).abs();
       score -= distFromCenter * 3;
 
-      // Position des pions de l'IA
+      // Position of the AI's pawns
       for (final pawn in state.getPawns(Player.player2)) {
         final distToNexus = _manhattanDistance(pawn.position, nexusPos);
         if (distToNexus <= 2) score += 8;
       }
 
-      // Position des pions adverses (pénalité si proches du Nexus)
+      // Position of the opponent's pawns (penalty if near the Nexus)
       for (final pawn in state.getPawns(Player.player1)) {
         final distToNexus = _manhattanDistance(pawn.position, nexusPos);
         if (distToNexus <= 2) score -= 8;
@@ -341,27 +341,27 @@ class AIPlayer {
     return score;
   }
 
-  // ============== FONCTIONS COMMUNES ==============
+  // ============== COMMON FUNCTIONS ==============
 
   int _evaluateNexusMove(GameState state, Position move) {
     int score = 0;
     final isOpponentCamp = state.winCondition == WinCondition.opponentCamp;
 
     if (state.gameMode == GameMode.hexagonal) {
-      // Mode hexagonal
+      // Hexagonal mode
       final colHeight = GameState.hexColumnHeights[move.col];
       final maxRow = colHeight - 1;
 
       if (isOpponentCamp) {
-        // P2 veut aller vers le haut (row 0)
+        // P2 wants to go up (row 0)
         score += (maxRow - move.row) * 10;
 
-        // Victoire si atteint le haut
+        // Win if it reaches the top
         if (move.row == 0) {
           return 1000;
         }
 
-        // Pénalité si proche du bas (victoire adverse)
+        // Penalty if near the bottom (opponent win)
         if (move.row == maxRow - 1) {
           score -= 20;
         }
@@ -369,15 +369,15 @@ class AIPlayer {
           return -1000;
         }
       } else {
-        // ownCamp: P2 veut aller vers le bas
+        // ownCamp: P2 wants to go down
         score += move.row * 10;
 
-        // Victoire si atteint le bas de la colonne
+        // Win if it reaches the bottom of the column
         if (move.row == maxRow) {
           return 1000;
         }
 
-        // Pénalité si proche du haut
+        // Penalty if near the top
         if (move.row == 1) {
           score -= 20;
         }
@@ -386,7 +386,7 @@ class AIPlayer {
         }
       }
 
-      // Préférer le centre (colonne 3)
+      // Prefer the center (column 3)
       final distanceFromCenter = (move.col - 3).abs();
       score -= distanceFromCenter * 2;
 
@@ -394,17 +394,17 @@ class AIPlayer {
       final futureMoves = tempState.getValidNexusMoves();
       score += futureMoves.length * 3;
     } else {
-      // Mode carré
+      // Square mode
       if (isOpponentCamp) {
-        // P2 veut aller vers le haut (row 0)
+        // P2 wants to go up (row 0)
         score += (state.boardSize - 1 - move.row) * 10;
 
-        // Victoire si atteint le haut
+        // Win if it reaches the top
         if (move.row == 0) {
           return 1000;
         }
 
-        // Pénalité si proche du bas (victoire adverse)
+        // Penalty if near the bottom (opponent win)
         if (move.row == state.boardSize - 2) {
           score -= 20;
         }
@@ -412,7 +412,7 @@ class AIPlayer {
           return -1000;
         }
       } else {
-        // ownCamp: P2 veut aller vers le bas
+        // ownCamp: P2 wants to go down
         score += move.row * 10;
 
         if (move.row == state.boardSize - 1) {
@@ -454,9 +454,9 @@ class AIPlayer {
     final newNexusMoves = newState.getValidNexusMoves().length;
     score += (currentNexusMoves - newNexusMoves) * 15;
 
-    // Bloquer le chemin vers la row de victoire de P1
-    // En ownCamp: P1 gagne à row 0
-    // En opponentCamp: P1 gagne à maxRow
+    // Block the path to P1's winning row
+    // In ownCamp: P1 wins at row 0
+    // In opponentCamp: P1 wins at maxRow
     final targetRow = isOpponentCamp ? state.boardSize - 1 : 0;
     if (_blocksPathToRow(state, move, targetRow)) {
       score += 25;
@@ -470,11 +470,11 @@ class AIPlayer {
     score += _countBlockingPotential(state, move) * 5;
 
     if (state.gameMode == GameMode.hexagonal) {
-      // Mode hexagonal : préférer le centre (colonne 3)
+      // Hexagonal mode: prefer the center (column 3)
       final distanceFromCenter = (move.col - 3).abs();
       score -= distanceFromCenter;
     } else {
-      // Mode carré
+      // Square mode
       final center = state.boardSize ~/ 2;
       final distanceFromCenter =
           (move.row - center).abs() + (move.col - center).abs();
@@ -549,26 +549,26 @@ class AIPlayer {
   bool _blocksPathToRow(GameState state, Position pawnPos, int targetRow) {
     final nexusPos = state.nexus.position;
 
-    // Vérifie si le pion est sur la même colonne que le Nexus
+    // Checks if the pawn is on the same column as the Nexus
     if (pawnPos.col == nexusPos.col) {
       if (targetRow < nexusPos.row) {
-        // Nexus doit aller vers le haut
+        // Nexus must go up
         return pawnPos.row < nexusPos.row && pawnPos.row >= targetRow;
       } else if (targetRow > nexusPos.row) {
-        // Nexus doit aller vers le bas
+        // Nexus must go down
         return pawnPos.row > nexusPos.row && pawnPos.row <= targetRow;
       }
     }
 
-    // Vérifie les diagonales
+    // Checks the diagonals
     final rowDiff = pawnPos.row - nexusPos.row;
     final colDiff = pawnPos.col - nexusPos.col;
     if (rowDiff.abs() == colDiff.abs()) {
       if (targetRow < nexusPos.row && rowDiff < 0) {
-        // Nexus doit aller vers le haut, pion est en haut
+        // Nexus must go up, pawn is above
         return true;
       } else if (targetRow > nexusPos.row && rowDiff > 0) {
-        // Nexus doit aller vers le bas, pion est en bas
+        // Nexus must go down, pawn is below
         return true;
       }
     }
@@ -581,7 +581,7 @@ class AIPlayer {
     final nexusPos = state.nexus.position;
 
     if (state.gameMode == GameMode.hexagonal) {
-      // Mode hexagonal : vérifie les 6 directions
+      // Hexagonal mode: checks the 6 directions
       for (int dir = 0; dir < 6; dir++) {
         Position? check = state.getNextHexCell(nexusPos, dir);
 
@@ -594,7 +594,7 @@ class AIPlayer {
         }
       }
     } else {
-      // Mode carré : vérifie les 8 directions
+      // Square mode: checks the 8 directions
       for (final dir in GameState.directions) {
         Position check = nexusPos + dir;
         while (state.isValidPosition(check)) {

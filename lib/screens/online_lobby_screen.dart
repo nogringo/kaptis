@@ -35,9 +35,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   bool _isLoading = false;
   bool _copied = false;
   String? _error;
-  String? _pendingCode; // Code généré localement avant connexion
-  bool _isCreatingRoom = false; // En cours de création
-  bool _configChangedDuringCreation = false; // Config modifiée pendant création
+  String? _pendingCode; // Code generated locally before connection
+  bool _isCreatingRoom = false; // Currently being created
+  bool _configChangedDuringCreation = false; // Config modified during creation
 
   StreamSubscription<void>? _gameStartSubscription;
 
@@ -75,7 +75,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   }
 
   void _onServiceUpdate() {
-    // Sync config from room for guest (quand l'host modifie)
+    // Sync config from room for guest (when the host modifies it)
     final room = _multiplayerService.currentRoom;
     if (!_isHost && room != null) {
       _boardSize = room.boardSize;
@@ -87,13 +87,13 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   }
 
   Future<void> _createRoom() async {
-    // Génère le code immédiatement (pas de chargement visible)
+    // Generate the code immediately (no visible loading)
     _pendingCode = _generateRoomCode();
     _isCreatingRoom = true;
     _configChangedDuringCreation = false;
     setState(() {});
 
-    // Connexion Nostr en arrière-plan
+    // Nostr connection in the background
     await _multiplayerService.createRoomWithCode(
       code: _pendingCode!,
       boardSize: _boardSize,
@@ -106,7 +106,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     _isCreatingRoom = false;
     _pendingCode = null;
 
-    // Si la config a changé pendant la création, on re-sync
+    // If the config changed during creation, re-sync
     if (_configChangedDuringCreation &&
         _multiplayerService.currentRoom != null) {
       _configChangedDuringCreation = false;
@@ -155,16 +155,16 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   Future<void> _updateConfig() async {
     if (!_isHost) return;
 
-    // Si la room est en cours de création, on note juste que la config a changé
+    // If the room is currently being created, just note that the config changed
     if (_isCreatingRoom) {
       _configChangedDuringCreation = true;
       return;
     }
 
-    // Si la room n'existe pas encore, rien à faire
+    // If the room does not exist yet, nothing to do
     if (_multiplayerService.currentRoom == null) return;
 
-    // Republier l'événement addressable (remplace l'ancien)
+    // Republish the addressable event (replaces the old one)
     await _multiplayerService.updateRoomConfig(
       boardSize: _boardSize,
       gameMode: _gameMode,
@@ -755,7 +755,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
     return Row(
       children: [
-        // Avatar ou indicateur
+        // Avatar or indicator
         if (profile?.picture != null)
           ClipOval(
             child: Image.network(
@@ -772,7 +772,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
         SizedBox(width: isLarge ? 12 : 8),
 
-        // Nom et label
+        // Name and label
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -798,7 +798,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           ),
         ),
 
-        // Indicateur de connexion
+        // Connection indicator
         Container(
           width: isLarge ? 10 : 8,
           height: isLarge ? 10 : 8,

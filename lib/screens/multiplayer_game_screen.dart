@@ -230,7 +230,7 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
       builder: (context, constraints) {
         final padding = 16.0;
         final availableWidth = constraints.maxWidth - (padding * 2);
-        final statusBarHeight = 180.0; // Plus grand pour infos multijoueur
+        final statusBarHeight = 180.0; // Larger for multiplayer info
         final availableHeight =
             constraints.maxHeight - (padding * 2) - statusBarHeight;
         final maxBoardSize = availableWidth < availableHeight

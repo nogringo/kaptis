@@ -310,7 +310,7 @@ class NostrService {
   }
 
   /// Find a game session by room code
-  // TODO: Gérer le cas où plusieurs parties ont le même code (afficher la liste avec les créateurs)
+  // TODO: Handle the case where multiple games have the same code (display the list with the creators)
   Future<Nip01Event?> findGameSession(String sessionId) async {
     await _ensureConnected();
 

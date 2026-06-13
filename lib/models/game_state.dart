@@ -65,10 +65,10 @@ class GameState {
   final GameMode gameMode;
   final WinCondition winCondition;
 
-  // Hauteurs des colonnes pour le mode hexagonal (7 colonnes)
+  // Column heights for hexagonal mode (7 columns)
   static const List<int> hexColumnHeights = [4, 5, 6, 7, 6, 5, 4];
 
-  // 6 directions hexagonales : 0=N, 1=S, 2=NW, 3=SW, 4=NE, 5=SE
+  // 6 hexagonal directions: 0=N, 1=S, 2=NW, 3=SW, 4=NE, 5=SE
   static const int hexDirN = 0;
   static const int hexDirS = 1;
   static const int hexDirNW = 2;
@@ -96,7 +96,7 @@ class GameState {
     final pieces = <Piece>[];
     final center = size ~/ 2;
 
-    // Nexus au centre
+    // Nexus at the center
     pieces.add(
       Piece(
         type: PieceType.nexus,
@@ -105,7 +105,7 @@ class GameState {
       ),
     );
 
-    // Pions joueur 1 (en haut, ligne 0)
+    // Player 1 pawns (at the top, row 0)
     for (int col = 0; col < size; col++) {
       pieces.add(
         Piece(
@@ -116,7 +116,7 @@ class GameState {
       );
     }
 
-    // Pions joueur 2 (en bas, dernière ligne)
+    // Player 2 pawns (at the bottom, last row)
     for (int col = 0; col < size; col++) {
       pieces.add(
         Piece(
@@ -138,23 +138,23 @@ class GameState {
     );
   }
 
-  // Initialisation pour le mode hexagonal (37 cellules, 7 colonnes)
+  // Initialization for hexagonal mode (37 cells, 7 columns)
   factory GameState.initialHex({
     WinCondition winCondition = WinCondition.ownCamp,
     Player startingPlayer = Player.player1,
   }) {
     final pieces = <Piece>[];
 
-    // Nexus au centre (col=3, row=3)
+    // Nexus at the center (col=3, row=3)
     pieces.add(
       Piece(
         type: PieceType.nexus,
         owner: null,
-        position: Position(3, 3), // row=3 dans la colonne centrale (hauteur 7)
+        position: Position(3, 3), // row=3 in the central column (height 7)
       ),
     );
 
-    // Pions joueur 1 (en haut de chaque colonne, row=0)
+    // Player 1 pawns (at the top of each column, row=0)
     for (int col = 0; col < 7; col++) {
       pieces.add(
         Piece(
@@ -165,7 +165,7 @@ class GameState {
       );
     }
 
-    // Pions joueur 2 (en bas de chaque colonne, row=max-1)
+    // Player 2 pawns (at the bottom of each column, row=max-1)
     for (int col = 0; col < 7; col++) {
       final maxRow = hexColumnHeights[col] - 1;
       pieces.add(
@@ -178,7 +178,7 @@ class GameState {
     }
 
     return GameState(
-      boardSize: 7, // 7 colonnes pour le mode hexagonal
+      boardSize: 7, // 7 columns for hexagonal mode
       pieces: pieces,
       currentPlayer: startingPlayer,
       phase: GamePhase.moveNexus,
@@ -211,48 +211,48 @@ class GameState {
         pos.col < boardSize;
   }
 
-  // Validation pour le mode hexagonal
+  // Validation for hexagonal mode
   bool isValidHexPosition(Position pos) {
     if (pos.col < 0 || pos.col >= 7) return false;
     final maxRow = hexColumnHeights[pos.col];
     return pos.row >= 0 && pos.row < maxRow;
   }
 
-  // Obtenir la cellule suivante dans une direction hexagonale
+  // Get the next cell in a hexagonal direction
   // direction: 0=N, 1=S, 2=NW, 3=SW, 4=NE, 5=SE
   Position? getNextHexCell(Position pos, int direction) {
     final curHeight = hexColumnHeights[pos.col];
 
     switch (direction) {
-      case 0: // N (haut même colonne)
+      case 0: // N (up, same column)
         if (pos.row > 0) return Position(pos.row - 1, pos.col);
         return null;
 
-      case 1: // S (bas même colonne)
+      case 1: // S (down, same column)
         if (pos.row < curHeight - 1) return Position(pos.row + 1, pos.col);
         return null;
 
-      case 2: // NW (haut-gauche)
+      case 2: // NW (top-left)
         if (pos.col == 0) return null;
         final leftHeight = hexColumnHeights[pos.col - 1];
-        // Si colonne adjacente plus courte: row-1, sinon: row
+        // If the adjacent column is shorter: row-1, otherwise: row
         final newRow = leftHeight < curHeight ? pos.row - 1 : pos.row;
         if (newRow >= 0 && newRow < leftHeight) {
           return Position(newRow, pos.col - 1);
         }
         return null;
 
-      case 3: // SW (bas-gauche)
+      case 3: // SW (bottom-left)
         if (pos.col == 0) return null;
         final leftHeight2 = hexColumnHeights[pos.col - 1];
-        // Si colonne adjacente plus courte: row, sinon: row+1
+        // If the adjacent column is shorter: row, otherwise: row+1
         final newRow2 = leftHeight2 < curHeight ? pos.row : pos.row + 1;
         if (newRow2 >= 0 && newRow2 < leftHeight2) {
           return Position(newRow2, pos.col - 1);
         }
         return null;
 
-      case 4: // NE (haut-droite)
+      case 4: // NE (top-right)
         if (pos.col >= 6) return null;
         final rightHeight = hexColumnHeights[pos.col + 1];
         final newRow3 = rightHeight < curHeight ? pos.row - 1 : pos.row;
@@ -261,7 +261,7 @@ class GameState {
         }
         return null;
 
-      case 5: // SE (bas-droite)
+      case 5: // SE (bottom-right)
         if (pos.col >= 6) return null;
         final rightHeight2 = hexColumnHeights[pos.col + 1];
         final newRow4 = rightHeight2 < curHeight ? pos.row : pos.row + 1;
@@ -273,7 +273,7 @@ class GameState {
     return null;
   }
 
-  // Obtenir tous les voisins hexagonaux d'une position
+  // Get all hexagonal neighbors of a position
   List<Position> getHexNeighbors(Position pos) {
     final neighbors = <Position>[];
     for (int dir = 0; dir < 6; dir++) {
@@ -285,25 +285,25 @@ class GameState {
     return neighbors;
   }
 
-  // Directions possibles (8 directions)
+  // Possible directions (8 directions)
   static const List<Position> directions = [
-    Position(-1, 0), // haut
-    Position(1, 0), // bas
-    Position(0, -1), // gauche
-    Position(0, 1), // droite
-    Position(-1, -1), // diag haut-gauche
-    Position(-1, 1), // diag haut-droite
-    Position(1, -1), // diag bas-gauche
-    Position(1, 1), // diag bas-droite
+    Position(-1, 0), // up
+    Position(1, 0), // down
+    Position(0, -1), // left
+    Position(0, 1), // right
+    Position(-1, -1), // diag top-left
+    Position(-1, 1), // diag top-right
+    Position(1, -1), // diag bottom-left
+    Position(1, 1), // diag bottom-right
   ];
 
-  // Mouvements valides pour le Nexus (1 case dans toutes directions)
+  // Valid moves for the Nexus (1 cell in all directions)
   List<Position> getValidNexusMoves() {
     final nexusPos = nexus.position;
     final validMoves = <Position>[];
 
     if (gameMode == GameMode.hexagonal) {
-      // Mode hexagonal : 6 directions
+      // Hexagonal mode: 6 directions
       final neighbors = getHexNeighbors(nexusPos);
       for (final newPos in neighbors) {
         if (getPieceAt(newPos) == null) {
@@ -311,7 +311,7 @@ class GameState {
         }
       }
     } else {
-      // Mode carré : 8 directions
+      // Square mode: 8 directions
       for (final dir in directions) {
         final newPos = nexusPos + dir;
         if (isValidPosition(newPos) && getPieceAt(newPos) == null) {
@@ -323,14 +323,14 @@ class GameState {
     return validMoves;
   }
 
-  // Mouvements valides pour un pion (jusqu'au bout ou jusqu'à un obstacle)
+  // Valid moves for a pawn (to the end or until an obstacle)
   List<Position> getValidPawnMoves(Piece pawn) {
     if (pawn.type != PieceType.pawn) return [];
 
     final validMoves = <Position>[];
 
     if (gameMode == GameMode.hexagonal) {
-      // Mode hexagonal : 6 directions, glisse jusqu'à l'obstacle
+      // Hexagonal mode: 6 directions, slides until the obstacle
       for (int dir = 0; dir < 6; dir++) {
         Position lastValid = pawn.position;
         Position? current = getNextHexCell(pawn.position, dir);
@@ -345,7 +345,7 @@ class GameState {
         }
       }
     } else {
-      // Mode carré : 8 directions
+      // Square mode: 8 directions
       for (final dir in directions) {
         Position lastValid = pawn.position;
         Position current = pawn.position + dir;
@@ -355,7 +355,7 @@ class GameState {
           current = current + dir;
         }
 
-        // Le pion doit se déplacer le plus loin possible
+        // The pawn must move as far as possible
         if (lastValid != pawn.position) {
           validMoves.add(lastValid);
         }
@@ -365,55 +365,55 @@ class GameState {
     return validMoves;
   }
 
-  // Vérifie si le Nexus est bloqué
+  // Checks if the Nexus is blocked
   bool isNexusBlocked() {
     return getValidNexusMoves().isEmpty;
   }
 
-  // Vérifie si un joueur a gagné
+  // Checks if a player has won
   Player? checkWinner() {
     final nexusPos = nexus.position;
 
     if (gameMode == GameMode.hexagonal) {
-      // Mode hexagonal
+      // Hexagonal mode
       final maxRow = hexColumnHeights[nexusPos.col] - 1;
 
       if (winCondition == WinCondition.ownCamp) {
-        // P1 gagne si Nexus atteint row == 0 (son camp)
+        // P1 wins if the Nexus reaches row == 0 (its camp)
         if (nexusPos.row == 0) {
           return Player.player1;
         }
-        // P2 gagne si Nexus atteint la dernière row (son camp)
+        // P2 wins if the Nexus reaches the last row (its camp)
         if (nexusPos.row == maxRow) {
           return Player.player2;
         }
       } else {
-        // opponentCamp: P1 gagne si Nexus atteint le camp adverse (bas)
+        // opponentCamp: P1 wins if the Nexus reaches the opponent's camp (bottom)
         if (nexusPos.row == maxRow) {
           return Player.player1;
         }
-        // P2 gagne si Nexus atteint le camp adverse (haut)
+        // P2 wins if the Nexus reaches the opponent's camp (top)
         if (nexusPos.row == 0) {
           return Player.player2;
         }
       }
     } else {
-      // Mode carré
+      // Square mode
       if (winCondition == WinCondition.ownCamp) {
-        // P1 gagne si Nexus atteint son camp (row 0)
+        // P1 wins if the Nexus reaches its camp (row 0)
         if (nexusPos.row == 0) {
           return Player.player1;
         }
-        // P2 gagne si Nexus atteint son camp (dernière row)
+        // P2 wins if the Nexus reaches its camp (last row)
         if (nexusPos.row == boardSize - 1) {
           return Player.player2;
         }
       } else {
-        // opponentCamp: P1 gagne si Nexus atteint le camp adverse (dernière row)
+        // opponentCamp: P1 wins if the Nexus reaches the opponent's camp (last row)
         if (nexusPos.row == boardSize - 1) {
           return Player.player1;
         }
-        // P2 gagne si Nexus atteint le camp adverse (row 0)
+        // P2 wins if the Nexus reaches the opponent's camp (row 0)
         if (nexusPos.row == 0) {
           return Player.player2;
         }
@@ -423,7 +423,7 @@ class GameState {
     return null;
   }
 
-  // Vérifie si le joueur actuel peut jouer
+  // Checks if the current player can play
   bool canCurrentPlayerPlay() {
     if (phase == GamePhase.moveNexus) {
       return getValidNexusMoves().isNotEmpty;
@@ -459,7 +459,7 @@ class GameState {
       winCondition: winCondition,
     );
 
-    // Vérifier victoire après déplacement du Nexus
+    // Check for victory after moving the Nexus
     final winner = newState.checkWinner();
     if (winner != null) {
       return GameState(
@@ -502,7 +502,7 @@ class GameState {
       winCondition: winCondition,
     );
 
-    // Vérifier si le Nexus est bloqué (victoire pour le joueur actuel)
+    // Check if the Nexus is blocked (victory for the current player)
     if (newState.isNexusBlocked()) {
       return GameState(
         boardSize: boardSize,

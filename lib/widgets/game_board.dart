@@ -56,7 +56,7 @@ class GameBoardState extends State<GameBoard> {
 
   AppColors get _theme => context.colors;
 
-  // Getters pour exposer l'état au parent
+  // Getters to expose the state to the parent
   bool get aiThinking => _aiThinking;
   Player? get winner => gameState.winner;
   Player get currentPlayer => gameState.currentPlayer;
@@ -110,7 +110,7 @@ class GameBoardState extends State<GameBoard> {
       _aiThinking = false;
     });
     _notifyStateChanged();
-    // Si l'IA commence, déclencher son tour avec délai
+    // If the AI starts, trigger its turn with a delay
     if (widget.vsAI && widget.startingPlayer == Player.player2) {
       _startAITurnWithDelay();
     }
@@ -147,7 +147,7 @@ class GameBoardState extends State<GameBoard> {
       );
     }
 
-    // Si l'IA commence, déclencher son tour après le build avec délai
+    // If the AI starts, trigger its turn after the build with a delay
     if (widget.vsAI && widget.startingPlayer == Player.player2) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _startAITurnWithDelay();
@@ -455,7 +455,7 @@ class GameBoardState extends State<GameBoard> {
               itemBuilder: (context, index) {
                 final visualRow = index ~/ gameState.boardSize;
                 final col = index % gameState.boardSize;
-                // Inverser pour que le joueur local soit en bas
+                // Invert so that the local player is at the bottom
                 final shouldInvert =
                     !widget.isMultiplayer ||
                     widget.localPlayer == Player.player1;
@@ -476,11 +476,11 @@ class GameBoardState extends State<GameBoard> {
     final maxWidth = widget.maxWidth ?? 400;
     final maxHeight = widget.maxHeight;
 
-    // Calculer hexSize basé sur la largeur
+    // Compute hexSize based on the width
     final hexSizeFromWidth = maxWidth / 5.5;
 
-    // Si on a une contrainte de hauteur, calculer aussi hexSize basé sur la hauteur
-    // Le ratio hauteur/hexSize est environ 7 * sqrt(3)/2 + 0.5 ≈ 6.56
+    // If there is a height constraint, also compute hexSize based on the height
+    // The height/hexSize ratio is about 7 * sqrt(3)/2 + 0.5 ≈ 6.56
     if (maxHeight != null) {
       final hexSizeFromHeight = maxHeight / 6.56;
       return min(hexSizeFromWidth, hexSizeFromHeight).clamp(40.0, 100.0);
@@ -530,7 +530,7 @@ class GameBoardState extends State<GameBoard> {
 
       for (int row = 0; row < colHeight; row++) {
         final x = startX + hexWidth / 2 + col * horizontalSpacing;
-        // Inverser pour que le joueur local soit en bas
+        // Invert so that the local player is at the bottom
         final shouldInvert =
             !widget.isMultiplayer || widget.localPlayer == Player.player1;
         final invertedRow = shouldInvert ? colHeight - 1 - row : row;
@@ -603,7 +603,7 @@ class GameBoardState extends State<GameBoard> {
               ),
               child: Stack(
                 children: [
-                  // isTopRow = row 0 (camp joueur 1) -> objectif selon winCondition
+                  // isTopRow = row 0 (player 1 camp) -> objective depends on winCondition
                   if (isTopRow)
                     Positioned(
                       bottom: 6,
@@ -622,7 +622,7 @@ class GameBoardState extends State<GameBoard> {
                         ),
                       ),
                     ),
-                  // isBottomRow = row max (camp joueur 2) -> objectif selon winCondition
+                  // isBottomRow = row max (player 2 camp) -> objective depends on winCondition
                   if (isBottomRow)
                     Positioned(
                       top: 6,
@@ -728,7 +728,7 @@ class GameBoardState extends State<GameBoard> {
     final indicatorSize = _cellSize * 0.12;
 
     Widget? zoneIndicator;
-    // row 0 (camp joueur 1) -> objectif selon winCondition
+    // row 0 (player 1 camp) -> objective depends on winCondition
     if (pos.row == 0) {
       zoneIndicator = Positioned(
         bottom: 2,
@@ -744,7 +744,7 @@ class GameBoardState extends State<GameBoard> {
           ),
         ),
       );
-      // row max (camp joueur 2) -> objectif selon winCondition
+      // row max (player 2 camp) -> objective depends on winCondition
     } else if (pos.row == gameState.boardSize - 1) {
       zoneIndicator = Positioned(
         top: 2,

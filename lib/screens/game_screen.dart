@@ -127,7 +127,7 @@ class _GameScreenState extends State<GameScreen> {
       builder: (context, constraints) {
         final padding = 16.0;
         final availableWidth = constraints.maxWidth - (padding * 2);
-        // Réserver espace pour status bar (~120px) + spacing (24px)
+        // Reserve space for the status bar (~120px) + spacing (24px)
         final statusBarHeight = 144.0;
         final availableHeight =
             constraints.maxHeight - (padding * 2) - statusBarHeight;
@@ -180,7 +180,7 @@ class _GameScreenState extends State<GameScreen> {
               ),
               child: _buildSidebar(),
             ),
-            // Plateau de jeu
+            // Game board
             Expanded(
               child: Center(
                 child: Padding(
@@ -210,14 +210,14 @@ class _GameScreenState extends State<GameScreen> {
   Widget _buildSidebar() {
     return Column(
       children: [
-        // Options en haut
+        // Options at the top
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Bouton retour + titre
+                // Back button + title
                 Row(
                   children: [
                     const BackButton(),
@@ -233,7 +233,7 @@ class _GameScreenState extends State<GameScreen> {
                   ],
                 ),
                 const Spacer(),
-                // Bouton nouvelle partie
+                // New game button
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -257,7 +257,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
         ),
-        // Status en bas
+        // Status at the bottom
         _buildStatusPanel(),
       ],
     );
