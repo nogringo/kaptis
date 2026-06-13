@@ -235,7 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: Padding(
@@ -291,56 +290,56 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showMultiplayerBottomSheet() {
     showModalBottomSheet(
+      showDragHandle: true,
       context: context,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              AppLocalizations.of(context)!.multiplayer,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: _theme.primaryText,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.multiplayer,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: _theme.primaryText,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            _buildOptionButton(
-              icon: Icons.add_circle_outline,
-              label: AppLocalizations.of(context)!.createGame,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const OnlineLobbyScreen(mode: LobbyMode.create),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildOptionButton(
-              icon: Icons.login_rounded,
-              label: AppLocalizations.of(context)!.joinGame,
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const OnlineLobbyScreen(mode: LobbyMode.join),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 24),
+              _buildOptionButton(
+                icon: Icons.add_circle_outline,
+                label: AppLocalizations.of(context)!.createGame,
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const OnlineLobbyScreen(mode: LobbyMode.create),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildOptionButton(
+                icon: Icons.login_rounded,
+                label: AppLocalizations.of(context)!.joinGame,
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const OnlineLobbyScreen(mode: LobbyMode.join),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
