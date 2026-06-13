@@ -17,6 +17,7 @@ dependencies:
   ndk_flutter: ^0.8.4-dev.5
   app_links: ^7.1.2
   share_plus: ^13.1.0
+  audioplayers: ^6.7.1
 
 dev_dependencies:
   flutter_test:
@@ -26,3 +27,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/sounds/

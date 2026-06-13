@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/online_lobby_screen.dart';
 import 'services/deep_link_service.dart';
 import 'services/preferences_service.dart';
+import 'services/sound_service.dart';
 import 'theme/app_colors.dart';
 
 final deepLinkService = DeepLinkService();
@@ -13,6 +14,7 @@ final deepLinkService = DeepLinkService();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await PreferencesService.init();
+  await SoundService.instance.init();
   runApp(const KaptisApp());
 }
 

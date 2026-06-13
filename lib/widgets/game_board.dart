@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_state.dart';
 import '../models/ai_player.dart';
 import '../services/preferences_service.dart';
+import '../services/sound_service.dart';
 import '../theme/app_colors.dart';
 import 'nexus_widget.dart';
 
@@ -119,12 +120,33 @@ class GameBoardState extends State<GameBoard> {
 
   /// Set game state from external source (for multiplayer)
   void setGameState(GameState newState) {
+    _playMoveSound(gameState, newState);
     setState(() {
       gameState = newState;
       selectedPawn = null;
       validMoves = [];
     });
     _notifyStateChanged();
+  }
+
+  /// Plays the appropriate sound for an opponent move by comparing the old and
+  /// new states: if the Nexus changed position it's a Nexus move, otherwise a
+  /// pawn move.
+  void _playMoveSound(GameState oldState, GameState newState) {
+    final oldNexus = _nexusPosition(oldState);
+    final newNexus = _nexusPosition(newState);
+    if (oldNexus != newNexus) {
+      SoundService.instance.playNexusMove();
+    } else {
+      SoundService.instance.playPawnMove();
+    }
+  }
+
+  Position? _nexusPosition(GameState state) {
+    for (final p in state.pieces) {
+      if (p.type == PieceType.nexus) return p.position;
+    }
+    return null;
   }
 
   @override
@@ -183,6 +205,7 @@ class GameBoardState extends State<GameBoard> {
     if (gameState.phase == GamePhase.moveNexus) {
       if (validMoves.contains(pos)) {
         final newState = gameState.moveNexus(pos);
+        SoundService.instance.playNexusMove();
         setState(() {
           gameState = newState;
           validMoves = [];
@@ -206,6 +229,7 @@ class GameBoardState extends State<GameBoard> {
       if (selectedPawn != null && validMoves.contains(pos)) {
         final fromPos = selectedPawn!.position;
         final newState = gameState.movePawn(selectedPawn!, pos);
+        SoundService.instance.playPawnMove();
         setState(() {
           gameState = newState;
           selectedPawn = null;
@@ -262,6 +286,7 @@ class GameBoardState extends State<GameBoard> {
     if (gameState.phase == GamePhase.moveNexus) {
       final nexusMove = _ai.getBestNexusMove(gameState);
       if (nexusMove != null) {
+        SoundService.instance.playNexusMove();
         setState(() {
           gameState = gameState.moveNexus(nexusMove);
         });
@@ -282,6 +307,7 @@ class GameBoardState extends State<GameBoard> {
           gameState.currentPlayer == Player.player2) {
         final pawnMove = _ai.getBestPawnMove(gameState);
         if (pawnMove != null) {
+          SoundService.instance.playPawnMove();
           setState(() {
             gameState = gameState.movePawn(pawnMove.$1, pawnMove.$2);
             _aiThinking = false;
