@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ndk/ndk.dart';
-import 'package:ndk/shared/nips/nip01/key_pair.dart';
 import 'package:ndk/shared/nips/nip01/bip340.dart';
 import 'package:ndk_flutter/ndk_flutter.dart';
 
@@ -23,7 +21,7 @@ class NostrService {
   Ndk? _ndk;
   NdkFlutter? _ndkFlutter;
   bool _isConnected = false;
-  KeyPair? _keyPair;
+  String? _pubkey;
 
   static const List<String> defaultRelays = [
     'wss://relay.nmail.li',
@@ -36,15 +34,7 @@ class NostrService {
   bool get isConnected => _isConnected;
   Ndk? get ndk => _ndk;
   NdkFlutter? get ndkFlutter => _ndkFlutter;
-  KeyPair? get keyPair => _keyPair;
-
-  /// Get the appropriate event verifier based on platform
-  EventVerifier _getEventVerifier() {
-    if (kIsWeb) {
-      return WebEventVerifier();
-    }
-    return Bip340EventVerifier();
-  }
+  String? get pubkey => _pubkey;
 
   /// Initialize NDK and connect to relays
   Future<void> connect({List<String>? relays}) async {
@@ -52,7 +42,8 @@ class NostrService {
 
     _ndk = Ndk(
       NdkConfig(
-        eventVerifier: _getEventVerifier(),
+        eventVerifier: NdkEventVerifier(),
+        eventSignerFactory: NdkEventSignerFactory(),
         cache: MemCacheManager(),
         bootstrapRelays: relays ?? defaultRelays,
       ),
@@ -63,32 +54,23 @@ class NostrService {
     // Restore accounts from secure storage
     await _ndkFlutter!.restoreAccountsState();
 
-    // Get or create keypair
-    _keyPair = await _getOrCreateKeyPair();
+    // Get or create the account pubkey
+    _pubkey = await _getOrCreatePubkey();
 
     _isConnected = true;
   }
 
-  /// Get or create a keypair
-  Future<KeyPair> _getOrCreateKeyPair() async {
-    // Check if NdkFlutter restored an account
+  /// Get or create the account pubkey
+  Future<String> _getOrCreatePubkey() async {
+    // Reuse any already-connected account, whatever its signer
+    // (local key, NIP-07 browser extension, NIP-46/Amber remote signer...).
+    // Signing is delegated to NDK's connected signer, so we only need the pubkey.
     final publicKey = _ndk!.accounts.getPublicKey();
     if (publicKey != null) {
-      final account = _ndk!.accounts.accounts[publicKey];
-      if (account != null && account.signer is Bip340EventSigner) {
-        final signer = account.signer as Bip340EventSigner;
-        if (signer.privateKey != null) {
-          return KeyPair(
-            signer.privateKey!,
-            publicKey,
-            Nip19.encodePrivateKey(signer.privateKey!),
-            Nip19.encodePubKey(publicKey),
-          );
-        }
-      }
+      return publicKey;
     }
 
-    // No account restored, generate new one
+    // No account at all, generate a new local identity
     final newKeyPair = Bip340.generatePrivateKey();
     _ndk!.accounts.loginPrivateKey(
       pubkey: newKeyPair.publicKey,
@@ -96,13 +78,13 @@ class NostrService {
     );
     await _ndkFlutter?.saveAccountsState();
 
-    return newKeyPair;
+    return newKeyPair.publicKey;
   }
 
   /// Get public key
   Future<String> getPublicKey() async {
     await _ensureConnected();
-    return _keyPair!.publicKey;
+    return _pubkey!;
   }
 
   /// Disconnect from relays
@@ -110,7 +92,7 @@ class NostrService {
     _ndk = null;
     _ndkFlutter = null;
     _isConnected = false;
-    _keyPair = null;
+    _pubkey = null;
   }
 
   /// Publish a game session event (kind 38743)
@@ -144,7 +126,7 @@ class NostrService {
 
     final event = Nip01Event(
       kind: NostrEventKinds.gameSession,
-      pubKey: _keyPair!.publicKey,
+      pubKey: _pubkey!,
       content: '',
       tags: tags,
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -180,7 +162,7 @@ class NostrService {
 
     final event = Nip01Event(
       kind: NostrEventKinds.gameAction,
-      pubKey: _keyPair!.publicKey,
+      pubKey: _pubkey!,
       content: '',
       tags: tags,
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -198,7 +180,7 @@ class NostrService {
 
     final event = Nip01Event(
       kind: NostrEventKinds.gameAction,
-      pubKey: _keyPair!.publicKey,
+      pubKey: _pubkey!,
       content: '',
       tags: [
         ['a', '38743:$hostPubkey:kaptis-$sessionId'],
@@ -230,7 +212,7 @@ class NostrService {
 
     final event = Nip01Event(
       kind: NostrEventKinds.gameAction,
-      pubKey: _keyPair!.publicKey,
+      pubKey: _pubkey!,
       content: '',
       tags: tags,
       createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -251,7 +233,7 @@ class NostrService {
 
     final event = Nip01Event(
       kind: NostrEventKinds.gameResult,
-      pubKey: _keyPair!.publicKey,
+      pubKey: _pubkey!,
       content: '',
       tags: [
         ['a', '38743:$hostPubkey:kaptis-$sessionId'],
