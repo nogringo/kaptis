@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/ai_player.dart';
 import '../models/game_state.dart';
 import '../theme/app_colors.dart';
@@ -68,9 +69,13 @@ class _GameScreenState extends State<GameScreen> {
     final winner = boardState.winner!;
     String winnerName;
     if (widget.vsAI) {
-      winnerName = winner == Player.player1 ? 'Vous' : 'Ordinateur';
+      winnerName = winner == Player.player1
+          ? AppLocalizations.of(context)!.you
+          : AppLocalizations.of(context)!.computer;
     } else {
-      winnerName = winner == Player.player1 ? 'Joueur 1' : 'Joueur 2';
+      winnerName = winner == Player.player1
+          ? AppLocalizations.of(context)!.player1
+          : AppLocalizations.of(context)!.player2;
     }
 
     final winnerColor = winner == Player.player1
@@ -105,7 +110,7 @@ class _GameScreenState extends State<GameScreen> {
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
-              tooltip: 'Nouvelle partie',
+              tooltip: AppLocalizations.of(context)!.newGame,
               onPressed: () {
                 _gameBoardKey.currentState?.resetGame();
                 _triggerRebuild();
@@ -243,7 +248,7 @@ class _GameScreenState extends State<GameScreen> {
                       _triggerRebuild();
                     },
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Nouvelle partie'),
+                    label: Text(AppLocalizations.of(context)!.newGame),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: _theme.accentColor,
                       side: BorderSide(color: _theme.accentColor),
@@ -272,41 +277,43 @@ class _GameScreenState extends State<GameScreen> {
     bool isThinking = false;
 
     if (boardState == null) {
-      playerName = widget.vsAI ? 'Vous' : 'Joueur 1';
-      actionText = 'Déplacez le Nexus';
+      playerName = widget.vsAI
+          ? AppLocalizations.of(context)!.you
+          : AppLocalizations.of(context)!.player1;
+      actionText = AppLocalizations.of(context)!.moveNexusAction;
       statusColor = _theme.player1Color;
     } else if (boardState.winner != null) {
       if (widget.vsAI) {
         playerName = boardState.winner == Player.player1
-            ? 'Vous'
-            : 'Ordinateur';
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = boardState.winner == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
-      actionText = 'Gagne !';
+      actionText = AppLocalizations.of(context)!.wins;
       statusColor = boardState.winner == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;
     } else if (boardState.aiThinking) {
-      playerName = 'Ordinateur';
-      actionText = 'Reflechit...';
+      playerName = AppLocalizations.of(context)!.computer;
+      actionText = AppLocalizations.of(context)!.thinking;
       statusColor = _theme.player2Color;
       isThinking = true;
     } else {
       if (widget.vsAI) {
         playerName = boardState.currentPlayer == Player.player1
-            ? 'Vous'
-            : 'Ordinateur';
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = boardState.currentPlayer == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
       actionText = boardState.phase == GamePhase.moveNexus
-          ? 'Déplacez le Nexus'
-          : 'Déplacez un pion';
+          ? AppLocalizations.of(context)!.moveNexusAction
+          : AppLocalizations.of(context)!.movePawnAction;
       statusColor = boardState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;

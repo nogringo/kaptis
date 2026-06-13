@@ -21,6 +21,9 @@ import 'nostr_service.dart';
 // - Web of trust (limit to follows)
 // - Proof of Work (NIP-13) to slow down bots
 
+/// Known multiplayer error cases (localized at the UI layer).
+enum MultiplayerError { roomNotFound, roomFull, alreadyStarted }
+
 /// Player profile info
 class PlayerProfile {
   final String pubkey;
@@ -95,6 +98,7 @@ class MultiplayerService extends ChangeNotifier {
   int _sequenceNumber = 0;
   bool _isConnecting = false;
   String? _error;
+  MultiplayerError? _errorCode;
 
   StreamSubscription<Nip01Event>? _sessionSubscription;
   StreamSubscription<Nip01Event>? _movesSubscription;
@@ -112,6 +116,7 @@ class MultiplayerService extends ChangeNotifier {
   Player? get localPlayer => _localPlayer;
   bool get isConnecting => _isConnecting;
   String? get error => _error;
+  MultiplayerError? get errorCode => _errorCode;
   bool get isHost => _currentRoom?.hostPubkey == _localPublicKey;
   bool get isMyTurn =>
       _gameState != null && _localPlayer == _gameState!.currentPlayer;
@@ -178,6 +183,7 @@ class MultiplayerService extends ChangeNotifier {
   }) async {
     _isConnecting = true;
     _error = null;
+    _errorCode = null;
     notifyListeners();
 
     try {
@@ -321,6 +327,7 @@ class MultiplayerService extends ChangeNotifier {
   Future<GameRoom?> joinRoom(String code) async {
     _isConnecting = true;
     _error = null;
+    _errorCode = null;
     notifyListeners();
 
     try {
@@ -329,7 +336,7 @@ class MultiplayerService extends ChangeNotifier {
       // Find the room
       final event = await _nostrService.findGameSession(code);
       if (event == null) {
-        _error = 'Partie introuvable';
+        _errorCode = MultiplayerError.roomNotFound;
         _isConnecting = false;
         notifyListeners();
         return null;
@@ -338,14 +345,14 @@ class MultiplayerService extends ChangeNotifier {
       final room = GameRoom.fromNostrEvent(event);
 
       if (room.isFull) {
-        _error = 'La partie est complète';
+        _errorCode = MultiplayerError.roomFull;
         _isConnecting = false;
         notifyListeners();
         return null;
       }
 
       if (room.status != RoomStatus.waiting) {
-        _error = 'La partie a déjà commencé';
+        _errorCode = MultiplayerError.alreadyStarted;
         _isConnecting = false;
         notifyListeners();
         return null;
@@ -590,6 +597,7 @@ class MultiplayerService extends ChangeNotifier {
     _localPlayer = null;
     _sequenceNumber = 0;
     _error = null;
+    _errorCode = null;
     notifyListeners();
   }
 

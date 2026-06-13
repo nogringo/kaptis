@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/preferences_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/nexus_widget.dart';
@@ -17,9 +18,9 @@ class _RulesScreenState extends State<RulesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Règles du jeu',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.rulesTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -33,36 +34,23 @@ class _RulesScreenState extends State<RulesScreen> {
               children: [
                 _buildSection(
                   icon: Icons.grid_on_rounded,
-                  title: 'Le plateau',
-                  content:
-                      'Le jeu se joue sur un plateau carré (5x5 ou 7x7 cases) ou hexagonal. '
-                      'Chaque joueur possède 5 ou 7 pions placés sur sa ligne de départ. '
-                      'Le Nexus est placé au centre du plateau.',
+                  title: AppLocalizations.of(context)!.rulesBoardTitle,
+                  content: AppLocalizations.of(context)!.rulesBoardContent,
                 ),
                 _buildSection(
                   icon: Icons.emoji_events_rounded,
-                  title: 'Objectif',
-                  content:
-                      'Un joueur gagne la partie s\'il réussit à :\n\n'
-                      '1. Amener le Nexus sur la ligne de sa couleur\n\n'
-                      '2. Immobiliser le Nexus par encerclement stratégique (inspiré du Go)',
+                  title: AppLocalizations.of(context)!.rulesObjectiveTitle,
+                  content: AppLocalizations.of(context)!.rulesObjectiveContent,
                 ),
                 _buildSection(
                   icon: Icons.swap_horiz_rounded,
-                  title: 'Déroulement d\'un tour',
-                  content:
-                      'À son tour, un joueur effectue 2 actions dans cet ordre :\n\n'
-                      '1. Déplacer le Nexus d\'une seule case (comme le Roi aux échecs)\n\n'
-                      '2. Déplacer un de ses pions jusqu\'au bout de la ligne (comme la Dame aux échecs)',
+                  title: AppLocalizations.of(context)!.rulesTurnTitle,
+                  content: AppLocalizations.of(context)!.rulesTurnContent,
                 ),
                 _buildSection(
                   icon: Icons.info_outline_rounded,
-                  title: 'Règles importantes',
-                  content:
-                      '• Le Nexus se déplace d\'une case dans toutes les directions (Roi)\n\n'
-                      '• Les pions filent jusqu\'au bout dans la direction choisie (Dame)\n\n'
-                      '• Aucune pièce ne peut sauter par-dessus une autre\n\n'
-                      '• 8 directions sur plateau carré, 6 sur plateau hexagonal',
+                  title: AppLocalizations.of(context)!.rulesImportantTitle,
+                  content: AppLocalizations.of(context)!.rulesImportantContent,
                 ),
                 _buildPiecesLegend(),
                 const SizedBox(height: 30),
@@ -152,7 +140,7 @@ class _RulesScreenState extends State<RulesScreen> {
               ),
               const SizedBox(width: 14),
               Text(
-                'Les pièces',
+                AppLocalizations.of(context)!.rulesPiecesTitle,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -167,15 +155,15 @@ class _RulesScreenState extends State<RulesScreen> {
           _buildPieceRow(
             color: _theme.player1Color,
             icon: null,
-            name: 'Pions Joueur 1',
-            description: 'Se déplacent comme la Dame aux échecs',
+            name: AppLocalizations.of(context)!.rulesPiecesP1,
+            description: AppLocalizations.of(context)!.rulesPawnMove,
           ),
           const SizedBox(height: 16),
           _buildPieceRow(
             color: _theme.player2Color,
             icon: null,
-            name: 'Pions Joueur 2',
-            description: 'Se déplacent comme la Dame aux échecs',
+            name: AppLocalizations.of(context)!.rulesPiecesP2,
+            description: AppLocalizations.of(context)!.rulesPawnMove,
           ),
         ],
       ),
@@ -199,7 +187,7 @@ class _RulesScreenState extends State<RulesScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Nexus',
+                AppLocalizations.of(context)!.nexus,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -207,7 +195,7 @@ class _RulesScreenState extends State<RulesScreen> {
                 ),
               ),
               Text(
-                'Se déplace comme le Roi aux échecs',
+                AppLocalizations.of(context)!.rulesNexusMove,
                 style: TextStyle(fontSize: 13, color: _theme.secondaryText),
               ),
             ],

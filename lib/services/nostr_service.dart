@@ -127,7 +127,7 @@ class NostrService {
     final tags = [
       ['d', 'kaptis-$sessionId'],
       ['game', 'kaptis'],
-      ['title', 'Partie Kaptis'],
+      ['title', 'Kaptis'],
       ['status', status],
       ['max-players', maxPlayers.toString()],
       ['current-players', currentPlayers.toString()],

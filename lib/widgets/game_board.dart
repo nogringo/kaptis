@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/game_state.dart';
 import '../models/ai_player.dart';
 import '../services/preferences_service.dart';
@@ -319,33 +320,35 @@ class GameBoardState extends State<GameBoard> {
 
     if (gameState.winner != null) {
       if (widget.vsAI) {
-        playerName = gameState.winner == Player.player1 ? 'Vous' : 'Ordinateur';
+        playerName = gameState.winner == Player.player1
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = gameState.winner == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
-      actionText = 'Gagne !';
+      actionText = AppLocalizations.of(context)!.wins;
       statusColor = gameState.winner == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;
     } else if (_aiThinking) {
-      playerName = 'Ordinateur';
-      actionText = 'Reflechit...';
+      playerName = AppLocalizations.of(context)!.computer;
+      actionText = AppLocalizations.of(context)!.thinking;
       statusColor = _theme.player2Color;
     } else {
       if (widget.vsAI) {
         playerName = gameState.currentPlayer == Player.player1
-            ? 'Vous'
-            : 'Ordinateur';
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = gameState.currentPlayer == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
       actionText = gameState.phase == GamePhase.moveNexus
-          ? 'Déplacez le Nexus'
-          : 'Déplacez un pion';
+          ? AppLocalizations.of(context)!.moveNexusAction
+          : AppLocalizations.of(context)!.movePawnAction;
       statusColor = gameState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;

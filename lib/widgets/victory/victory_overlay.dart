@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/game_state.dart';
 import '../../theme/app_colors.dart';
 import 'confetti_particle.dart';
@@ -197,7 +198,7 @@ class _VictoryOverlayState extends State<VictoryOverlay>
 
           // "Gagne !" text
           Text(
-            'Gagne !',
+            AppLocalizations.of(context)!.wins,
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.bold,
@@ -221,9 +222,12 @@ class _VictoryOverlayState extends State<VictoryOverlay>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Rejouer',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  AppLocalizations.of(context)!.replay,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -242,9 +246,12 @@ class _VictoryOverlayState extends State<VictoryOverlay>
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Menu',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              child: Text(
+                AppLocalizations.of(context)!.menu,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),

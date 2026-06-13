@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   shared_preferences: ^2.5.5
   ndk: ^0.8.4-dev.4
   ndk_flutter: ^0.8.4-dev.5
@@ -22,3 +25,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true

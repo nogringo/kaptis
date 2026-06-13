@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/ai_player.dart';
 import '../models/game_state.dart';
 import '../services/preferences_service.dart';
@@ -31,7 +32,7 @@ class _SetupScreenState extends State<SetupScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Nouvelle partie',
+          AppLocalizations.of(context)!.newGame,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: isLarge ? 24 : 20,
@@ -89,7 +90,10 @@ class _SetupScreenState extends State<SetupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Mode de jeu', isLarge),
+                  _buildSectionTitle(
+                    AppLocalizations.of(context)!.gameModeSection,
+                    isLarge,
+                  ),
                   const SizedBox(height: 16),
                   _buildModeSelector(isLarge),
                   AnimatedSize(
@@ -100,7 +104,10 @@ class _SetupScreenState extends State<SetupScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 32),
-                              _buildSectionTitle('Difficulté', isLarge),
+                              _buildSectionTitle(
+                                AppLocalizations.of(context)!.difficulty,
+                                isLarge,
+                              ),
                               const SizedBox(height: 16),
                               _buildDifficultySelector(isLarge),
                             ],
@@ -108,11 +115,17 @@ class _SetupScreenState extends State<SetupScreen> {
                         : const SizedBox.shrink(),
                   ),
                   const SizedBox(height: 32),
-                  _buildSectionTitle('Condition de victoire', isLarge),
+                  _buildSectionTitle(
+                    AppLocalizations.of(context)!.winConditionSection,
+                    isLarge,
+                  ),
                   const SizedBox(height: 16),
                   _buildWinConditionSelector(isLarge),
                   const SizedBox(height: 32),
-                  _buildSectionTitle('Commence en premier', isLarge),
+                  _buildSectionTitle(
+                    AppLocalizations.of(context)!.startsFirst,
+                    isLarge,
+                  ),
                   const SizedBox(height: 16),
                   _buildStartingPlayerSelector(isLarge),
                 ],
@@ -123,7 +136,10 @@ class _SetupScreenState extends State<SetupScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Type de plateau', isLarge),
+                  _buildSectionTitle(
+                    AppLocalizations.of(context)!.boardType,
+                    isLarge,
+                  ),
                   const SizedBox(height: 16),
                   _buildBoardTypeSelector(isLarge),
                   AnimatedSize(
@@ -134,7 +150,10 @@ class _SetupScreenState extends State<SetupScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 32),
-                              _buildSectionTitle('Taille du plateau', isLarge),
+                              _buildSectionTitle(
+                                AppLocalizations.of(context)!.boardSizeSection,
+                                isLarge,
+                              ),
                               const SizedBox(height: 16),
                               _buildSizeSelector(isLarge),
                             ],
@@ -154,7 +173,10 @@ class _SetupScreenState extends State<SetupScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Mode de jeu', isLarge),
+        _buildSectionTitle(
+          AppLocalizations.of(context)!.gameModeSection,
+          isLarge,
+        ),
         const SizedBox(height: 16),
         _buildModeSelector(isLarge),
         const SizedBox(height: 32),
@@ -165,7 +187,10 @@ class _SetupScreenState extends State<SetupScreen> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Difficulté', isLarge),
+                    _buildSectionTitle(
+                      AppLocalizations.of(context)!.difficulty,
+                      isLarge,
+                    ),
                     const SizedBox(height: 16),
                     _buildDifficultySelector(isLarge),
                     const SizedBox(height: 32),
@@ -173,7 +198,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 )
               : const SizedBox.shrink(),
         ),
-        _buildSectionTitle('Type de plateau', isLarge),
+        _buildSectionTitle(AppLocalizations.of(context)!.boardType, isLarge),
         const SizedBox(height: 16),
         _buildBoardTypeSelector(isLarge),
         const SizedBox(height: 32),
@@ -184,7 +209,10 @@ class _SetupScreenState extends State<SetupScreen> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionTitle('Taille du plateau', isLarge),
+                    _buildSectionTitle(
+                      AppLocalizations.of(context)!.boardSizeSection,
+                      isLarge,
+                    ),
                     const SizedBox(height: 16),
                     _buildSizeSelector(isLarge),
                     const SizedBox(height: 32),
@@ -192,11 +220,14 @@ class _SetupScreenState extends State<SetupScreen> {
                 )
               : const SizedBox.shrink(),
         ),
-        _buildSectionTitle('Condition de victoire', isLarge),
+        _buildSectionTitle(
+          AppLocalizations.of(context)!.winConditionSection,
+          isLarge,
+        ),
         const SizedBox(height: 16),
         _buildWinConditionSelector(isLarge),
         const SizedBox(height: 32),
-        _buildSectionTitle('Commence en premier', isLarge),
+        _buildSectionTitle(AppLocalizations.of(context)!.startsFirst, isLarge),
         const SizedBox(height: 16),
         _buildStartingPlayerSelector(isLarge),
         const SizedBox(height: 24),
@@ -223,8 +254,8 @@ class _SetupScreenState extends State<SetupScreen> {
           Expanded(
             child: _buildModeCard(
               icon: Icons.smart_toy_rounded,
-              title: 'vs IA',
-              subtitle: 'Jouer avec Blob',
+              title: AppLocalizations.of(context)!.vsAI,
+              subtitle: AppLocalizations.of(context)!.vsAISubtitle,
               isSelected: _vsAI,
               onTap: () {
                 setState(() => _vsAI = true);
@@ -237,8 +268,8 @@ class _SetupScreenState extends State<SetupScreen> {
           Expanded(
             child: _buildModeCard(
               icon: Icons.people_rounded,
-              title: '2 Joueurs',
-              subtitle: 'Jouer avec un ami',
+              title: AppLocalizations.of(context)!.twoPlayers,
+              subtitle: AppLocalizations.of(context)!.twoPlayersSubtitle,
               isSelected: !_vsAI,
               onTap: () {
                 setState(() => _vsAI = false);
@@ -317,8 +348,8 @@ class _SetupScreenState extends State<SetupScreen> {
           Expanded(
             child: _buildBoardTypeCard(
               icon: Icons.grid_4x4_rounded,
-              title: 'Carré',
-              subtitle: '5x5 ou 7x7 cases',
+              title: AppLocalizations.of(context)!.boardSquare,
+              subtitle: AppLocalizations.of(context)!.boardSquareSubtitle,
               isSelected: _gameMode == GameMode.square,
               onTap: () {
                 setState(() => _gameMode = GameMode.square);
@@ -331,8 +362,8 @@ class _SetupScreenState extends State<SetupScreen> {
           Expanded(
             child: _buildBoardTypeCard(
               icon: Icons.hexagon_rounded,
-              title: 'Hexagonal',
-              subtitle: '37 hexagones',
+              title: AppLocalizations.of(context)!.hexagonal,
+              subtitle: AppLocalizations.of(context)!.boardHexSubtitle,
               isSelected: _gameMode == GameMode.hexagonal,
               onTap: () {
                 setState(() => _gameMode = GameMode.hexagonal);
@@ -408,7 +439,7 @@ class _SetupScreenState extends State<SetupScreen> {
       children: [
         Expanded(
           child: _buildDifficultyCard(
-            label: 'Facile',
+            label: AppLocalizations.of(context)!.difficultyEasy,
             icon: Icons.sentiment_satisfied_rounded,
             difficulty: AIDifficulty.easy,
             color: Colors.green,
@@ -418,7 +449,7 @@ class _SetupScreenState extends State<SetupScreen> {
         SizedBox(width: isLarge ? 16 : 12),
         Expanded(
           child: _buildDifficultyCard(
-            label: 'Avancé',
+            label: AppLocalizations.of(context)!.difficultyNormal,
             icon: Icons.sentiment_neutral_rounded,
             difficulty: AIDifficulty.normal,
             color: Colors.orange,
@@ -428,7 +459,7 @@ class _SetupScreenState extends State<SetupScreen> {
         SizedBox(width: isLarge ? 16 : 12),
         Expanded(
           child: _buildDifficultyCard(
-            label: 'Expert',
+            label: AppLocalizations.of(context)!.difficultyHard,
             icon: Icons.sentiment_very_dissatisfied_rounded,
             difficulty: AIDifficulty.hard,
             color: Colors.red,
@@ -496,7 +527,7 @@ class _SetupScreenState extends State<SetupScreen> {
         Expanded(
           child: _buildSizeCard(
             size: 5,
-            description: '5 pions par joueur\nParties rapides',
+            description: AppLocalizations.of(context)!.boardSize5Desc,
             isLarge: isLarge,
           ),
         ),
@@ -504,7 +535,7 @@ class _SetupScreenState extends State<SetupScreen> {
         Expanded(
           child: _buildSizeCard(
             size: 7,
-            description: '7 pions par joueur\nParties longues',
+            description: AppLocalizations.of(context)!.boardSize7Desc,
             isLarge: isLarge,
           ),
         ),
@@ -573,8 +604,8 @@ class _SetupScreenState extends State<SetupScreen> {
           Expanded(
             child: _buildWinConditionCard(
               icon: Icons.home_rounded,
-              title: 'Son camp',
-              subtitle: 'Ramener le Nexus dans son camp',
+              title: AppLocalizations.of(context)!.winOwnCamp,
+              subtitle: AppLocalizations.of(context)!.winOwnCampSubtitle,
               isSelected: _winCondition == WinCondition.ownCamp,
               onTap: () {
                 setState(() => _winCondition = WinCondition.ownCamp);
@@ -587,8 +618,8 @@ class _SetupScreenState extends State<SetupScreen> {
           Expanded(
             child: _buildWinConditionCard(
               icon: Icons.flag_rounded,
-              title: 'Camp adverse',
-              subtitle: 'Amener le Nexus chez l\'adversaire',
+              title: AppLocalizations.of(context)!.winOpponentCamp,
+              subtitle: AppLocalizations.of(context)!.winOpponentCampSubtitle,
               isSelected: _winCondition == WinCondition.opponentCamp,
               onTap: () {
                 setState(() => _winCondition = WinCondition.opponentCamp);
@@ -666,8 +697,8 @@ class _SetupScreenState extends State<SetupScreen> {
         children: [
           Expanded(
             child: _buildStartingPlayerCard(
-              title: 'Bleus',
-              subtitle: 'Joueur 1 commence',
+              title: AppLocalizations.of(context)!.teamBlue,
+              subtitle: AppLocalizations.of(context)!.player1Starts,
               color: _theme.player1Color,
               isSelected: _startingPlayer == Player.player1,
               onTap: () {
@@ -680,8 +711,8 @@ class _SetupScreenState extends State<SetupScreen> {
           SizedBox(width: isLarge ? 20 : 16),
           Expanded(
             child: _buildStartingPlayerCard(
-              title: 'Rouges',
-              subtitle: 'Joueur 2 commence',
+              title: AppLocalizations.of(context)!.teamRed,
+              subtitle: AppLocalizations.of(context)!.player2Starts,
               color: _theme.player2Color,
               isSelected: _startingPlayer == Player.player2,
               onTap: () {
@@ -782,7 +813,7 @@ class _SetupScreenState extends State<SetupScreen> {
           elevation: 4,
         ),
         child: Text(
-          'COMMENCER',
+          AppLocalizations.of(context)!.start,
           style: TextStyle(
             fontSize: isLarge ? 20 : 18,
             fontWeight: FontWeight.bold,
