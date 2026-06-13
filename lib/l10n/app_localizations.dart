@@ -789,6 +789,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The game has already started'**
   String get errorAlreadyStarted;
+
+  /// Tooltip when sound effects are enabled
+  ///
+  /// In en, this message translates to:
+  /// **'Sound on'**
+  String get soundOn;
+
+  /// Tooltip when sound effects are disabled
+  ///
+  /// In en, this message translates to:
+  /// **'Sound off'**
+  String get soundOff;
 }
 
 class _AppLocalizationsDelegate

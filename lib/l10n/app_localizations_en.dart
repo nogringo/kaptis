@@ -361,4 +361,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorAlreadyStarted => 'The game has already started';
+
+  @override
+  String get soundOn => 'Sound on';
+
+  @override
+  String get soundOff => 'Sound off';
 }

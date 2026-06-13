@@ -6,6 +6,7 @@ import 'online_lobby_screen.dart';
 import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/sound_toggle_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,27 +24,39 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: Responsive.screenPadding(context),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: Responsive.contentMaxWidth(context),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildTitle(),
-                  SizedBox(height: _isLarge ? 20 : 16),
-                  _buildSubtitle(),
-                  SizedBox(height: _isLarge ? 16 : 12),
-                  _buildTagline(),
-                  SizedBox(height: _isLarge ? 60 : 48),
-                  _buildButtons(),
-                ],
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                padding: Responsive.screenPadding(context),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: Responsive.contentMaxWidth(context),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildTitle(),
+                      SizedBox(height: _isLarge ? 20 : 16),
+                      _buildSubtitle(),
+                      SizedBox(height: _isLarge ? 16 : 12),
+                      _buildTagline(),
+                      SizedBox(height: _isLarge ? 60 : 48),
+                      _buildButtons(),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: SoundToggleButton(
+                size: _isLarge ? 32 : 28,
+                color: _theme.secondaryText,
+              ),
+            ),
+          ],
         ),
       ),
     );

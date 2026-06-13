@@ -360,4 +360,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errorAlreadyStarted => 'La partie a déjà commencé';
+
+  @override
+  String get soundOn => 'Son activé';
+
+  @override
+  String get soundOff => 'Son coupé';
 }

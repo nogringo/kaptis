@@ -123,5 +123,7 @@
 
   "errorRoomNotFound": "Partie introuvable",
   "errorRoomFull": "La partie est complète",
-  "errorAlreadyStarted": "La partie a déjà commencé"
+  "errorAlreadyStarted": "La partie a déjà commencé",
+  "soundOn": "Son activé",
+  "soundOff": "Son coupé"
 }

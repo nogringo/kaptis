@@ -4,8 +4,16 @@ import '../models/ai_player.dart';
 import '../models/game_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/game_board.dart';
+import '../widgets/sound_toggle_button.dart';
 import '../widgets/victory/victory_overlay.dart';
 
+// TODO: This screen shares a lot of presentational boilerplate with
+// MultiplayerGameScreen (responsive desktop/mobile shell, status panel
+// container, victory overlay wiring, winner-transition detection in
+// _triggerRebuild). Extract the shared shell into reusable widgets
+// (e.g. GameScaffold + GameStatusPanel) in a dedicated PR. Keep the two
+// screens separate though: their behavior differs (networking, leave
+// confirmation, reset/replay, config source).
 class GameScreen extends StatefulWidget {
   final int boardSize;
   final bool vsAI;
@@ -107,6 +115,7 @@ class _GameScreenState extends State<GameScreen> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           centerTitle: true,
+          actionsPadding: const EdgeInsets.only(right: 8),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
@@ -116,6 +125,9 @@ class _GameScreenState extends State<GameScreen> {
                 _triggerRebuild();
               },
             ),
+            // Sound toggle stays rightmost so it lives in the same corner
+            // across all screens (home, local game, multiplayer).
+            const SoundToggleButton(),
           ],
         ),
         body: SafeArea(child: _buildMobileLayout()),
@@ -235,6 +247,8 @@ class _GameScreenState extends State<GameScreen> {
                         color: _theme.primaryText,
                       ),
                     ),
+                    const Spacer(),
+                    const SoundToggleButton(),
                   ],
                 ),
                 const Spacer(),

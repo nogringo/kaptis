@@ -5,8 +5,16 @@ import '../models/game_state.dart';
 import '../services/multiplayer_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/game_board.dart';
+import '../widgets/sound_toggle_button.dart';
 import '../widgets/victory/victory_overlay.dart';
 
+// TODO: This screen shares a lot of presentational boilerplate with
+// GameScreen (responsive desktop/mobile shell, status panel container,
+// victory overlay wiring, winner-transition detection in _triggerRebuild).
+// Extract the shared shell into reusable widgets (e.g. GameScaffold +
+// GameStatusPanel) in a dedicated PR. Keep the two screens separate though:
+// their behavior differs (networking, leave confirmation, reset/replay,
+// config source).
 class MultiplayerGameScreen extends StatefulWidget {
   final MultiplayerService multiplayerService;
 
@@ -215,6 +223,8 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
                 Navigator.pop(context);
               },
             ),
+            actionsPadding: const EdgeInsets.only(right: 8),
+            actions: const [SoundToggleButton()],
           ),
           body: SafeArea(child: _buildMobileLayout()),
         ),
@@ -396,6 +406,8 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
                         color: _theme.primaryText,
                       ),
                     ),
+                    const Spacer(),
+                    const SoundToggleButton(),
                   ],
                 ),
                 const SizedBox(height: 24),

@@ -248,5 +248,9 @@
   "errorRoomFull": "The game is full",
   "@errorRoomFull": { "description": "Multiplayer error: the room already has two players" },
   "errorAlreadyStarted": "The game has already started",
-  "@errorAlreadyStarted": { "description": "Multiplayer error: the room is no longer joinable" }
+  "@errorAlreadyStarted": { "description": "Multiplayer error: the room is no longer joinable" },
+  "soundOn": "Sound on",
+  "@soundOn": { "description": "Tooltip when sound effects are enabled" },
+  "soundOff": "Sound off",
+  "@soundOff": { "description": "Tooltip when sound effects are disabled" }
 }

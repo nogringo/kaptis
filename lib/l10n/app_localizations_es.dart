@@ -360,4 +360,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorAlreadyStarted => 'La partida ya ha comenzado';
+
+  @override
+  String get soundOn => 'Sonido activado';
+
+  @override
+  String get soundOff => 'Sonido desactivado';
 }
