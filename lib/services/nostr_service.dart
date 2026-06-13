@@ -26,9 +26,11 @@ class NostrService {
   KeyPair? _keyPair;
 
   static const List<String> defaultRelays = [
-    'wss://relay.primal.net',
-    'wss://relay.damus.io',
+    'wss://relay.nmail.li',
+    'wss://nostr-01.yakihonne.com',
     'wss://nos.lol',
+    'wss://relay.damus.io',
+    'wss://relay.primal.net',
   ];
 
   bool get isConnected => _isConnected;
