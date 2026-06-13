@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/nexus_skin.dart';
 import '../services/preferences_service.dart';
 import '../theme/app_colors.dart';
@@ -33,9 +34,9 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
     final theme = context.colors;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Personnaliser le Nexus',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)!.customizeNexus,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -49,7 +50,7 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
             child: Column(
               children: [
                 Text(
-                  'Couleur',
+                  AppLocalizations.of(context)!.color,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -60,7 +61,7 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
                 _buildColorSelector(theme),
                 const SizedBox(height: 32),
                 Text(
-                  'Forme',
+                  AppLocalizations.of(context)!.shape,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -78,44 +79,54 @@ class _NexusSelectionScreenState extends State<NexusSelectionScreen> {
                       _buildDesignCard(
                         context,
                         skin: NexusSkin.core,
-                        title: 'Noyau',
-                        subtitle: 'Noyau energetique',
+                        title: AppLocalizations.of(context)!.skinCoreTitle,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.skinCoreSubtitle,
                       ),
                       _buildDesignCard(
                         context,
                         skin: NexusSkin.diamond,
-                        title: 'Diamant',
-                        subtitle: 'Forme diamant',
+                        title: AppLocalizations.of(context)!.skinDiamondTitle,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.skinDiamondSubtitle,
                       ),
                       _buildDesignCard(
                         context,
                         skin: NexusSkin.crystal,
-                        title: 'Cristal',
-                        subtitle: 'Gemme hexagonale',
+                        title: AppLocalizations.of(context)!.skinCrystalTitle,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.skinCrystalSubtitle,
                       ),
                       _buildDesignCard(
                         context,
                         skin: NexusSkin.pulsingOrb,
-                        title: 'Orbe',
-                        subtitle: 'Sphere pulsante',
+                        title: AppLocalizations.of(context)!.skinOrbTitle,
+                        subtitle: AppLocalizations.of(context)!.skinOrbSubtitle,
                       ),
                       _buildDesignCard(
                         context,
                         skin: NexusSkin.vortex,
-                        title: 'Vortex',
-                        subtitle: 'Spirale rotative',
+                        title: AppLocalizations.of(context)!.skinVortexTitle,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.skinVortexSubtitle,
                       ),
                       _buildDesignCard(
                         context,
                         skin: NexusSkin.star,
-                        title: 'Etoile',
-                        subtitle: 'Etoile brillante',
+                        title: AppLocalizations.of(context)!.skinStarTitle,
+                        subtitle: AppLocalizations.of(
+                          context,
+                        )!.skinStarSubtitle,
                       ),
                       _buildDesignCard(
                         context,
                         skin: NexusSkin.sun,
-                        title: 'Soleil',
-                        subtitle: 'Soleil rayonnant',
+                        title: AppLocalizations.of(context)!.skinSunTitle,
+                        subtitle: AppLocalizations.of(context)!.skinSunSubtitle,
                       ),
                     ],
                   ),

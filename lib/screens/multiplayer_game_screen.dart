@@ -1,11 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/game_state.dart';
 import '../services/multiplayer_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/game_board.dart';
+import '../widgets/sound_toggle_button.dart';
 import '../widgets/victory/victory_overlay.dart';
 
+// TODO: This screen shares a lot of presentational boilerplate with
+// GameScreen (responsive desktop/mobile shell, status panel container,
+// victory overlay wiring, winner-transition detection in _triggerRebuild).
+// Extract the shared shell into reusable widgets (e.g. GameScaffold +
+// GameStatusPanel) in a dedicated PR. Keep the two screens separate though:
+// their behavior differs (networking, leave confirmation, reset/replay,
+// config source).
 class MultiplayerGameScreen extends StatefulWidget {
   final MultiplayerService multiplayerService;
 
@@ -111,7 +120,9 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
     final winner = boardState.winner!;
     final localPlayer = widget.multiplayerService.localPlayer;
     final isLocalWinner = winner == localPlayer;
-    final winnerName = isLocalWinner ? 'Vous' : 'Adversaire';
+    final winnerName = isLocalWinner
+        ? AppLocalizations.of(context)!.you
+        : AppLocalizations.of(context)!.opponent;
 
     final winnerColor = winner == Player.player1
         ? _theme.player1Color
@@ -130,16 +141,16 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
     final shouldLeave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Quitter la partie ?'),
-        content: const Text('Vous allez abandonner la partie en cours.'),
+        title: Text(AppLocalizations.of(context)!.leaveGameTitle),
+        content: Text(AppLocalizations.of(context)!.leaveGameContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Quitter'),
+            child: Text(AppLocalizations.of(context)!.leave),
           ),
         ],
       ),
@@ -164,11 +175,11 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Connexion perdue'),
+              Text(AppLocalizations.of(context)!.connectionLost),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Retour'),
+                child: Text(AppLocalizations.of(context)!.back),
               ),
             ],
           ),
@@ -212,6 +223,8 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
                 Navigator.pop(context);
               },
             ),
+            actionsPadding: const EdgeInsets.only(right: 8),
+            actions: const [SoundToggleButton()],
           ),
           body: SafeArea(child: _buildMobileLayout()),
         ),
@@ -230,7 +243,7 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
       builder: (context, constraints) {
         final padding = 16.0;
         final availableWidth = constraints.maxWidth - (padding * 2);
-        final statusBarHeight = 180.0; // Plus grand pour infos multijoueur
+        final statusBarHeight = 180.0; // Larger for multiplayer info
         final availableHeight =
             constraints.maxHeight - (padding * 2) - statusBarHeight;
         final maxBoardSize = availableWidth < availableHeight
@@ -348,7 +361,9 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            isConnected ? 'Votre tour' : 'En attente...',
+            isConnected
+                ? AppLocalizations.of(context)!.yourTurn
+                : AppLocalizations.of(context)!.waiting,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -391,6 +406,8 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
                         color: _theme.primaryText,
                       ),
                     ),
+                    const Spacer(),
+                    const SoundToggleButton(),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -398,7 +415,9 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
                 const SizedBox(height: 24),
                 if (room != null) ...[
                   Text(
-                    'Code: ${room.code}',
+                    AppLocalizations.of(
+                      context,
+                    )!.multiplayerCodeLabel(room.code),
                     style: TextStyle(
                       fontSize: 14,
                       color: _theme.secondaryText,
@@ -407,7 +426,9 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Vous jouez les ${widget.multiplayerService.localPlayer == Player.player1 ? "Bleus" : "Rouges"}',
+                    widget.multiplayerService.localPlayer == Player.player1
+                        ? AppLocalizations.of(context)!.youPlayBlue
+                        : AppLocalizations.of(context)!.youPlayRed,
                     style: TextStyle(
                       fontSize: 14,
                       color:
@@ -438,22 +459,26 @@ class _MultiplayerGameScreenState extends State<MultiplayerGameScreen> {
     Color statusColor;
 
     if (boardState == null) {
-      playerName = 'Chargement';
+      playerName = AppLocalizations.of(context)!.loading;
       actionText = '...';
       statusColor = _theme.accentColor;
     } else if (boardState.winner != null) {
       final isLocalWinner = boardState.winner == localPlayer;
-      playerName = isLocalWinner ? 'Vous' : 'Adversaire';
-      actionText = 'Gagne !';
+      playerName = isLocalWinner
+          ? AppLocalizations.of(context)!.you
+          : AppLocalizations.of(context)!.opponent;
+      actionText = AppLocalizations.of(context)!.wins;
       statusColor = boardState.winner == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;
     } else {
       final isMyTurn = boardState.currentPlayer == localPlayer;
-      playerName = isMyTurn ? 'Vous' : 'Adversaire';
+      playerName = isMyTurn
+          ? AppLocalizations.of(context)!.you
+          : AppLocalizations.of(context)!.opponent;
       actionText = boardState.phase == GamePhase.moveNexus
-          ? 'Déplacez le Nexus'
-          : 'Déplacez un pion';
+          ? AppLocalizations.of(context)!.moveNexusAction
+          : AppLocalizations.of(context)!.movePawnAction;
       statusColor = boardState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;

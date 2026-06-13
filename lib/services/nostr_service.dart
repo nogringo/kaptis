@@ -26,9 +26,11 @@ class NostrService {
   KeyPair? _keyPair;
 
   static const List<String> defaultRelays = [
-    'wss://relay.primal.net',
-    'wss://relay.damus.io',
+    'wss://relay.nmail.li',
+    'wss://nostr-01.yakihonne.com',
     'wss://nos.lol',
+    'wss://relay.damus.io',
+    'wss://relay.primal.net',
   ];
 
   bool get isConnected => _isConnected;
@@ -127,7 +129,7 @@ class NostrService {
     final tags = [
       ['d', 'kaptis-$sessionId'],
       ['game', 'kaptis'],
-      ['title', 'Partie Kaptis'],
+      ['title', 'Kaptis'],
       ['status', status],
       ['max-players', maxPlayers.toString()],
       ['current-players', currentPlayers.toString()],
@@ -310,7 +312,7 @@ class NostrService {
   }
 
   /// Find a game session by room code
-  // TODO: Gérer le cas où plusieurs parties ont le même code (afficher la liste avec les créateurs)
+  // TODO: Handle the case where multiple games have the same code (display the list with the creators)
   Future<Nip01Event?> findGameSession(String sessionId) async {
     await _ensureConnected();
 

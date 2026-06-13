@@ -1,10 +1,12 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/home_screen.dart';
 import 'screens/online_lobby_screen.dart';
 import 'services/deep_link_service.dart';
 import 'services/preferences_service.dart';
+import 'services/sound_service.dart';
 import 'theme/app_colors.dart';
 
 final deepLinkService = DeepLinkService();
@@ -12,6 +14,7 @@ final deepLinkService = DeepLinkService();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await PreferencesService.init();
+  await SoundService.instance.init();
   runApp(const KaptisApp());
 }
 
@@ -58,6 +61,13 @@ class _KaptisAppState extends State<KaptisApp> {
     return MaterialApp(
       navigatorKey: _navigatorKey,
       title: "Kaptis",
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF234d3f),

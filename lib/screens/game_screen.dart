@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/ai_player.dart';
 import '../models/game_state.dart';
 import '../theme/app_colors.dart';
 import '../widgets/game_board.dart';
+import '../widgets/sound_toggle_button.dart';
 import '../widgets/victory/victory_overlay.dart';
 
+// TODO: This screen shares a lot of presentational boilerplate with
+// MultiplayerGameScreen (responsive desktop/mobile shell, status panel
+// container, victory overlay wiring, winner-transition detection in
+// _triggerRebuild). Extract the shared shell into reusable widgets
+// (e.g. GameScaffold + GameStatusPanel) in a dedicated PR. Keep the two
+// screens separate though: their behavior differs (networking, leave
+// confirmation, reset/replay, config source).
 class GameScreen extends StatefulWidget {
   final int boardSize;
   final bool vsAI;
@@ -68,9 +77,13 @@ class _GameScreenState extends State<GameScreen> {
     final winner = boardState.winner!;
     String winnerName;
     if (widget.vsAI) {
-      winnerName = winner == Player.player1 ? 'Vous' : 'Ordinateur';
+      winnerName = winner == Player.player1
+          ? AppLocalizations.of(context)!.you
+          : AppLocalizations.of(context)!.computer;
     } else {
-      winnerName = winner == Player.player1 ? 'Joueur 1' : 'Joueur 2';
+      winnerName = winner == Player.player1
+          ? AppLocalizations.of(context)!.player1
+          : AppLocalizations.of(context)!.player2;
     }
 
     final winnerColor = winner == Player.player1
@@ -102,15 +115,19 @@ class _GameScreenState extends State<GameScreen> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           centerTitle: true,
+          actionsPadding: const EdgeInsets.only(right: 8),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh_rounded),
-              tooltip: 'Nouvelle partie',
+              tooltip: AppLocalizations.of(context)!.newGame,
               onPressed: () {
                 _gameBoardKey.currentState?.resetGame();
                 _triggerRebuild();
               },
             ),
+            // Sound toggle stays rightmost so it lives in the same corner
+            // across all screens (home, local game, multiplayer).
+            const SoundToggleButton(),
           ],
         ),
         body: SafeArea(child: _buildMobileLayout()),
@@ -127,7 +144,7 @@ class _GameScreenState extends State<GameScreen> {
       builder: (context, constraints) {
         final padding = 16.0;
         final availableWidth = constraints.maxWidth - (padding * 2);
-        // Réserver espace pour status bar (~120px) + spacing (24px)
+        // Reserve space for the status bar (~120px) + spacing (24px)
         final statusBarHeight = 144.0;
         final availableHeight =
             constraints.maxHeight - (padding * 2) - statusBarHeight;
@@ -180,7 +197,7 @@ class _GameScreenState extends State<GameScreen> {
               ),
               child: _buildSidebar(),
             ),
-            // Plateau de jeu
+            // Game board
             Expanded(
               child: Center(
                 child: Padding(
@@ -210,14 +227,14 @@ class _GameScreenState extends State<GameScreen> {
   Widget _buildSidebar() {
     return Column(
       children: [
-        // Options en haut
+        // Options at the top
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Bouton retour + titre
+                // Back button + title
                 Row(
                   children: [
                     const BackButton(),
@@ -230,10 +247,12 @@ class _GameScreenState extends State<GameScreen> {
                         color: _theme.primaryText,
                       ),
                     ),
+                    const Spacer(),
+                    const SoundToggleButton(),
                   ],
                 ),
                 const Spacer(),
-                // Bouton nouvelle partie
+                // New game button
                 SizedBox(
                   width: double.infinity,
                   height: 48,
@@ -243,7 +262,7 @@ class _GameScreenState extends State<GameScreen> {
                       _triggerRebuild();
                     },
                     icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Nouvelle partie'),
+                    label: Text(AppLocalizations.of(context)!.newGame),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: _theme.accentColor,
                       side: BorderSide(color: _theme.accentColor),
@@ -257,7 +276,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
         ),
-        // Status en bas
+        // Status at the bottom
         _buildStatusPanel(),
       ],
     );
@@ -272,41 +291,43 @@ class _GameScreenState extends State<GameScreen> {
     bool isThinking = false;
 
     if (boardState == null) {
-      playerName = widget.vsAI ? 'Vous' : 'Joueur 1';
-      actionText = 'Déplacez le Nexus';
+      playerName = widget.vsAI
+          ? AppLocalizations.of(context)!.you
+          : AppLocalizations.of(context)!.player1;
+      actionText = AppLocalizations.of(context)!.moveNexusAction;
       statusColor = _theme.player1Color;
     } else if (boardState.winner != null) {
       if (widget.vsAI) {
         playerName = boardState.winner == Player.player1
-            ? 'Vous'
-            : 'Ordinateur';
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = boardState.winner == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
-      actionText = 'Gagne !';
+      actionText = AppLocalizations.of(context)!.wins;
       statusColor = boardState.winner == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;
     } else if (boardState.aiThinking) {
-      playerName = 'Ordinateur';
-      actionText = 'Reflechit...';
+      playerName = AppLocalizations.of(context)!.computer;
+      actionText = AppLocalizations.of(context)!.thinking;
       statusColor = _theme.player2Color;
       isThinking = true;
     } else {
       if (widget.vsAI) {
         playerName = boardState.currentPlayer == Player.player1
-            ? 'Vous'
-            : 'Ordinateur';
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = boardState.currentPlayer == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
       actionText = boardState.phase == GamePhase.moveNexus
-          ? 'Déplacez le Nexus'
-          : 'Déplacez un pion';
+          ? AppLocalizations.of(context)!.moveNexusAction
+          : AppLocalizations.of(context)!.movePawnAction;
       statusColor = boardState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;

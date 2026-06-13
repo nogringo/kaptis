@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/game_state.dart';
 import '../models/ai_player.dart';
 import '../services/preferences_service.dart';
+import '../services/sound_service.dart';
 import '../theme/app_colors.dart';
 import 'nexus_widget.dart';
 
@@ -56,7 +58,7 @@ class GameBoardState extends State<GameBoard> {
 
   AppColors get _theme => context.colors;
 
-  // Getters pour exposer l'état au parent
+  // Getters to expose the state to the parent
   bool get aiThinking => _aiThinking;
   Player? get winner => gameState.winner;
   Player get currentPlayer => gameState.currentPlayer;
@@ -110,7 +112,7 @@ class GameBoardState extends State<GameBoard> {
       _aiThinking = false;
     });
     _notifyStateChanged();
-    // Si l'IA commence, déclencher son tour avec délai
+    // If the AI starts, trigger its turn with a delay
     if (widget.vsAI && widget.startingPlayer == Player.player2) {
       _startAITurnWithDelay();
     }
@@ -118,12 +120,33 @@ class GameBoardState extends State<GameBoard> {
 
   /// Set game state from external source (for multiplayer)
   void setGameState(GameState newState) {
+    _playMoveSound(gameState, newState);
     setState(() {
       gameState = newState;
       selectedPawn = null;
       validMoves = [];
     });
     _notifyStateChanged();
+  }
+
+  /// Plays the appropriate sound for an opponent move by comparing the old and
+  /// new states: if the Nexus changed position it's a Nexus move, otherwise a
+  /// pawn move.
+  void _playMoveSound(GameState oldState, GameState newState) {
+    final oldNexus = _nexusPosition(oldState);
+    final newNexus = _nexusPosition(newState);
+    if (oldNexus != newNexus) {
+      SoundService.instance.playNexusMove();
+    } else {
+      SoundService.instance.playPawnMove();
+    }
+  }
+
+  Position? _nexusPosition(GameState state) {
+    for (final p in state.pieces) {
+      if (p.type == PieceType.nexus) return p.position;
+    }
+    return null;
   }
 
   @override
@@ -147,7 +170,7 @@ class GameBoardState extends State<GameBoard> {
       );
     }
 
-    // Si l'IA commence, déclencher son tour après le build avec délai
+    // If the AI starts, trigger its turn after the build with a delay
     if (widget.vsAI && widget.startingPlayer == Player.player2) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _startAITurnWithDelay();
@@ -182,6 +205,7 @@ class GameBoardState extends State<GameBoard> {
     if (gameState.phase == GamePhase.moveNexus) {
       if (validMoves.contains(pos)) {
         final newState = gameState.moveNexus(pos);
+        SoundService.instance.playNexusMove();
         setState(() {
           gameState = newState;
           validMoves = [];
@@ -205,6 +229,7 @@ class GameBoardState extends State<GameBoard> {
       if (selectedPawn != null && validMoves.contains(pos)) {
         final fromPos = selectedPawn!.position;
         final newState = gameState.movePawn(selectedPawn!, pos);
+        SoundService.instance.playPawnMove();
         setState(() {
           gameState = newState;
           selectedPawn = null;
@@ -261,6 +286,7 @@ class GameBoardState extends State<GameBoard> {
     if (gameState.phase == GamePhase.moveNexus) {
       final nexusMove = _ai.getBestNexusMove(gameState);
       if (nexusMove != null) {
+        SoundService.instance.playNexusMove();
         setState(() {
           gameState = gameState.moveNexus(nexusMove);
         });
@@ -281,6 +307,7 @@ class GameBoardState extends State<GameBoard> {
           gameState.currentPlayer == Player.player2) {
         final pawnMove = _ai.getBestPawnMove(gameState);
         if (pawnMove != null) {
+          SoundService.instance.playPawnMove();
           setState(() {
             gameState = gameState.movePawn(pawnMove.$1, pawnMove.$2);
             _aiThinking = false;
@@ -319,33 +346,35 @@ class GameBoardState extends State<GameBoard> {
 
     if (gameState.winner != null) {
       if (widget.vsAI) {
-        playerName = gameState.winner == Player.player1 ? 'Vous' : 'Ordinateur';
+        playerName = gameState.winner == Player.player1
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = gameState.winner == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
-      actionText = 'Gagne !';
+      actionText = AppLocalizations.of(context)!.wins;
       statusColor = gameState.winner == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;
     } else if (_aiThinking) {
-      playerName = 'Ordinateur';
-      actionText = 'Reflechit...';
+      playerName = AppLocalizations.of(context)!.computer;
+      actionText = AppLocalizations.of(context)!.thinking;
       statusColor = _theme.player2Color;
     } else {
       if (widget.vsAI) {
         playerName = gameState.currentPlayer == Player.player1
-            ? 'Vous'
-            : 'Ordinateur';
+            ? AppLocalizations.of(context)!.you
+            : AppLocalizations.of(context)!.computer;
       } else {
         playerName = gameState.currentPlayer == Player.player1
-            ? 'Joueur 1'
-            : 'Joueur 2';
+            ? AppLocalizations.of(context)!.player1
+            : AppLocalizations.of(context)!.player2;
       }
       actionText = gameState.phase == GamePhase.moveNexus
-          ? 'Déplacez le Nexus'
-          : 'Déplacez un pion';
+          ? AppLocalizations.of(context)!.moveNexusAction
+          : AppLocalizations.of(context)!.movePawnAction;
       statusColor = gameState.currentPlayer == Player.player1
           ? _theme.player1Color
           : _theme.player2Color;
@@ -455,7 +484,7 @@ class GameBoardState extends State<GameBoard> {
               itemBuilder: (context, index) {
                 final visualRow = index ~/ gameState.boardSize;
                 final col = index % gameState.boardSize;
-                // Inverser pour que le joueur local soit en bas
+                // Invert so that the local player is at the bottom
                 final shouldInvert =
                     !widget.isMultiplayer ||
                     widget.localPlayer == Player.player1;
@@ -476,11 +505,11 @@ class GameBoardState extends State<GameBoard> {
     final maxWidth = widget.maxWidth ?? 400;
     final maxHeight = widget.maxHeight;
 
-    // Calculer hexSize basé sur la largeur
+    // Compute hexSize based on the width
     final hexSizeFromWidth = maxWidth / 5.5;
 
-    // Si on a une contrainte de hauteur, calculer aussi hexSize basé sur la hauteur
-    // Le ratio hauteur/hexSize est environ 7 * sqrt(3)/2 + 0.5 ≈ 6.56
+    // If there is a height constraint, also compute hexSize based on the height
+    // The height/hexSize ratio is about 7 * sqrt(3)/2 + 0.5 ≈ 6.56
     if (maxHeight != null) {
       final hexSizeFromHeight = maxHeight / 6.56;
       return min(hexSizeFromWidth, hexSizeFromHeight).clamp(40.0, 100.0);
@@ -530,7 +559,7 @@ class GameBoardState extends State<GameBoard> {
 
       for (int row = 0; row < colHeight; row++) {
         final x = startX + hexWidth / 2 + col * horizontalSpacing;
-        // Inverser pour que le joueur local soit en bas
+        // Invert so that the local player is at the bottom
         final shouldInvert =
             !widget.isMultiplayer || widget.localPlayer == Player.player1;
         final invertedRow = shouldInvert ? colHeight - 1 - row : row;
@@ -603,7 +632,7 @@ class GameBoardState extends State<GameBoard> {
               ),
               child: Stack(
                 children: [
-                  // isTopRow = row 0 (camp joueur 1) -> objectif selon winCondition
+                  // isTopRow = row 0 (player 1 camp) -> objective depends on winCondition
                   if (isTopRow)
                     Positioned(
                       bottom: 6,
@@ -622,7 +651,7 @@ class GameBoardState extends State<GameBoard> {
                         ),
                       ),
                     ),
-                  // isBottomRow = row max (camp joueur 2) -> objectif selon winCondition
+                  // isBottomRow = row max (player 2 camp) -> objective depends on winCondition
                   if (isBottomRow)
                     Positioned(
                       top: 6,
@@ -728,7 +757,7 @@ class GameBoardState extends State<GameBoard> {
     final indicatorSize = _cellSize * 0.12;
 
     Widget? zoneIndicator;
-    // row 0 (camp joueur 1) -> objectif selon winCondition
+    // row 0 (player 1 camp) -> objective depends on winCondition
     if (pos.row == 0) {
       zoneIndicator = Positioned(
         bottom: 2,
@@ -744,7 +773,7 @@ class GameBoardState extends State<GameBoard> {
           ),
         ),
       );
-      // row max (camp joueur 2) -> objectif selon winCondition
+      // row max (player 2 camp) -> objective depends on winCondition
     } else if (pos.row == gameState.boardSize - 1) {
       zoneIndicator = Positioned(
         top: 2,

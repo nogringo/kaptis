@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import '../l10n/app_localizations.dart';
 import '../main.dart' show deepLinkService;
 import '../models/game_state.dart';
 import '../services/multiplayer_service.dart';
@@ -35,9 +36,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   bool _isLoading = false;
   bool _copied = false;
   String? _error;
-  String? _pendingCode; // Code généré localement avant connexion
-  bool _isCreatingRoom = false; // En cours de création
-  bool _configChangedDuringCreation = false; // Config modifiée pendant création
+  String? _pendingCode; // Code generated locally before connection
+  bool _isCreatingRoom = false; // Currently being created
+  bool _configChangedDuringCreation = false; // Config modified during creation
 
   StreamSubscription<void>? _gameStartSubscription;
 
@@ -75,7 +76,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   }
 
   void _onServiceUpdate() {
-    // Sync config from room for guest (quand l'host modifie)
+    // Sync config from room for guest (when the host modifies it)
     final room = _multiplayerService.currentRoom;
     if (!_isHost && room != null) {
       _boardSize = room.boardSize;
@@ -86,14 +87,28 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     setState(() {});
   }
 
+  /// Map a service error to a localized message (or raw text for exceptions).
+  String? _mapServiceError(AppLocalizations l10n) {
+    switch (_multiplayerService.errorCode) {
+      case MultiplayerError.roomNotFound:
+        return l10n.errorRoomNotFound;
+      case MultiplayerError.roomFull:
+        return l10n.errorRoomFull;
+      case MultiplayerError.alreadyStarted:
+        return l10n.errorAlreadyStarted;
+      case null:
+        return _multiplayerService.error;
+    }
+  }
+
   Future<void> _createRoom() async {
-    // Génère le code immédiatement (pas de chargement visible)
+    // Generate the code immediately (no visible loading)
     _pendingCode = _generateRoomCode();
     _isCreatingRoom = true;
     _configChangedDuringCreation = false;
     setState(() {});
 
-    // Connexion Nostr en arrière-plan
+    // Nostr connection in the background
     await _multiplayerService.createRoomWithCode(
       code: _pendingCode!,
       boardSize: _boardSize,
@@ -106,15 +121,16 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     _isCreatingRoom = false;
     _pendingCode = null;
 
-    // Si la config a changé pendant la création, on re-sync
+    // If the config changed during creation, re-sync
     if (_configChangedDuringCreation &&
         _multiplayerService.currentRoom != null) {
       _configChangedDuringCreation = false;
       await _updateConfig();
     }
 
+    if (!mounted) return;
     setState(() {
-      _error = _multiplayerService.error;
+      _error = _mapServiceError(AppLocalizations.of(context)!);
     });
   }
 
@@ -125,9 +141,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   }
 
   Future<void> _joinRoom() async {
+    final l10n = AppLocalizations.of(context)!;
     final code = _codeController.text.trim().toUpperCase();
     if (code.isEmpty) {
-      setState(() => _error = 'Entrez un code');
+      setState(() => _error = l10n.enterCodeError);
       return;
     }
 
@@ -140,7 +157,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
     setState(() {
       _isLoading = false;
-      _error = _multiplayerService.error;
+      _error = _mapServiceError(l10n);
     });
 
     if (room != null) {
@@ -155,16 +172,16 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   Future<void> _updateConfig() async {
     if (!_isHost) return;
 
-    // Si la room est en cours de création, on note juste que la config a changé
+    // If the room is currently being created, just note that the config changed
     if (_isCreatingRoom) {
       _configChangedDuringCreation = true;
       return;
     }
 
-    // Si la room n'existe pas encore, rien à faire
+    // If the room does not exist yet, nothing to do
     if (_multiplayerService.currentRoom == null) return;
 
-    // Republier l'événement addressable (remplace l'ancien)
+    // Republish the addressable event (replaces the old one)
     await _multiplayerService.updateRoomConfig(
       boardSize: _boardSize,
       gameMode: _gameMode,
@@ -211,7 +228,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   void _shareLink(String code) {
     final link = deepLinkService.generateShareLink(code);
     SharePlus.instance.share(
-      ShareParams(text: 'Rejoins ma partie Kaptis!\n$link'),
+      ShareParams(text: AppLocalizations.of(context)!.shareMessage(link)),
     );
   }
 
@@ -232,7 +249,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            _isHost ? 'Créer une partie' : 'Rejoindre',
+            _isHost
+                ? AppLocalizations.of(context)!.createGame
+                : AppLocalizations.of(context)!.join,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: isLarge ? 24 : 20,
@@ -346,7 +365,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       child: Column(
         children: [
           Text(
-            'Code de la partie',
+            AppLocalizations.of(context)!.gameCodeLabel,
             style: TextStyle(
               fontSize: isLarge ? 16 : 14,
               color: _theme.secondaryText,
@@ -373,7 +392,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                   size: isLarge ? 20 : 18,
                 ),
                 label: Text(
-                  'Copier',
+                  AppLocalizations.of(context)!.copy,
                   style: TextStyle(fontSize: isLarge ? 16 : 14),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -390,7 +409,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 onPressed: () => _shareLink(code),
                 icon: Icon(Icons.share, size: isLarge ? 20 : 18),
                 label: Text(
-                  'Partager',
+                  AppLocalizations.of(context)!.share,
                   style: TextStyle(fontSize: isLarge ? 16 : 14),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -420,7 +439,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       child: Column(
         children: [
           Text(
-            'Entrez le code',
+            AppLocalizations.of(context)!.enterCode,
             style: TextStyle(
               fontSize: isLarge ? 18 : 16,
               fontWeight: FontWeight.w500,
@@ -474,7 +493,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Configuration',
+            AppLocalizations.of(context)!.configuration,
             style: TextStyle(
               fontSize: isLarge ? 18 : 16,
               fontWeight: FontWeight.bold,
@@ -486,11 +505,11 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           // Board size
           _buildConfigRow(
             isLarge,
-            'Plateau',
+            AppLocalizations.of(context)!.boardLabel,
             readOnly
                 ? Text(
                     _gameMode == GameMode.hexagonal
-                        ? 'Hexagonal'
+                        ? AppLocalizations.of(context)!.hexagonal
                         : '${_boardSize}x$_boardSize',
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
@@ -502,10 +521,13 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                         ? 'hex'
                         : '${_boardSize}x$_boardSize',
                     isLarge: isLarge,
-                    items: const [
-                      DropdownMenuItem(value: '5x5', child: Text('5x5')),
-                      DropdownMenuItem(value: '7x7', child: Text('7x7')),
-                      DropdownMenuItem(value: 'hex', child: Text('Hexagonal')),
+                    items: [
+                      const DropdownMenuItem(value: '5x5', child: Text('5x5')),
+                      const DropdownMenuItem(value: '7x7', child: Text('7x7')),
+                      DropdownMenuItem(
+                        value: 'hex',
+                        child: Text(AppLocalizations.of(context)!.hexagonal),
+                      ),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -526,12 +548,12 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           // Win condition
           _buildConfigRow(
             isLarge,
-            'Victoire',
+            AppLocalizations.of(context)!.victoryLabel,
             readOnly
                 ? Text(
                     _winCondition == WinCondition.ownCamp
-                        ? 'Son camp'
-                        : 'Camp adverse',
+                        ? AppLocalizations.of(context)!.winOwnCamp
+                        : AppLocalizations.of(context)!.winOpponentCamp,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: _theme.primaryText,
@@ -540,14 +562,16 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 : _buildStyledDropdown<WinCondition>(
                     value: _winCondition,
                     isLarge: isLarge,
-                    items: const [
+                    items: [
                       DropdownMenuItem(
                         value: WinCondition.ownCamp,
-                        child: Text('Son camp'),
+                        child: Text(AppLocalizations.of(context)!.winOwnCamp),
                       ),
                       DropdownMenuItem(
                         value: WinCondition.opponentCamp,
-                        child: Text('Camp adverse'),
+                        child: Text(
+                          AppLocalizations.of(context)!.winOpponentCamp,
+                        ),
                       ),
                     ],
                     onChanged: (value) {
@@ -564,7 +588,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           // Starting player
           _buildConfigRow(
             isLarge,
-            'Commence',
+            AppLocalizations.of(context)!.startsLabel,
             readOnly
                 ? Row(
                     mainAxisSize: MainAxisSize.min,
@@ -581,7 +605,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        _startingPlayer == Player.player1 ? 'Bleu' : 'Rouge',
+                        _startingPlayer == Player.player1
+                            ? AppLocalizations.of(context)!.colorBlue
+                            : AppLocalizations.of(context)!.colorRed,
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           color: _theme.primaryText,
@@ -607,7 +633,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Text('Bleu'),
+                            Text(AppLocalizations.of(context)!.colorBlue),
                           ],
                         ),
                       ),
@@ -625,7 +651,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Text('Rouge'),
+                            Text(AppLocalizations.of(context)!.colorRed),
                           ],
                         ),
                       ),
@@ -703,7 +729,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Joueurs',
+            AppLocalizations.of(context)!.players,
             style: TextStyle(
               fontSize: isLarge ? 18 : 16,
               fontWeight: FontWeight.bold,
@@ -718,7 +744,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
             profile: _isHost
                 ? _multiplayerService.localProfile
                 : _multiplayerService.hostProfile,
-            label: _isHost ? 'Vous (host)' : 'Host',
+            label: _isHost
+                ? AppLocalizations.of(context)!.youHost
+                : AppLocalizations.of(context)!.host,
             connected: true,
             color: _theme.player1Color,
           ),
@@ -734,8 +762,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                       : _multiplayerService.localProfile)
                 : null,
             label: _hasGuest
-                ? (_isHost ? 'Adversaire' : 'Vous')
-                : 'En attente...',
+                ? (_isHost
+                      ? AppLocalizations.of(context)!.opponent
+                      : AppLocalizations.of(context)!.you)
+                : AppLocalizations.of(context)!.waiting,
             connected: _hasGuest,
             color: _hasGuest ? _theme.player2Color : _theme.tertiaryText,
           ),
@@ -755,7 +785,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
     return Row(
       children: [
-        // Avatar ou indicateur
+        // Avatar or indicator
         if (profile?.picture != null)
           ClipOval(
             child: Image.network(
@@ -772,7 +802,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
 
         SizedBox(width: isLarge ? 12 : 8),
 
-        // Nom et label
+        // Name and label
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -798,7 +828,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           ),
         ),
 
-        // Indicateur de connexion
+        // Connection indicator
         Container(
           width: isLarge ? 10 : 8,
           height: isLarge ? 10 : 8,
@@ -842,7 +872,9 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         ),
       ),
       child: Text(
-        _hasGuest ? 'Lancer la partie' : 'En attente d\'un adversaire...',
+        _hasGuest
+            ? AppLocalizations.of(context)!.startGameButton
+            : AppLocalizations.of(context)!.waitingOpponent,
         style: TextStyle(
           fontSize: isLarge ? 18 : 16,
           fontWeight: FontWeight.bold,
@@ -872,7 +904,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
               ),
             )
           : Text(
-              'Rejoindre',
+              AppLocalizations.of(context)!.join,
               style: TextStyle(
                 fontSize: isLarge ? 18 : 16,
                 fontWeight: FontWeight.bold,
@@ -902,7 +934,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           ),
           SizedBox(width: isLarge ? 12 : 8),
           Text(
-            'En attente du lancement par le host...',
+            AppLocalizations.of(context)!.waitingHostStart,
             style: TextStyle(
               fontSize: isLarge ? 16 : 14,
               color: Colors.orange.shade700,

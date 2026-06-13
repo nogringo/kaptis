@@ -5,6 +5,8 @@ import 'nexus_selection_screen.dart';
 import 'online_lobby_screen.dart';
 import '../theme/app_colors.dart';
 import '../utils/responsive.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/sound_toggle_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,27 +24,39 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: Responsive.screenPadding(context),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: Responsive.contentMaxWidth(context),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildTitle(),
-                  SizedBox(height: _isLarge ? 20 : 16),
-                  _buildSubtitle(),
-                  SizedBox(height: _isLarge ? 16 : 12),
-                  _buildTagline(),
-                  SizedBox(height: _isLarge ? 60 : 48),
-                  _buildButtons(),
-                ],
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                padding: Responsive.screenPadding(context),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: Responsive.contentMaxWidth(context),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildTitle(),
+                      SizedBox(height: _isLarge ? 20 : 16),
+                      _buildSubtitle(),
+                      SizedBox(height: _isLarge ? 16 : 12),
+                      _buildTagline(),
+                      SizedBox(height: _isLarge ? 60 : 48),
+                      _buildButtons(),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: SoundToggleButton(
+                size: _isLarge ? 32 : 28,
+                color: _theme.secondaryText,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -66,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSubtitle() {
     return Text(
-      'Jeu de stratégie pour 2 joueurs',
+      AppLocalizations.of(context)!.homeSubtitle,
       style: TextStyle(
         fontSize: _isLarge ? 20 : 16,
         color: _theme.secondaryText,
@@ -77,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildTagline() {
     return Text(
-      'Capture, Bloque, Domine... le Nexus !',
+      AppLocalizations.of(context)!.homeTagline,
       style: TextStyle(
         fontSize: _isLarge ? 24 : 18,
         fontWeight: FontWeight.w600,
@@ -157,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(Icons.play_arrow_rounded, size: height * 0.5),
               const SizedBox(width: 8),
               Text(
-                'JOUER EN LOCAL',
+                AppLocalizations.of(context)!.homePlayLocal,
                 style: TextStyle(
                   fontSize: height * 0.32,
                   fontWeight: FontWeight.bold,
@@ -194,7 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(Icons.public_rounded, size: height * 0.5),
               const SizedBox(width: 8),
               Text(
-                'JOUER EN LIGNE',
+                AppLocalizations.of(context)!.homePlayOnline,
                 style: TextStyle(
                   fontSize: height * 0.32,
                   fontWeight: FontWeight.bold,
@@ -230,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Multijoueur',
+                  AppLocalizations.of(context)!.multiplayer,
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -240,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 32),
                 _buildOptionButton(
                   icon: Icons.add_circle_outline,
-                  label: 'Créer une partie',
+                  label: AppLocalizations.of(context)!.createGame,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -255,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 _buildOptionButton(
                   icon: Icons.login_rounded,
-                  label: 'Rejoindre une partie',
+                  label: AppLocalizations.of(context)!.joinGame,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -288,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Multijoueur',
+              AppLocalizations.of(context)!.multiplayer,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -298,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             _buildOptionButton(
               icon: Icons.add_circle_outline,
-              label: 'Créer une partie',
+              label: AppLocalizations.of(context)!.createGame,
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -313,7 +327,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 12),
             _buildOptionButton(
               icon: Icons.login_rounded,
-              label: 'Rejoindre une partie',
+              label: AppLocalizations.of(context)!.joinGame,
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -390,7 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(Icons.menu_book_rounded, size: height * 0.45),
             const SizedBox(width: 8),
             Text(
-              'RÈGLES',
+              AppLocalizations.of(context)!.homeRulesButton,
               style: TextStyle(
                 fontSize: height * 0.3,
                 fontWeight: FontWeight.w600,
@@ -429,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(Icons.auto_awesome, size: height * 0.45),
             const SizedBox(width: 8),
             Text(
-              'NEXUS',
+              AppLocalizations.of(context)!.homeNexusButton,
               style: TextStyle(
                 fontSize: height * 0.3,
                 fontWeight: FontWeight.w600,

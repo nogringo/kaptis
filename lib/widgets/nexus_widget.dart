@@ -19,7 +19,7 @@ class _NexusWidgetState extends State<NexusWidget>
   late AnimationController _rotateController;
   late AnimationController _glowController;
 
-  // Taille de reference pour dessiner le Nexus
+  // Reference size for drawing the Nexus
   static const double _referenceSize = 60.0;
 
   @override

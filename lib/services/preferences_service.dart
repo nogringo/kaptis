@@ -12,6 +12,7 @@ class PreferencesService {
   static const _gameModeKey = 'game_mode';
   static const _winConditionKey = 'win_condition';
   static const _startingPlayerKey = 'starting_player';
+  static const _soundEnabledKey = 'sound_enabled';
 
   static NexusSkin _nexusSkin = NexusSkin.core;
   static NexusColor _nexusColor = NexusColor.gold;
@@ -21,6 +22,7 @@ class PreferencesService {
   static GameMode _gameMode = GameMode.square;
   static WinCondition _winCondition = WinCondition.ownCamp;
   static Player _startingPlayer = Player.player1;
+  static bool _soundEnabled = true;
 
   static NexusSkin get nexusSkin => _nexusSkin;
   static NexusColor get nexusColor => _nexusColor;
@@ -30,6 +32,7 @@ class PreferencesService {
   static GameMode get gameMode => _gameMode;
   static WinCondition get winCondition => _winCondition;
   static Player get startingPlayer => _startingPlayer;
+  static bool get soundEnabled => _soundEnabled;
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -57,6 +60,7 @@ class PreferencesService {
         prefs.getInt(_startingPlayerKey) ?? Player.player1.index;
     _startingPlayer =
         Player.values[startingPlayerIndex.clamp(0, Player.values.length - 1)];
+    _soundEnabled = prefs.getBool(_soundEnabledKey) ?? true;
   }
 
   static Future<void> setNexusSkin(NexusSkin skin) async {
@@ -105,5 +109,11 @@ class PreferencesService {
     _startingPlayer = player;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_startingPlayerKey, player.index);
+  }
+
+  static Future<void> setSoundEnabled(bool value) async {
+    _soundEnabled = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_soundEnabledKey, value);
   }
 }

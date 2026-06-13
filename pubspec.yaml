@@ -9,11 +9,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: ^2.5.4
-  ndk: ^0.7.1-dev.12
-  ndk_flutter: ^0.0.2-dev.4
-  app_links: ^7.0.0
-  share_plus: ^12.0.1
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  shared_preferences: ^2.5.5
+  ndk: ^0.8.4-dev.4
+  ndk_flutter: ^0.8.4-dev.5
+  app_links: ^7.1.2
+  share_plus: ^13.1.0
+  audioplayers: ^6.7.1
 
 dev_dependencies:
   flutter_test:
@@ -22,3 +26,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
+  assets:
+    - assets/sounds/
