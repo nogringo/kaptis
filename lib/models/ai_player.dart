@@ -162,9 +162,11 @@ class AIPlayer {
     final scoredMoves = <MapEntry<Position, int>>[];
 
     for (final move in validMoves) {
-      // Simuler le coup et évaluer avec minimax
+      // Simulate the move and evaluate with minimax.
+      // moveNexus does not change currentPlayer: it is still the AI's (P2)
+      // turn, which must then move a pawn -> we stay maximizing.
       final newState = state.moveNexus(move);
-      int score = _minimax(newState, 3, false, -10000, 10000);
+      int score = _minimax(newState, 3, true, -10000, 10000);
       scoredMoves.add(MapEntry(move, score));
     }
 
@@ -490,7 +492,9 @@ class AIPlayer {
       return p;
     }).toList();
 
-    return GameState(
+    // The pawn is played by the AI (P2): after the move, it is P1's turn
+    // to move the Nexus.
+    final newState = GameState(
       boardSize: state.boardSize,
       pieces: newPieces,
       currentPlayer: Player.player1,
@@ -499,6 +503,22 @@ class AIPlayer {
       gameMode: state.gameMode,
       winCondition: state.winCondition,
     );
+
+    // If the move blocks the Nexus, the AI (P2) wins. Without this, minimax
+    // would never see wins by blocking.
+    if (newState.isNexusBlocked()) {
+      return GameState(
+        boardSize: state.boardSize,
+        pieces: newPieces,
+        currentPlayer: Player.player1,
+        phase: GamePhase.moveNexus,
+        winner: pawn.owner,
+        gameMode: state.gameMode,
+        winCondition: state.winCondition,
+      );
+    }
+
+    return newState;
   }
 
   int _manhattanDistance(Position a, Position b) {
