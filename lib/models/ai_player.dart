@@ -457,7 +457,11 @@ class AIPlayer {
     // Block the path to P1's winning row
     // In ownCamp: P1 wins at row 0
     // In opponentCamp: P1 wins at maxRow
-    final targetRow = isOpponentCamp ? state.boardSize - 1 : 0;
+    // In hexagonal mode the last row depends on the Nexus column.
+    final int maxRow = state.gameMode == GameMode.hexagonal
+        ? GameState.hexColumnHeights[nexusPos.col] - 1
+        : state.boardSize - 1;
+    final targetRow = isOpponentCamp ? maxRow : 0;
     if (_blocksPathToRow(state, move, targetRow)) {
       score += 25;
     }
@@ -548,6 +552,26 @@ class AIPlayer {
 
   bool _blocksPathToRow(GameState state, Position pawnPos, int targetRow) {
     final nexusPos = state.nexus.position;
+
+    if (state.gameMode == GameMode.hexagonal) {
+      // Scan the 6 hex directions. The pawn blocks the path if it sits on a
+      // ray whose first step moves the Nexus closer to the target row.
+      for (int dir = 0; dir < 6; dir++) {
+        final firstStep = state.getNextHexCell(nexusPos, dir);
+        if (firstStep == null) continue;
+        // Keep only directions heading toward the target row.
+        final towardTarget =
+            (firstStep.row - nexusPos.row) * (targetRow - nexusPos.row) > 0;
+        if (!towardTarget) continue;
+
+        Position? check = firstStep;
+        while (check != null) {
+          if (check == pawnPos) return true;
+          check = state.getNextHexCell(check, dir);
+        }
+      }
+      return false;
+    }
 
     // Checks if the pawn is on the same column as the Nexus
     if (pawnPos.col == nexusPos.col) {
